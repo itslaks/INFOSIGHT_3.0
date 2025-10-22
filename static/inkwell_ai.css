@@ -1,0 +1,11 @@
+/* Inkwell AI CSS */
+
+/* Panel display styles */
+#resultsPanel {
+    display: none;
+}
+
+/* Metric value styles */
+#category {
+    font-size: 1.2em;
+}

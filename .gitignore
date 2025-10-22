@@ -1,0 +1,157 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# Flask
+instance/
+.webassets-cache
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+config.py
+secrets.py
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# API Keys and Secrets
+*_key.txt
+*_secret.txt
+*.pem
+*.key
+credentials.json
+
+# Uploads and Temp Files
+uploads/
+temp/
+tmp/
+cache/
+*.tmp
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Models and Data
+*.h5
+*.pkl
+*.model
+*.weights
+models/
+data/
+datasets/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Documentation
+docs/_build/
+site/
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Compiled files
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Security
+*.pem
+*.cer
+*.crt
+*.der
+*.p12
+*.pfx
+
+# Large files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Node modules (if any frontend tools)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Nmap scan results
+*.nmap
+*.xml
+scan_results/
+
+# Image uploads
+static/uploads/
+static/temp/
+
+# AI Model caches
+.transformers/
+.torch/

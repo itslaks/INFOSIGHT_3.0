@@ -1,0 +1,1681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INFOSIGHT AI Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00ffd5;
+            --primary-dark: #00b3a1;
+            --primary-light: #5ffff0;
+            --secondary: #1a1a1a;
+            --text: #ffffff;
+            --text-dim: #a0a0a0;
+            --background: #0a0a0a;
+            --card-bg: #141414;
+            --card-hover: #1a1a1a;
+            --hover: #00ffdd1a;
+            --error: #ff4444;
+            --success: #00ff88;
+            --warning: #ffbb00;
+            --info: #00b3ff;
+            --border: #2a2a2a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.03;
+            background: 
+                radial-gradient(circle at 20% 50%, var(--primary) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, var(--primary-dark) 0%, transparent 50%);
+            animation: bgPulse 15s ease-in-out infinite;
+        }
+
+        @keyframes bgPulse {
+            0%, 100% { opacity: 0.03; }
+            50% { opacity: 0.06; }
+        }
+
+        /* Header */
+        .header {
+            background: rgba(20, 20, 20, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo i {
+            font-size: 2rem;
+            color: var(--primary);
+            animation: logoGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes logoGlow {
+            0%, 100% { filter: drop-shadow(0 0 5px var(--primary)); }
+            50% { filter: drop-shadow(0 0 15px var(--primary)); }
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-text p {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .stat-badge {
+            background: var(--card-bg);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-badge i {
+            color: var(--primary);
+        }
+
+        /* Formatted Content Styles */
+        .formatted-content {
+            line-height: 1.8;
+        }
+
+        .content-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: rgba(0, 255, 213, 0.03);
+            border-left: 3px solid var(--primary);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .content-section:hover {
+            background: rgba(0, 255, 213, 0.05);
+            transform: translateX(4px);
+        }
+
+        .section-heading {
+            color: var(--primary);
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(0, 255, 213, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-heading::before {
+            content: '▶';
+            font-size: 0.8em;
+            color: var(--primary-light);
+        }
+
+        .section-paragraph {
+            color: var(--text);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            text-align: justify;
+            line-height: 1.9;
+            padding-left: 1rem;
+        }
+
+        .section-paragraph:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Key phrases highlighting */
+        .section-paragraph:first-letter {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: var(--primary-light);
+            float: left;
+            line-height: 1;
+            margin-right: 0.1em;
+        }
+
+        /* Empty state */
+        #generated-text.empty {
+            color: var(--text-dim);
+            font-style: italic;
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+
+        #generated-text.empty::before {
+            content: '✨ Generated content will appear here...';
+            display: block;
+            font-size: 1.1rem;
+        }
+
+        /* Responsive typography */
+        @media (max-width: 768px) {
+            .section-heading {
+                font-size: 1.1rem;
+            }
+            
+            .section-paragraph {
+                font-size: 0.95rem;
+                text-align: left;
+            }
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Mode Selector */
+        .mode-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .mode-card {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--primary);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .mode-card:hover {
+            border-color: var(--primary-dark);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 255, 213, 0.15);
+        }
+
+        .mode-card.active {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, var(--card-bg), rgba(0, 255, 213, 0.05));
+        }
+
+        .mode-card.active::before {
+            transform: scaleX(1);
+        }
+
+        .mode-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .mode-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .mode-description {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* Input Section */
+        .input-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-header h2 {
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .quick-prompts {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .quick-prompt-btn {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quick-prompt-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .prompt-wrapper {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        #prompt-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 1rem;
+            background: var(--secondary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 1rem;
+            resize: vertical;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        #prompt-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(0, 255, 213, 0.1);
+        }
+
+        .input-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .character-count {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .count-bar {
+            width: 100px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .count-fill {
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.2s ease, background 0.2s ease;
+        }
+
+        /* Button Styles */
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--secondary);
+            box-shadow: 0 4px 15px rgba(0, 255, 213, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 213, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            background: var(--hover);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Output Grid */
+        .output-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+
+        .output-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            opacity: 0;
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card-header {
+            background: var(--secondary);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .card-title i {
+            color: var(--primary);
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            background: var(--hover);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .card-content {
+            padding: 1.5rem;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .card-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .card-content::-webkit-scrollbar-track {
+            background: var(--secondary);
+        }
+
+        .card-content::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .card-content::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Text Output */
+        #generated-text {
+            line-height: 1.8;
+            color: var(--text);
+        }
+
+        #generated-text.empty::before {
+            content: 'Generated text will appear here...';
+            color: var(--text-dim);
+            font-style: italic;
+        }
+
+        /* Image Output */
+        .image-container {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            background: var(--secondary);
+        }
+
+        #generated-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        #generated-image:hover {
+            transform: scale(1.02);
+        }
+
+        .image-placeholder {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1rem;
+            color: var(--text-dim);
+        }
+
+        .image-placeholder i {
+            font-size: 3rem;
+            opacity: 0.3;
+        }
+
+        /* History Sidebar */
+        .history-toggle {
+            position: fixed;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary);
+            color: var(--secondary);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 255, 213, 0.4);
+            transition: all 0.3s ease;
+            z-index: 99;
+        }
+
+        .history-toggle:hover {
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .history-sidebar {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 400px;
+            height: 100vh;
+            background: var(--card-bg);
+            border-left: 1px solid var(--border);
+            transition: right 0.3s ease;
+            z-index: 101;
+            overflow-y: auto;
+        }
+
+        .history-sidebar.open {
+            right: 0;
+        }
+
+        .history-header {
+            padding: 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .history-item:hover {
+            background: var(--hover);
+        }
+
+        .history-item-prompt {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .history-item-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loader-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+
+        .loader-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 4px solid transparent;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loader-ring:nth-child(2) {
+            border-top-color: var(--primary-light);
+            animation-delay: 0.1s;
+        }
+
+        .loader-ring:nth-child(3) {
+            border-top-color: var(--primary-dark);
+            animation-delay: 0.2s;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            color: var(--primary);
+            letter-spacing: 2px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading-progress {
+            width: 300px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .loading-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 100px;
+            right: 2rem;
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .toast {
+            background: var(--card-bg);
+            border: 1px solid;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            min-width: 300px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            border-color: var(--success);
+        }
+
+        .toast.error {
+            border-color: var(--error);
+        }
+
+        .toast.warning {
+            border-color: var(--warning);
+        }
+
+        .toast.info {
+            border-color: var(--info);
+        }
+
+        .toast-icon {
+            font-size: 1.5rem;
+        }
+
+        .toast.success .toast-icon {
+            color: var(--success);
+        }
+
+        .toast.error .toast-icon {
+            color: var(--error);
+        }
+
+        .toast.warning .toast-icon {
+            color: var(--warning);
+        }
+
+        .toast.info .toast-icon {
+            color: var(--info);
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .toast-message {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1002;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+
+        .modal-content img {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 12px;
+            box-shadow: 0 0 50px rgba(0, 255, 213, 0.3);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: -50px;
+            right: 0;
+            background: transparent;
+            border: none;
+            color: var(--primary);
+            font-size: 2rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease;
+        }
+
+        .modal-close:hover {
+            transform: scale(1.2) rotate(90deg);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .output-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .history-sidebar {
+                width: 100%;
+                right: -100%;
+            }
+
+            .history-toggle {
+                right: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .mode-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .input-footer {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn-group {
+                justify-content: stretch;
+            }
+
+            .btn {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .toast-container {
+                right: 1rem;
+                left: 1rem;
+            }
+
+            .toast {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-brain"></i>
+                <div class="logo-text">
+                    <h1>INFOSIGHT AI Pro</h1>
+                    <p>Next-Generation AI Content Studio</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="stat-badge">
+                    <i class="fas fa-chart-line"></i>
+                    <span id="generation-count">0 Generations</span>
+                </div>
+                <div class="stat-badge">
+                    <i class="fas fa-clock"></i>
+                    <span id="session-time">0:00</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="mode-selector">
+            <div class="mode-card active" data-mode="text">
+                <div class="mode-icon"><i class="fas fa-file-alt"></i></div>
+                <div class="mode-title">Text Generation</div>
+                <div class="mode-description">Create high-quality content with AI-powered text generation</div>
+            </div>
+            <div class="mode-card" data-mode="image">
+                <div class="mode-icon"><i class="fas fa-image"></i></div>
+                <div class="mode-title">Image Generation</div>
+                <div class="mode-description">Generate stunning visuals from text descriptions</div>
+            </div>
+            <div class="mode-card" data-mode="both">
+                <div class="mode-icon"><i class="fas fa-layer-group"></i></div>
+                <div class="mode-title">Hybrid Mode</div>
+                <div class="mode-description">Generate both text and images simultaneously</div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <div class="input-header">
+                <h2><i class="fas fa-pen-fancy"></i> Create Your Prompt</h2>
+            </div>
+            
+            <div class="quick-prompts">
+                <button class="quick-prompt-btn" data-prompt="Write a blog post about">Blog Post</button>
+                <button class="quick-prompt-btn" data-prompt="Create a detailed guide on">Guide</button>
+                <button class="quick-prompt-btn" data-prompt="Explain the concept of">Explanation</button>
+                <button class="quick-prompt-btn" data-prompt="Generate a creative story about">Story</button>
+                <button class="quick-prompt-btn" data-prompt="Professional photo of">Photo</button>
+            </div>
+
+            <div class="prompt-wrapper">
+                <textarea id="prompt-input" placeholder="Describe what you want to create... Be specific and detailed for best results." maxlength="2000"></textarea>
+            </div>
+
+            <div class="input-footer">
+                <div class="character-count">
+                    <span id="char-count">0/2000</span>
+                    <div class="count-bar">
+                        <div class="count-fill" id="count-fill"></div>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button id="generate-btn" class="btn btn-primary">
+                        <i class="fas fa-magic"></i>
+                        <span>Generate</span>
+                    </button>
+                    <button id="enhance-btn" class="btn btn-secondary">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        <span>Enhance</span>
+                    </button>
+                    <button id="clear-btn" class="btn btn-secondary">
+                        <i class="fas fa-eraser"></i>
+                        <span>Clear</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="output-grid">
+            <div id="text-output" class="output-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-align-left"></i>
+                        Generated Content
+                    </div>
+                    <div class="card-actions">
+                        <button class="icon-btn" id="copy-text-btn" title="Copy to clipboard">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="icon-btn" id="download-text-btn" title="Download as file">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="icon-btn" id="share-text-btn" title="Share">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div id="generated-text" class="empty"></div>
+                </div>
+            </div>
+
+            <div id="image-output" class="output-card" style="display: none;">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-palette"></i>
+                        Generated Image
+                    </div>
+                    <div class="card-actions">
+                        <button class="icon-btn" id="download-image-btn" title="Download image">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="icon-btn" id="fullscreen-btn" title="View fullscreen">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                        <button class="icon-btn" id="regenerate-image-btn" title="Regenerate">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="image-container">
+                        <div class="image-placeholder">
+                            <i class="fas fa-image"></i>
+                            <p>Generated image will appear here</p>
+                        </div>
+                        <img id="generated-image" style="display: none;" alt="Generated content">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="history-toggle" id="history-toggle">
+        <i class="fas fa-history"></i>
+    </button>
+
+    <div class="history-sidebar" id="history-sidebar">
+        <div class="history-header">
+            <h3>Generation History</h3>
+            <button class="icon-btn" id="close-history">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="history-list"></div>
+    </div>
+
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loader-container">
+            <div class="loader-ring"></div>
+            <div class="loader-ring"></div>
+            <div class="loader-ring"></div>
+        </div>
+        <div class="loading-text" id="loading-text">Generating...</div>
+        <div class="loading-progress">
+            <div class="loading-progress-bar" id="progress-bar"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="image-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+            <img id="modal-image" alt="Full size image">
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // State Management
+        const state = {
+            currentMode: 'text',
+            generationCount: 0,
+            sessionStart: Date.now(),
+            history: JSON.parse(localStorage.getItem('infosight_history') || '[]')
+        };
+
+        // DOM Elements
+        const elements = {
+            modeCards: document.querySelectorAll('.mode-card'),
+            promptInput: document.getElementById('prompt-input'),
+            generateBtn: document.getElementById('generate-btn'),
+            enhanceBtn: document.getElementById('enhance-btn'),
+            clearBtn: document.getElementById('clear-btn'),
+            textOutput: document.getElementById('text-output'),
+            imageOutput: document.getElementById('image-output'),
+            generatedText: document.getElementById('generated-text'),
+            generatedImage: document.getElementById('generated-image'),
+            imagePlaceholder: document.querySelector('.image-placeholder'),
+            loadingOverlay: document.getElementById('loading-overlay'),
+            loadingText: document.getElementById('loading-text'),
+            progressBar: document.getElementById('progress-bar'),
+            charCount: document.getElementById('char-count'),
+            countFill: document.getElementById('count-fill'),
+            generationCount: document.getElementById('generation-count'),
+            sessionTime: document.getElementById('session-time'),
+            historyToggle: document.getElementById('history-toggle'),
+            historySidebar: document.getElementById('history-sidebar'),
+            closeHistory: document.getElementById('close-history'),
+            historyList: document.getElementById('history-list'),
+            imageModal: document.getElementById('image-modal'),
+            modalImage: document.getElementById('modal-image'),
+            modalClose: document.getElementById('modal-close'),
+            toastContainer: document.getElementById('toast-container')
+        };
+
+        // API Configuration
+        const API_BASE = '/infosight_ai';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp();
+            setupEventListeners();
+            startSessionTimer();
+            renderHistory();
+        });
+
+        function initializeApp() {
+            updateCharacterCount();
+            updateUI();
+        }
+
+        function setupEventListeners() {
+            // Mode selection
+            elements.modeCards.forEach(card => {
+                card.addEventListener('click', () => selectMode(card.dataset.mode));
+            });
+
+            // Quick prompts
+            document.querySelectorAll('.quick-prompt-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    elements.promptInput.value = btn.dataset.prompt + ' ';
+                    elements.promptInput.focus();
+                    updateCharacterCount();
+                });
+            });
+
+            // Input events
+            elements.promptInput.addEventListener('input', updateCharacterCount);
+            elements.promptInput.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'Enter') {
+                    handleGenerate();
+                }
+            });
+
+            // Button events
+            elements.generateBtn.addEventListener('click', handleGenerate);
+            elements.enhanceBtn.addEventListener('click', handleEnhance);
+            elements.clearBtn.addEventListener('click', handleClear);
+
+            // Output actions
+            document.getElementById('copy-text-btn').addEventListener('click', copyText);
+            document.getElementById('download-text-btn').addEventListener('click', downloadText);
+            document.getElementById('share-text-btn').addEventListener('click', shareText);
+            document.getElementById('download-image-btn').addEventListener('click', downloadImage);
+            document.getElementById('fullscreen-btn').addEventListener('click', openImageModal);
+            document.getElementById('regenerate-image-btn').addEventListener('click', regenerateImage);
+
+            // History
+            elements.historyToggle.addEventListener('click', toggleHistory);
+            elements.closeHistory.addEventListener('click', toggleHistory);
+
+            // Modal
+            elements.modalClose.addEventListener('click', closeImageModal);
+            elements.imageModal.addEventListener('click', (e) => {
+                if (e.target === elements.imageModal) closeImageModal();
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeImageModal();
+                    if (elements.historySidebar.classList.contains('open')) {
+                        toggleHistory();
+                    }
+                }
+            });
+        }
+
+        function selectMode(mode) {
+            state.currentMode = mode;
+            elements.modeCards.forEach(card => {
+                card.classList.toggle('active', card.dataset.mode === mode);
+            });
+            updateUI();
+        }
+
+        function updateUI() {
+            const showText = state.currentMode === 'text' || state.currentMode === 'both';
+            const showImage = state.currentMode === 'image' || state.currentMode === 'both';
+            
+            elements.textOutput.style.display = showText ? 'block' : 'none';
+            elements.imageOutput.style.display = showImage ? 'block' : 'none';
+        }
+
+        function updateCharacterCount() {
+            const length = elements.promptInput.value.length;
+            const max = 2000;
+            const percentage = (length / max) * 100;
+            
+            elements.charCount.textContent = `${length}/${max}`;
+            elements.countFill.style.width = `${percentage}%`;
+            
+            if (percentage > 90) {
+                elements.countFill.style.background = 'var(--error)';
+            } else if (percentage > 70) {
+                elements.countFill.style.background = 'var(--warning)';
+            } else {
+                elements.countFill.style.background = 'var(--primary)';
+            }
+        }
+
+        async function handleGenerate() {
+            const prompt = elements.promptInput.value.trim();
+            
+            if (!prompt) {
+                showToast('Please enter a prompt', 'error');
+                return;
+            }
+
+            if (prompt.length > 2000) {
+                showToast('Prompt is too long (max 2000 characters)', 'error');
+                return;
+            }
+
+            showLoading(true);
+            setButtonsDisabled(true);
+
+            try {
+                switch (state.currentMode) {
+                    case 'text':
+                        await generateText(prompt);
+                        break;
+                    case 'image':
+                        await generateImage(prompt);
+                        break;
+                    case 'both':
+                        await generateBoth(prompt);
+                        break;
+                }
+
+                addToHistory(prompt, state.currentMode);
+                state.generationCount++;
+                updateGenerationCount();
+                showToast('Generation completed successfully!', 'success');
+            } catch (error) {
+                console.error('Generation error:', error);
+                showToast(error.message || 'Generation failed', 'error');
+            } finally {
+                showLoading(false);
+                setButtonsDisabled(false);
+            }
+        }
+
+        async function generateText(prompt) {
+            updateLoadingText('Generating text content...');
+            simulateProgress(30);
+
+            const response = await fetch(`${API_BASE}/generate-text`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt })
+            });
+
+            if (!response.ok) throw new Error('Text generation failed');
+
+            const data = await response.json();
+            displayText(data.text);
+            simulateProgress(100);
+        }
+
+        async function generateImage(prompt) {
+            updateLoadingText('Creating your image...');
+            simulateProgress(40);
+
+            const response = await fetch(`${API_BASE}/generate-image`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt })
+            });
+
+            if (!response.ok) throw new Error('Image generation failed');
+
+            const data = await response.json();
+            displayImage(data.image_url);
+            simulateProgress(100);
+        }
+
+        async function generateBoth(prompt) {
+            updateLoadingText('Generating text and image...');
+            simulateProgress(20);
+
+            const response = await fetch(`${API_BASE}/generate-both`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt })
+            });
+
+            if (!response.ok) throw new Error('Generation failed');
+
+            simulateProgress(60);
+            const data = await response.json();
+            
+            displayText(data.text);
+            if (data.image_url) {
+                displayImage(data.image_url);
+            }
+            simulateProgress(100);
+        }
+
+        function displayText(text) {
+    elements.generatedText.classList.remove('empty');
+    // Check if text contains HTML
+    if (text.includes('<div class="formatted-content">')) {
+        elements.generatedText.innerHTML = text;
+    } else {
+        // Fallback: simple paragraph formatting
+        const paragraphs = text.split('\n\n').filter(p => p.trim());
+        elements.generatedText.innerHTML = paragraphs
+            .map(p => `<p class="section-paragraph">${p}</p>`)
+            .join('');
+    }
+    
+    // Add animation to sections
+    setTimeout(() => {
+        const sections = elements.generatedText.querySelectorAll('.content-section');
+        sections.forEach((section, idx) => {
+            setTimeout(() => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+                section.style.transition = 'all 0.5s ease';
+                setTimeout(() => {
+                    section.style.opacity = '1';
+                    section.style.transform = 'translateY(0)';
+                }, 50);
+            }, idx * 100);
+        });
+    }, 100);
+}
+
+        function displayImage(url) {
+            elements.generatedImage.src = url;
+            elements.generatedImage.style.display = 'block';
+            elements.imagePlaceholder.style.display = 'none';
+        }
+
+        async function handleEnhance() {
+            const prompt = elements.promptInput.value.trim();
+            if (!prompt) {
+                showToast('Enter a prompt to enhance', 'warning');
+                return;
+            }
+
+            const enhancements = [
+                'highly detailed, professional quality',
+                'photorealistic, 8K resolution, stunning',
+                'creative, unique perspective, award-winning',
+                'cinematic, dramatic lighting, masterpiece'
+            ];
+
+            const enhancement = enhancements[Math.floor(Math.random() * enhancements.length)];
+            elements.promptInput.value = `${prompt}, ${enhancement}`;
+            updateCharacterCount();
+            showToast('Prompt enhanced!', 'success');
+        }
+
+        function handleClear() {
+            elements.promptInput.value = '';
+            elements.generatedText.textContent = '';
+            elements.generatedText.classList.add('empty');
+            elements.generatedImage.style.display = 'none';
+            elements.imagePlaceholder.style.display = 'flex';
+            updateCharacterCount();
+            showToast('Cleared successfully', 'info');
+        }
+
+        async function copyText() {
+            const text = elements.generatedText.textContent;
+            if (!text || elements.generatedText.classList.contains('empty')) {
+                showToast('No text to copy', 'warning');
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast('Text copied to clipboard!', 'success');
+            } catch (error) {
+                showToast('Failed to copy text', 'error');
+            }
+        }
+
+        function downloadText() {
+            const text = elements.generatedText.textContent;
+            if (!text || elements.generatedText.classList.contains('empty')) {
+                showToast('No text to download', 'warning');
+                return;
+            }
+
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `infosight-text-${Date.now()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Text downloaded!', 'success');
+        }
+
+        async function shareText() {
+            const text = elements.generatedText.textContent;
+            if (!text || elements.generatedText.classList.contains('empty')) {
+                showToast('No text to share', 'warning');
+                return;
+            }
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'INFOSIGHT AI Generated Content',
+                        text: text
+                    });
+                    showToast('Shared successfully!', 'success');
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        showToast('Share failed', 'error');
+                    }
+                }
+            } else {
+                copyText();
+            }
+        }
+
+        function downloadImage() {
+            if (elements.generatedImage.style.display === 'none') {
+                showToast('No image to download', 'warning');
+                return;
+            }
+
+            const a = document.createElement('a');
+            a.href = elements.generatedImage.src;
+            a.download = `infosight-image-${Date.now()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast('Image downloaded!', 'success');
+        }
+
+        function openImageModal() {
+            if (elements.generatedImage.style.display === 'none') {
+                showToast('No image to view', 'warning');
+                return;
+            }
+
+            elements.modalImage.src = elements.generatedImage.src;
+            elements.imageModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeImageModal() {
+            elements.imageModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        async function regenerateImage() {
+            const prompt = elements.promptInput.value.trim();
+            if (!prompt) {
+                showToast('Enter a prompt to regenerate', 'warning');
+                return;
+            }
+
+            showLoading(true);
+            setButtonsDisabled(true);
+
+            try {
+                await generateImage(prompt);
+                showToast('Image regenerated!', 'success');
+            } catch (error) {
+                showToast('Regeneration failed', 'error');
+            } finally {
+                showLoading(false);
+                setButtonsDisabled(false);
+            }
+        }
+
+        function toggleHistory() {
+            elements.historySidebar.classList.toggle('open');
+        }
+
+        function addToHistory(prompt, mode) {
+            const item = {
+                id: Date.now(),
+                prompt,
+                mode,
+                timestamp: new Date().toISOString()
+            };
+
+            state.history.unshift(item);
+            if (state.history.length > 50) state.history.pop();
+            
+            localStorage.setItem('infosight_history', JSON.stringify(state.history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            if (state.history.length === 0) {
+                elements.historyList.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-dim);">No history yet</div>';
+                return;
+            }
+
+            elements.historyList.innerHTML = state.history.map(item => `
+                <div class="history-item" data-id="${item.id}">
+                    <div class="history-item-prompt">${item.prompt}</div>
+                    <div class="history-item-meta">
+                        <span><i class="fas fa-${item.mode === 'text' ? 'file-alt' : item.mode === 'image' ? 'image' : 'layer-group'}"></i> ${item.mode}</span>
+                        <span>${formatDate(item.timestamp)}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add click handlers
+            elements.historyList.querySelectorAll('.history-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const id = parseInt(item.dataset.id);
+                    const historyItem = state.history.find(h => h.id === id);
+                    if (historyItem) {
+                        elements.promptInput.value = historyItem.prompt;
+                        selectMode(historyItem.mode);
+                        toggleHistory();
+                        updateCharacterCount();
+                    }
+                });
+            });
+        }
+
+        function formatDate(isoString) {
+            const date = new Date(isoString);
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (minutes < 1) return 'Just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            if (days < 7) return `${days}d ago`;
+            return date.toLocaleDateString();
+        }
+
+        function startSessionTimer() {
+            setInterval(() => {
+                const elapsed = Date.now() - state.sessionStart;
+                const minutes = Math.floor(elapsed / 60000);
+                const seconds = Math.floor((elapsed % 60000) / 1000);
+                elements.sessionTime.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function updateGenerationCount() {
+            elements.generationCount.textContent = `${state.generationCount} Generation${state.generationCount !== 1 ? 's' : ''}`;
+        }
+
+        function showLoading(show) {
+            elements.loadingOverlay.classList.toggle('active', show);
+            if (!show) {
+                elements.progressBar.style.width = '0%';
+            }
+        }
+
+        function updateLoadingText(text) {
+            elements.loadingText.textContent = text;
+        }
+
+        function simulateProgress(target) {
+            const current = parseInt(elements.progressBar.style.width) || 0;
+            const step = (target - current) / 20;
+            let progress = current;
+
+            const interval = setInterval(() => {
+                progress += step;
+                if (progress >= target) {
+                    progress = target;
+                    clearInterval(interval);
+                }
+                elements.progressBar.style.width = `${progress}%`;
+            }, 50);
+        }
+
+        function setButtonsDisabled(disabled) {
+            elements.generateBtn.disabled = disabled;
+            elements.enhanceBtn.disabled = disabled;
+            elements.clearBtn.disabled = disabled;
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
+
+            toast.innerHTML = `
+                <i class="fas ${icons[type]} toast-icon"></i>
+                <div class="toast-content">
+                    <div class="toast-title">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+            `;
+
+            elements.toastContainer.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

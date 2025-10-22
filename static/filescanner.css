@@ -1,0 +1,57 @@
+/* External styles for filescanner.html inline replacements */
+
+.hash-helper {
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+.centered {
+  text-align: center;
+}
+
+.risk-level {
+  margin-top: 15px;
+  font-size: 1.5em;
+}
+
+.stat-danger {
+  color: var(--danger-color);
+}
+
+.stat-warning {
+  color: var(--warning-color);
+}
+
+.stat-success {
+  color: var(--success-color);
+}
+
+.detection-summary {
+  margin-left: auto;
+  color: var(--text-secondary);
+  font-size: 0.8em;
+}
+
+.filter-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+/* Added replacements */
+.risk-score-fill {
+  width: 0%;
+}
+
+.vendor-result-text {
+  color: var(--text-secondary);
+  font-size: 0.85em;
+  margin-top: 3px;
+}
+
+.no-results-msg {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary);
+}

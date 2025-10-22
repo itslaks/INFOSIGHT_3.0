@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSeeker - Professional Security Analysis</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-black: #0a0a0a;
+            --secondary-black: #1a1a1a;
+            --tertiary-black: #2a2a2a;
+            --gray-dark: #3a3a3a;
+            --gray-medium: #666666;
+            --gray-light: #999999;
+            --burgundy: #800020;
+            --burgundy-light: #a0002a;
+            --burgundy-dark: #600018;
+            --teal: #008080;
+            --teal-light: #20a0a0;
+            --teal-dark: #006060;
+            --white: #ffffff;
+            --off-white: #f5f5f5;
+            
+            --critical: #8b0000;
+            --high: #b22222;
+            --medium: #cd853f;
+            --low: #20a060;
+            --safe: #008060;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PT Serif', serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-black) 0%, var(--secondary-black) 100%);
+            color: var(--off-white);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem 0;
+            border-bottom: 2px solid var(--burgundy);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            color: var(--burgundy);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: var(--teal);
+            font-style: italic;
+        }
+
+        .scan-form {
+            background: var(--secondary-black);
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border: 1px solid var(--gray-dark);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 1rem;
+            background: var(--tertiary-black);
+            border: 1px solid var(--gray-dark);
+            border-radius: 4px;
+            color: var(--off-white);
+            font-size: 1rem;
+            font-family: 'PT Serif', serif;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--teal);
+        }
+
+        select option {
+            background: var(--tertiary-black);
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: var(--burgundy);
+            color: var(--white);
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'PT Serif', serif;
+        }
+
+        button:hover {
+            background: var(--burgundy-light);
+            box-shadow: 0 4px 12px rgba(128, 0, 32, 0.4);
+        }
+
+        button:disabled {
+            background: var(--gray-medium);
+            cursor: not-allowed;
+        }
+
+        .export-button {
+            background: var(--teal);
+            margin-top: 1rem;
+        }
+
+        .export-button:hover {
+            background: var(--teal-light);
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results-section {
+            background: var(--secondary-black);
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border: 1px solid var(--gray-dark);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .results-section h2 {
+            color: var(--burgundy);
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            font-weight: 700;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--burgundy);
+        }
+
+        .security-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .score-display {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            border: 4px solid;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .score-circle .score-label {
+            font-size: 0.75rem;
+            font-weight: 400;
+            margin-top: 0.3rem;
+        }
+
+        .score-circle.critical { background: rgba(139, 0, 0, 0.2); border-color: var(--critical); color: var(--critical); }
+        .score-circle.high { background: rgba(178, 34, 34, 0.2); border-color: var(--high); color: var(--high); }
+        .score-circle.medium { background: rgba(205, 133, 63, 0.2); border-color: var(--medium); color: var(--medium); }
+        .score-circle.low { background: rgba(32, 160, 96, 0.2); border-color: var(--low); color: var(--low); }
+        .score-circle.safe { background: rgba(0, 128, 96, 0.2); border-color: var(--safe); color: var(--safe); }
+
+        .score-description {
+            margin-top: 1rem;
+            font-size: 1rem;
+            color: var(--gray-light);
+        }
+
+        .risk-badge {
+            padding: 0.8rem 2rem;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .risk-CRITICAL { background: var(--critical); color: var(--white); }
+        .risk-HIGH { background: var(--high); color: var(--white); }
+        .risk-MEDIUM { background: var(--medium); color: var(--white); }
+        .risk-LOW { background: var(--low); color: var(--white); }
+        .risk-SAFE { background: var(--safe); color: var(--white); }
+
+        .chart-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .chart-wrapper {
+            background: var(--tertiary-black);
+            padding: 1.5rem;
+            border-radius: 6px;
+            border: 1px solid var(--gray-dark);
+            height: 350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-wrapper canvas {
+            max-height: 280px !important;
+        }
+
+        .sources-list {
+            max-height: 350px;
+            overflow-y: auto;
+            background: var(--tertiary-black);
+            padding: 1.5rem;
+            border-radius: 6px;
+            border: 1px solid var(--gray-dark);
+        }
+
+        .sources-list h3 {
+            color: var(--teal);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .sources-list ul {
+            list-style: none;
+        }
+
+        .sources-list li {
+            padding: 0.6rem;
+            border-bottom: 1px solid var(--gray-dark);
+            font-size: 0.95rem;
+        }
+
+        .ip-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .info-card {
+            background: var(--tertiary-black);
+            padding: 1.5rem;
+            border-radius: 6px;
+            border: 1px solid var(--gray-dark);
+            transition: all 0.3s;
+        }
+
+        .info-card:hover {
+            border-color: var(--teal);
+            box-shadow: 0 4px 12px rgba(0, 128, 128, 0.2);
+        }
+
+        .info-card h3 {
+            color: var(--teal);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .info-card .info-row {
+            margin-bottom: 0.8rem;
+            font-size: 0.95rem;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .info-card .info-row strong {
+            color: var(--gray-light);
+            min-width: 140px;
+            flex-shrink: 0;
+        }
+
+        .info-card .info-value {
+            color: var(--off-white);
+            flex: 1;
+            word-break: break-all;
+        }
+
+        .nmap-output {
+            background: var(--primary-black);
+            padding: 1.5rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            border: 1px solid var(--gray-dark);
+        }
+
+        .port-scan-container {
+            background: var(--tertiary-black);
+            border-radius: 6px;
+            padding: 1.5rem;
+            border: 1px solid var(--gray-dark);
+        }
+
+        .port-open { color: var(--safe); }
+        .port-closed { color: var(--high); }
+        .port-filtered { color: var(--medium); }
+
+        .scan-stats {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: var(--tertiary-black);
+            border-radius: 6px;
+            border: 1px solid var(--gray-dark);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .scan-stats > div {
+            font-size: 0.95rem;
+        }
+
+        .scan-stats strong {
+            color: var(--teal);
+        }
+
+        .summary-content {
+            background: var(--tertiary-black);
+            padding: 2rem;
+            border-radius: 6px;
+            border-left: 4px solid var(--burgundy);
+            margin-bottom: 2rem;
+        }
+
+        .summary-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            color: var(--off-white);
+        }
+
+        .website-description {
+            background: var(--primary-black);
+            padding: 1.5rem;
+            border-radius: 6px;
+            border-left: 4px solid var(--teal);
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: var(--gray-light);
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        .ai-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--teal), var(--teal-light));
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        .findings-recommendations {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .findings-box, .recommendations-box {
+            background: var(--tertiary-black);
+            padding: 1.5rem;
+            border-radius: 6px;
+            border: 1px solid var(--gray-dark);
+        }
+
+        .findings-box h3 {
+            color: var(--burgundy);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .recommendations-box h3 {
+            color: var(--teal);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .finding-item, .recommendation-item {
+            background: var(--primary-black);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            border-left: 3px solid var(--burgundy);
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .recommendation-item {
+            border-left-color: var(--teal);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .spinner {
+            border: 4px solid var(--gray-dark);
+            border-top: 4px solid var(--burgundy);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            color: var(--teal);
+            font-size: 1.1rem;
+            font-style: italic;
+        }
+
+        .error {
+            color: var(--high);
+            padding: 1rem;
+            background: rgba(178, 34, 34, 0.1);
+            border: 1px solid var(--high);
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--tertiary-black);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--burgundy);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--burgundy-light);
+        }
+
+        @media (max-width: 1024px) {
+            .chart-container,
+            .findings-recommendations {
+                grid-template-columns: 1fr;
+            }
+
+            .score-display {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .score-circle {
+                width: 100px;
+                height: 100px;
+                font-size: 2rem;
+            }
+
+            .ip-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+            
+            .scan-form, .export-button {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>WebSeeker</h1>
+            <p>Professional Security Analysis & Threat Intelligence</p>
+        </div>
+
+        <div class="scan-form">
+            <div class="error" id="errorMessage"></div>
+            <div class="input-group">
+                <input type="text" id="domainInput" placeholder="Enter domain (e.g., example.com)" />
+            </div>
+            <div class="input-group">
+                <select id="scanType" aria-label="Select scan type">
+                    <option value="quick">Quick Scan - Essential Ports</option>
+                    <option value="comprehensive">Comprehensive Scan - Full Analysis</option>
+                    <option value="stealth">Stealth Scan - Low Profile</option>
+                </select>
+            </div>
+            <button id="scanButton" onclick="startScan()">Begin Security Analysis</button>
+        </div>
+
+        <div class="loading" id="loadingIndicator">
+            <div class="spinner"></div>
+            <p>Analyzing security posture... This may take a moment...</p>
+        </div>
+
+        <div class="results" id="resultsContainer">
+            <div class="results-section" id="securityAnalysisSection">
+                <h2>Security Analysis Overview</h2>
+                <div class="security-header">
+                    <div class="score-display">
+                        <div id="scoreCircle" class="score-circle">
+                            <div id="scoreNumber">0</div>
+                            <div class="score-label">Security Score</div>
+                        </div>
+                        <div>
+                            <div id="riskBadge" class="risk-badge"></div>
+                            <div id="scoreDescription" class="score-description"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-wrapper">
+                        <canvas id="vtChart"></canvas>
+                    </div>
+                    <div class="sources-list" id="vtSources">
+                        <h3>Threat Intelligence Sources</h3>
+                        <ul id="sourcesList"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <h2>IP & Network Information</h2>
+                <div id="ipInfo" class="ip-grid"></div>
+            </div>
+
+            <div class="results-section">
+                <h2>Port Scan Results</h2>
+                <div class="port-scan-container">
+                    <div id="portScanResults"></div>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <h2>SSL/TLS Certificate Information</h2>
+                <div id="sslInfo"></div>
+            </div>
+
+            <div class="results-section">
+                <h2>Executive Summary & Recommendations</h2>
+                <div class="summary-content">
+                    <span class="ai-badge">🤖 AI-POWERED ANALYSIS</span>
+                    <div id="summaryText" class="summary-text"></div>
+                    <div id="websiteDescription" class="website-description"></div>
+                    
+                    <div class="findings-recommendations">
+                        <div class="findings-box">
+                            <h3>🔍 Key Findings</h3>
+                            <div id="findingsList"></div>
+                        </div>
+                        <div class="recommendations-box">
+                            <h3>💡 Security Recommendations</h3>
+                            <div id="recommendationsList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="export-button" onclick="exportToPDF()">📄 Export Complete Report as PDF</button>
+        </div>
+    </div>
+
+    <script>
+let vtChart;
+let currentScanData = null;
+
+function getScoreBadgeClass(score) {
+    if (score >= 85) return 'safe';
+    if (score >= 70) return 'low';
+    if (score >= 50) return 'medium';
+    if (score >= 30) return 'high';
+    return 'critical';
+}
+
+function getRiskDescriptions() {
+    return {
+        critical: 'Critical security vulnerabilities detected requiring immediate action',
+        high: 'Significant security risks that need urgent attention',
+        medium: 'Moderate security concerns that should be addressed',
+        low: 'Minor security issues with low impact',
+        safe: 'Strong security posture with minimal concerns'
+    };
+}
+
+function displaySecurityAnalysis(data) {
+    const summary = data.executive_summary || {};
+    
+    const scoreCircle = document.getElementById('scoreCircle');
+    const scoreNumber = document.getElementById('scoreNumber');
+    const score = summary.security_score || 0;
+    const scoreClass = getScoreBadgeClass(score);
+    scoreCircle.className = `score-circle ${scoreClass}`;
+    scoreNumber.textContent = score;
+
+    const riskBadge = document.getElementById('riskBadge');
+    const riskLevel = summary.risk_level || 'UNKNOWN';
+    riskBadge.className = `risk-badge risk-${riskLevel}`;
+    riskBadge.textContent = `Risk: ${riskLevel}`;
+
+    const descriptions = getRiskDescriptions();
+    document.getElementById('scoreDescription').textContent = descriptions[scoreClass] || 'Assessment complete';
+}
+
+function displayVirusTotal(vtData) {
+    if (vtChart) {
+        vtChart.destroy();
+    }
+
+    const ctx = document.getElementById('vtChart').getContext('2d');
+    const sourcesList = document.getElementById('sourcesList');
+
+    const domainStats = vtData.domain_report?.last_analysis_stats || {
+        harmless: 0,
+        malicious: 0,
+        suspicious: 0,
+        unrated: 0
+    };
+
+    vtChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Clean', 'Malicious', 'Suspicious', 'Unrated'],
+            datasets: [{
+                data: [
+                    domainStats.harmless || 0,
+                    domainStats.malicious || 0,
+                    domainStats.suspicious || 0,
+                    domainStats.unrated || 0
+                ],
+                backgroundColor: [
+                    'rgba(0, 128, 96, 0.8)',
+                    'rgba(139, 0, 0, 0.8)',
+                    'rgba(205, 133, 63, 0.8)',
+                    'rgba(102, 102, 102, 0.8)'
+                ],
+                borderColor: [
+                    'var(--safe)',
+                    'var(--critical)',
+                    'var(--medium)',
+                    'var(--gray-medium)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { 
+                        color: 'var(--off-white)',
+                        font: { family: 'PT Serif', size: 11 }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Threat Intelligence Analysis',
+                    color: 'var(--burgundy)',
+                    font: { family: 'PT Serif', size: 14, weight: 'bold' }
+                }
+            }
+        }
+    });
+
+    sourcesList.innerHTML = '';
+    const analysisResults = vtData.domain_report?.last_analysis_results || {};
+    
+    if (Object.keys(analysisResults).length === 0) {
+        sourcesList.innerHTML = '<li style="color: var(--gray-light);">No detailed analysis available</li>';
+        return;
+    }
+
+    const sortedSources = Object.entries(analysisResults)
+        .sort((a, b) => {
+            const order = { 'malicious': 0, 'suspicious': 1, 'harmless': 2, 'clean': 3, 'unrated': 4 };
+            const catA = (a[1].category || a[1].result || 'unrated').toLowerCase();
+            const catB = (b[1].category || b[1].result || 'unrated').toLowerCase();
+            return (order[catA] || 99) - (order[catB] || 99);
+        })
+        .slice(0, 30);
+
+    sortedSources.forEach(([source, result]) => {
+        const li = document.createElement('li');
+        const resultCategory = (result.category || result.result || 'clean').toLowerCase();
+        const displayResult = resultCategory.charAt(0).toUpperCase() + resultCategory.slice(1);
+        
+        li.innerHTML = `<strong>${source}:</strong> ${displayResult}`;
+        li.style.color = 
+            resultCategory === 'clean' || resultCategory === 'harmless' ? 'var(--safe)' : 
+            resultCategory === 'malicious' ? 'var(--critical)' : 
+            resultCategory === 'suspicious' ? 'var(--medium)' : 'var(--gray-light)';
+        sourcesList.appendChild(li);
+    });
+}
+
+function displayIpInfo(data) {
+    const ipInfo = document.getElementById('ipInfo');
+    ipInfo.innerHTML = '';
+
+    if (!data || !data.success) {
+        ipInfo.innerHTML = `<div class="info-card"><p style="color: var(--high);">Error: ${data?.error || 'Unable to retrieve IP information'}</p></div>`;
+        return;
+    }
+
+    const sections = {
+        'Basic Information': {
+            'IP Address': data.ip || 'N/A',
+            'Hostname': data.hostname || 'N/A',
+            'Organization': data.org || 'N/A',
+            'Network': data.network || 'N/A'
+        },
+        'Geographic Location': {
+            'City': data.city || 'N/A',
+            'Region': data.region || 'N/A',
+            'Country': data.country || 'N/A',
+            'Coordinates': data.loc || 'N/A',
+            'Timezone': data.timezone || 'N/A'
+        },
+        'Network Details': {
+            'ASN': data.asn || 'N/A',
+            'Network Type': data.network_type || 'N/A',
+            'Reverse DNS': data.reverse_dns || 'N/A'
+        }
+    };
+
+    // Only add Domain Registration if WHOIS data exists
+    if (data.whois && Object.keys(data.whois).length > 0) {
+        sections['Domain Registration'] = {
+            'Registrar': data.whois.registrar || 'N/A',
+            'Created': data.whois.creation_date || 'N/A',
+            'Expires': data.whois.expiration_date || 'N/A'
+        };
+    }
+
+    // Only add Abuse Reports if data exists
+    if (data.abuse && (data.abuse.total_reports > 0 || data.abuse.confidence_score > 0)) {
+        sections['Abuse Reports'] = {
+            'Total Reports': data.abuse.total_reports || 0,
+            'Confidence': data.abuse.confidence_score ? `${data.abuse.confidence_score}%` : 'N/A',
+            'Last Reported': data.abuse.last_reported || 'Never'
+        };
+    }
+
+    for (const [category, fields] of Object.entries(sections)) {
+        const card = document.createElement('div');
+        card.className = 'info-card';
+        
+        const title = document.createElement('h3');
+        title.textContent = category;
+        card.appendChild(title);
+
+        for (const [key, value] of Object.entries(fields)) {
+            const row = document.createElement('div');
+            row.className = 'info-row';
+            row.innerHTML = `<strong>${key}:</strong> <span class="info-value">${value}</span>`;
+            card.appendChild(row);
+        }
+
+        ipInfo.appendChild(card);
+    }
+}
+
+function displayPortScan(portData, target) {
+    const portScanResults = document.getElementById('portScanResults');
+    
+    if (!portData || !portData.success) {
+        portScanResults.innerHTML = `<div class="nmap-output"><span style="color: var(--high);">Port scan error: ${portData?.error || 'Scan failed'}</span></div>`;
+        return;
+    }
+
+    const ports = portData.ports || [];
+    const portsByState = {
+        open: ports.filter(p => p.state === 'open'),
+        closed: ports.filter(p => p.state === 'closed'),
+        filtered: ports.filter(p => p.state === 'filtered')
+    };
+
+    // set desired inner width of the box (number of '═' characters)
+const innerWidth = 60; // adjust if you want a wider/narrower box
+const contentWidth = innerWidth - 2; // we'll include a space on each side inside the borders
+
+function fit(str) {
+  const s = String(str ?? '');
+  // truncate if too long, otherwise pad to contentWidth
+  return (s.length > contentWidth) ? s.slice(0, contentWidth - 3) + '...' : s.padEnd(contentWidth);
+}
+
+const topBorder    = '╔' + '═'.repeat(innerWidth) + '╗\n';
+const bottomBorder = '╚' + '═'.repeat(innerWidth) + '╝\n';
+
+const headerLines =
+  '║ ' + fit('NMAP PORT SCAN RESULTS') + ' ║\n' +
+  '║ ' + fit('Target: ' + target) + ' ║\n' +
+  '║ ' + fit('Scan Type: ' + (portData.scan_stats?.scan_type || 'quick').toUpperCase()) + ' ║\n';
+
+const divider = '╠' + '═'.repeat(innerWidth) + '╣\n';
+
+let output = topBorder + headerLines + bottomBorder + '\n' +
+`PORT      STATE   SERVICE         VERSION
+${'─'.repeat(innerWidth)}
+`;
+
+
+    if (portsByState.open.length > 0) {
+        portsByState.open.forEach(port => {
+            const portPadded = (port.port || '').toString().padEnd(9);
+            const statePadded = 'open'.padEnd(8);
+            const servicePadded = (port.service || 'unknown').padEnd(16);
+            const version = port.version || port.product || '';
+            output += `<span class="port-open">${portPadded}${statePadded}${servicePadded}${version}</span>\n`;
+        });
+    } else {
+        output += '<span style="color: var(--medium);">No open ports detected in scan range</span>\n';
+    }
+
+    output += `\n`;
+    if (portsByState.closed.length > 0) {
+        output += `<span class="port-closed">Closed Ports: ${portsByState.closed.length}</span>\n`;
+    }
+    if (portsByState.filtered.length > 0) {
+        output += `<span class="port-filtered">Filtered Ports: ${portsByState.filtered.length}</span>\n`;
+    }
+
+    portScanResults.innerHTML = `
+        <div class="nmap-output">${output}</div>
+        <div class="scan-stats">
+            <div><strong>Scan Type:</strong> ${portData.scan_stats?.scan_type || 'Quick'}</div>
+            <div><strong>Total Ports:</strong> ${ports.length}</div>
+            <div><strong>Open:</strong> <span style="color: var(--safe);">${portsByState.open.length}</span></div>
+            <div><strong>Closed:</strong> <span style="color: var(--high);">${portsByState.closed.length}</span></div>
+            <div><strong>Filtered:</strong> <span style="color: var(--medium);">${portsByState.filtered.length}</span></div>
+            <div><strong>Duration:</strong> ${portData.scan_stats?.elapsed || 'N/A'} seconds</div>
+        </div>
+    `;
+}
+
+function displaySslInfo(sslData) {
+    const sslInfo = document.getElementById('sslInfo');
+    
+    if (!sslData || !sslData.success) {
+        sslInfo.innerHTML = `<div class="info-card"><p style="color: var(--medium);">SSL/TLS: ${sslData?.error || 'No HTTPS detected'}</p></div>`;
+        return;
+    }
+
+    const issuerCN = sslData.issuer?.CN || sslData.issuer?.commonName || 'N/A';
+    const issuerO = sslData.issuer?.O || sslData.issuer?.organizationName || 'N/A';
+    const statusColor = sslData.expired ? 'var(--critical)' : 'var(--safe)';
+    const statusText = sslData.expired ? 'EXPIRED' : 'VALID';
+    
+    sslInfo.innerHTML = `
+        <div class="ip-grid">
+            <div class="info-card">
+                <h3>Certificate Information</h3>
+                <div class="info-row"><strong>Issuer:</strong> <span class="info-value">${issuerCN}</span></div>
+                <div class="info-row"><strong>Organization:</strong> <span class="info-value">${issuerO}</span></div>
+                <div class="info-row"><strong>Valid Until:</strong> <span class="info-value">${sslData.not_after || 'N/A'}</span></div>
+                <div class="info-row"><strong>Status:</strong> <span class="info-value" style="color: ${statusColor}; font-weight: bold;">${statusText}</span></div>
+            </div>
+            <div class="info-card">
+                <h3>Technical Details</h3>
+                <div class="info-row"><strong>Serial Number:</strong> <span class="info-value">${sslData.serial_number || 'N/A'}</span></div>
+                <div class="info-row"><strong>Version:</strong> <span class="info-value">${sslData.version !== undefined ? sslData.version : 'N/A'}</span></div>
+                <div class="info-row"><strong>Valid From:</strong> <span class="info-value">${sslData.not_before || 'N/A'}</span></div>
+                <div class="info-row"><strong>Protocol:</strong> <span class="info-value">${sslData.protocol || 'N/A'}</span></div>
+            </div>
+        </div>
+    `;
+}
+
+function displayExecutiveSummary(data) {
+    const summary = data.executive_summary || {};
+    
+    document.getElementById('summaryText').textContent = summary.executive_summary || 'Analysis complete.';
+
+    const websiteDesc = document.getElementById('websiteDescription');
+    if (summary.website_description) {
+        websiteDesc.textContent = summary.website_description;
+        websiteDesc.style.display = 'block';
+    } else {
+        websiteDesc.style.display = 'none';
+    }
+
+    const findingsList = document.getElementById('findingsList');
+    findingsList.innerHTML = '';
+    (summary.key_findings || []).forEach(finding => {
+        const item = document.createElement('div');
+        item.className = 'finding-item';
+        item.textContent = finding;
+        findingsList.appendChild(item);
+    });
+
+    const recommendationsList = document.getElementById('recommendationsList');
+    recommendationsList.innerHTML = '';
+    (summary.recommendations || []).forEach(rec => {
+        const item = document.createElement('div');
+        item.className = 'recommendation-item';
+        item.textContent = rec;
+        recommendationsList.appendChild(item);
+    });
+}
+
+async function startScan() {
+    const domainInput = document.getElementById('domainInput');
+    const scanType = document.getElementById('scanType').value;
+    const errorMessage = document.getElementById('errorMessage');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const scanButton = document.getElementById('scanButton');
+
+    const domain = domainInput.value.trim();
+
+    if (!domain) {
+        errorMessage.textContent = 'Please enter a domain name';
+        errorMessage.style.display = 'block';
+        domainInput.focus();
+        return;
+    }
+
+    const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9]?\.([a-zA-Z]{2,}\.)?[a-zA-Z]{2,}$/;
+    if (!domainRegex.test(domain)) {
+        errorMessage.textContent = 'Please enter a valid domain (e.g., example.com)';
+        errorMessage.style.display = 'block';
+        return;
+    }
+
+    errorMessage.style.display = 'none';
+    loadingIndicator.style.display = 'block';
+    resultsContainer.style.display = 'none';
+    scanButton.disabled = true;
+    scanButton.textContent = 'Analyzing...';
+
+    try {
+        // CHANGED: Update fetch URL to use Blueprint prefix
+        const response = await fetch('/webseeker/api/analyze', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ domain, scanType })
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || `HTTP error! status: ${response.status}`);
+        }
+
+        if (!data.success) {
+            throw new Error(data.error || 'Scan failed');
+        }
+
+        currentScanData = data;
+        displayResults(data);
+    } catch (error) {
+        console.error('Scan error:', error);
+        errorMessage.textContent = error.message || 'An error occurred during the scan. Please try again.';
+        errorMessage.style.display = 'block';
+    } finally {
+        loadingIndicator.style.display = 'none';
+        scanButton.disabled = false;
+        scanButton.textContent = 'Begin Security Analysis';
+    }
+}
+
+function displayResults(data) {
+    const resultsContainer = document.getElementById('resultsContainer');
+    resultsContainer.style.display = 'block';
+
+    displaySecurityAnalysis(data);
+    displayVirusTotal(data.virustotal || {});
+    displayIpInfo(data.ip_info || {});
+    displayPortScan(data.port_scan || {}, data.target);
+    displaySslInfo(data.ssl_cert || {});
+    displayExecutiveSummary(data);
+
+    resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+async function exportToPDF() {
+    if (!currentScanData) {
+        alert('No scan data available to export');
+        return;
+    }
+
+    try {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const margin = 15;
+        let yPos = margin;
+
+        function checkAddPage() {
+            if (yPos > pageHeight - 25) {
+                pdf.addPage();
+                yPos = margin;
+                return true;
+            }
+            return false;
+        }
+
+        // Header
+        pdf.setFillColor(128, 0, 32);
+        pdf.rect(0, 0, pageWidth, 25, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(24);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('WebSeeker Security Report', margin, 15);
+        
+        yPos = 35;
+
+        // Basic Info
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFontSize(12);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`Target: ${currentScanData.target}`, margin, yPos);
+        yPos += 7;
+        pdf.text(`Scan Date: ${new Date(currentScanData.timestamp).toLocaleString()}`, margin, yPos);
+        yPos += 7;
+        pdf.text(`Scan Type: ${currentScanData.scan_type.toUpperCase()}`, margin, yPos);
+        yPos += 12;
+
+        // Security Overview
+        const summary = currentScanData.executive_summary || {};
+        pdf.setFillColor(240, 240, 240);
+        pdf.rect(margin, yPos, pageWidth - 2 * margin, 40, 'F');
+        
+        pdf.setFontSize(16);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(128, 0, 32);
+        pdf.text('Security Overview', margin + 5, yPos + 8);
+        
+        pdf.setFontSize(36);
+        const scoreColor = getScoreBadgeClass(summary.security_score || 0);
+        const colors = {
+            critical: [139, 0, 0],
+            high: [178, 34, 34],
+            medium: [205, 133, 63],
+            low: [32, 160, 96],
+            safe: [0, 128, 96]
+        };
+        const [r, g, b] = colors[scoreColor] || [0, 0, 0];
+        pdf.setTextColor(r, g, b);
+        pdf.text(`${summary.security_score || 0}`, margin + 5, yPos + 25);
+        
+        pdf.setFontSize(12);
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(`Risk Level: ${summary.risk_level || 'UNKNOWN'}`, margin + 40, yPos + 25);
+        
+        yPos += 50;
+
+        // Executive Summary
+        checkAddPage();
+        pdf.setFontSize(14);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(128, 0, 32);
+        pdf.text('Executive Summary', margin, yPos);
+        yPos += 8;
+        
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(0, 0, 0);
+        const summaryLines = pdf.splitTextToSize(summary.executive_summary || 'N/A', pageWidth - 2 * margin);
+        pdf.text(summaryLines, margin, yPos);
+        yPos += summaryLines.length * 5 + 10;
+
+        // Website Description
+        if (summary.website_description) {
+            checkAddPage();
+            pdf.setFontSize(12);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(0, 128, 128);
+            pdf.text('Website Analysis', margin, yPos);
+            yPos += 7;
+            
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'italic');
+            pdf.setTextColor(60, 60, 60);
+            const descLines = pdf.splitTextToSize(summary.website_description, pageWidth - 2 * margin);
+            pdf.text(descLines, margin, yPos);
+            yPos += descLines.length * 5 + 10;
+        }
+
+        // IP Information
+        checkAddPage();
+        pdf.setFontSize(14);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(128, 0, 32);
+        pdf.text('IP & Network Information', margin, yPos);
+        yPos += 8;
+
+        const ipInfo = currentScanData.ip_info || {};
+        if (ipInfo.success) {
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(0, 0, 0);
+            
+            pdf.text(`IP Address: ${ipInfo.ip || 'N/A'}`, margin, yPos);
+            yPos += 6;
+            pdf.text(`Organization: ${ipInfo.org || 'N/A'}`, margin, yPos);
+            yPos += 6;
+            pdf.text(`Location: ${ipInfo.city || 'N/A'}, ${ipInfo.region || 'N/A'}, ${ipInfo.country || 'N/A'}`, margin, yPos);
+            yPos += 6;
+            pdf.text(`ASN: ${ipInfo.asn || 'N/A'}`, margin, yPos);
+            yPos += 6;
+            
+            if (ipInfo.abuse && ipInfo.abuse.total_reports > 0) {
+                pdf.text(`Abuse Reports: ${ipInfo.abuse.total_reports} (Confidence: ${ipInfo.abuse.confidence_score}%)`, margin, yPos);
+                yPos += 6;
+            }
+            yPos += 8;
+        }
+
+        // Port Scan Results
+        checkAddPage();
+        pdf.setFontSize(14);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(128, 0, 32);
+        pdf.text('Port Scan Results', margin, yPos);
+        yPos += 8;
+
+        const portScan = currentScanData.port_scan || {};
+        if (portScan.success && portScan.ports) {
+            const openPorts = portScan.ports.filter(p => p.state === 'open');
+            const closedPorts = portScan.ports.filter(p => p.state === 'closed');
+            const filteredPorts = portScan.ports.filter(p => p.state === 'filtered');
+
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text(`Total Ports Scanned: ${portScan.ports.length}`, margin, yPos);
+            yPos += 6;
+            pdf.text(`Open: ${openPorts.length} | Closed: ${closedPorts.length} | Filtered: ${filteredPorts.length}`, margin, yPos);
+            yPos += 10;
+
+            if (openPorts.length > 0) {
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('Open Ports:', margin, yPos);
+                yPos += 6;
+                pdf.setFont('helvetica', 'normal');
+                
+                openPorts.forEach(port => {
+                    checkAddPage();
+                    const portText = `Port ${port.port} (${port.service || 'unknown'}) - ${port.version || port.product || 'No version info'}`;
+                    const lines = pdf.splitTextToSize(portText, pageWidth - 2 * margin - 5);
+                    pdf.text(lines, margin + 5, yPos);
+                    yPos += lines.length * 5 + 2;
+                });
+            } else {
+                pdf.text('No open ports detected in scan range', margin, yPos);
+                yPos += 6;
+            }
+            yPos += 8;
+        }
+
+        // SSL/TLS Information
+        checkAddPage();
+        pdf.setFontSize(14);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(128, 0, 32);
+        pdf.text('SSL/TLS Certificate', margin, yPos);
+        yPos += 8;
+
+        const sslInfo = currentScanData.ssl_cert || {};
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(0, 0, 0);
+        
+        if (sslInfo.success) {
+            const issuerCN = sslInfo.issuer?.CN || sslInfo.issuer?.commonName || 'N/A';
+            pdf.text(`Issuer: ${issuerCN}`, margin, yPos);
+            yPos += 6;
+            pdf.text(`Valid Until: ${sslInfo.not_after || 'N/A'}`, margin, yPos);
+            yPos += 6;
+            pdf.text(`Status: ${sslInfo.expired ? 'EXPIRED' : 'VALID'}`, margin, yPos);
+            yPos += 6;
+            pdf.text(`Protocol: ${sslInfo.protocol || 'N/A'}`, margin, yPos);
+            yPos += 10;
+        } else {
+            pdf.text('No HTTPS/SSL detected or certificate unavailable', margin, yPos);
+            yPos += 10;
+        }
+
+        // Threat Intelligence
+        checkAddPage();
+        pdf.setFontSize(14);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(128, 0, 32);
+        pdf.text('Threat Intelligence Analysis', margin, yPos);
+        yPos += 8;
+
+        const vtData = currentScanData.virustotal || {};
+        const vtStats = vtData.domain_report?.last_analysis_stats || {};
+        
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(`Clean: ${vtStats.harmless || 0} | Malicious: ${vtStats.malicious || 0} | Suspicious: ${vtStats.suspicious || 0}`, margin, yPos);
+        yPos += 10;
+
+        // Key Findings
+        checkAddPage();
+        pdf.setFontSize(12);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(128, 0, 32);
+        pdf.text('Key Findings', margin, yPos);
+        yPos += 7;
+        
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(0, 0, 0);
+        (summary.key_findings || []).forEach((finding, index) => {
+            checkAddPage();
+            const cleanFinding = finding.replace(/[^\x20-\x7E]/g, '');
+            const lines = pdf.splitTextToSize(`${index + 1}. ${cleanFinding}`, pageWidth - 2 * margin - 5);
+            pdf.text(lines, margin + 5, yPos);
+            yPos += lines.length * 5 + 3;
+        });
+        yPos += 7;
+
+        // Security Recommendations
+        checkAddPage();
+        pdf.setFontSize(12);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(0, 128, 128);
+        pdf.text('Security Recommendations', margin, yPos);
+        yPos += 7;
+        
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(0, 0, 0);
+        (summary.recommendations || []).forEach((rec, index) => {
+            checkAddPage();
+            const cleanRec = rec.replace(/[^\x20-\x7E]/g, '');
+            const lines = pdf.splitTextToSize(`${index + 1}. ${cleanRec}`, pageWidth - 2 * margin - 5);
+            pdf.text(lines, margin + 5, yPos);
+            yPos += lines.length * 5 + 3;
+        });
+
+        // Page numbers
+        const totalPages = pdf.internal.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+            pdf.setPage(i);
+            pdf.setFontSize(8);
+            pdf.setTextColor(128, 128, 128);
+            pdf.text(`Page ${i} of ${totalPages}`, pageWidth - 30, pageHeight - 10);
+            pdf.text('Generated by WebSeeker Security Scanner', margin, pageHeight - 10);
+        }
+
+        const filename = `WebSeeker_Report_${currentScanData.target}_${new Date().toISOString().split('T')[0]}.pdf`;
+        pdf.save(filename);
+        
+    } catch (error) {
+        console.error('PDF export error:', error);
+        alert('Error generating PDF. Please ensure all libraries are loaded and try again.');
+    }
+}
+    </script>
+</body>
+</html>

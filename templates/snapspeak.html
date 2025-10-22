@@ -1,0 +1,1725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNAPSPEAK AI - Professional Image Analysis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00d4ff;
+            --primary-dark: #0095b3;
+            --secondary: #7b2cbf;
+            --accent: #ff006e;
+            --bg-dark: #0a0e27;
+            --bg-card: #151933;
+            --bg-card-hover: #1a1f3f;
+            --text-primary: #e8eaf6;
+            --text-secondary: #9fa8da;
+            --border: rgba(0, 212, 255, 0.15);
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --error: #ff3366;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1f3f 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 3rem 2rem;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -2px;
+            margin-bottom: 0.5rem;
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.3)); }
+            50% { filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.5)); }
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .upload-section {
+            background: var(--bg-card);
+            border: 2px dashed var(--border);
+            border-radius: 20px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+
+        .upload-section:hover {
+            border-color: var(--primary);
+            background: var(--bg-card-hover);
+            transform: translateY(-2px);
+        }
+
+        .upload-controls {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            border-radius: 12px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--bg-dark);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 30px rgba(0, 212, 255, 0.5);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--accent) 100%);
+            color: white;
+            box-shadow: 0 4px 20px rgba(123, 44, 191, 0.3);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 30px rgba(123, 44, 191, 0.5);
+        }
+
+        #imageInput { display: none; }
+
+        .image-preview {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            min-height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .preview-placeholder {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
+
+        .preview-placeholder i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .loading {
+            display: none;
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .loading-spinner {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 2rem;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-bar-container {
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+
+        .loading-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+
+        .loading-text {
+            margin-top: 1.5rem;
+            font-size: 1.2rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .results-section {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .result-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+            transform: translateX(-100%);
+            transition: transform 0.5s ease;
+        }
+
+        .result-card:hover::before {
+            transform: translateX(0);
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0, 212, 255, 0.2);
+            border-color: var(--primary);
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .result-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            flex: 1;
+        }
+
+        .result-content {
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+
+        .metadata-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .metadata-section {
+            background: rgba(0, 212, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .use-case-badge {
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            display: inline-block;
+        }
+
+        .metadata-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .metadata-item:last-child {
+            border-bottom: none;
+        }
+
+        .metadata-key {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .metadata-value {
+            color: var(--text-primary);
+            text-align: right;
+            max-width: 60%;
+            word-break: break-word;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .color-card {
+            background: rgba(0, 212, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .color-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+        }
+
+        .color-display {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .color-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .color-details {
+            flex: 1;
+        }
+
+        .color-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .color-value {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin: 0.3rem 0;
+        }
+
+        .color-percentage {
+            margin-top: 1rem;
+        }
+
+        .percentage-bar {
+            background: rgba(0, 212, 255, 0.1);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .percentage-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .steg-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: rgba(0, 212, 255, 0.05);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+        }
+
+        .risk-badge {
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .risk-low { background: var(--success); color: var(--bg-dark); }
+        .risk-medium { background: var(--warning); color: var(--bg-dark); }
+        .risk-high { background: var(--error); color: white; }
+
+        .confidence-meter {
+            flex: 1;
+        }
+
+        .confidence-bar {
+            background: rgba(255, 255, 255, 0.1);
+            height: 30px;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--warning), var(--error));
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .detection-methods {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .method-tag {
+            background: rgba(255, 51, 102, 0.2);
+            color: var(--error);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            border: 1px solid var(--error);
+        }
+
+        .hash-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .hash-item {
+            background: rgba(0, 212, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .hash-label {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .hash-value {
+            font-family: 'Courier New', monospace;
+            color: var(--text-secondary);
+            word-break: break-all;
+            font-size: 0.9rem;
+        }
+
+        .gemini-badge {
+            background: linear-gradient(135deg, #4285f4, #ea4335, #fbbc04, #34a853);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(0, 212, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .analysis-detail {
+            background: rgba(0, 212, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            border-left: 3px solid var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .container { padding: 1rem; }
+            .upload-section { padding: 2rem 1rem; }
+            .upload-controls { flex-direction: column; }
+            .btn { width: 100%; justify-content: center; }
+            .color-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <h1>SNAPSPEAK AI</h1>
+            </div>
+            <p class="tagline">Advanced Image Intelligence & Analysis Platform</p>
+        </header>
+
+        <div class="upload-section">
+            <div class="upload-controls">
+                <label for="imageInput" class="btn btn-primary">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Choose Image</span>
+                </label>
+                <input type="file" id="imageInput" accept="image/*" onchange="previewImage(event)">
+                <button id="analyzeBtn" class="btn btn-secondary" onclick="analyzeImage()">
+                    <i class="fas fa-brain"></i>
+                    <span>Analyze</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="image-preview" id="imagePreview">
+            <div class="preview-placeholder">
+                <i class="fas fa-image"></i>
+                <p>No image selected</p>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <div class="loading-bar-container">
+                <div class="loading-bar" id="loadingBar"></div>
+            </div>
+            <p class="loading-text" id="loadingText">Initializing analysis...</p>
+        </div>
+
+        <div class="results-section" id="resultsSection"></div>
+    </div>
+
+    <script>
+        let currentImage = null;
+
+function previewImage(event) {
+    const imagePreview = document.getElementById('imagePreview');
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            currentImage = e.target.result;
+            imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="fade-in">`;
+        }
+        reader.readAsDataURL(file);
+    }
+}
+
+async function analyzeImage() {
+    const fileInput = document.getElementById('imageInput');
+    const resultsSection = document.getElementById('resultsSection');
+    const loadingDiv = document.getElementById('loading');
+    const loadingBar = document.getElementById('loadingBar');
+    const loadingText = document.getElementById('loadingText');
+
+    if (!fileInput.files[0]) {
+        alert("Please select an image first.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+
+    resultsSection.innerHTML = "";
+    loadingDiv.style.display = "block";
+    loadingBar.style.width = '0%';
+
+    const startTime = Date.now();
+    const totalEstimatedTime = 20000;
+    let progressInterval;
+
+    const loadingMessages = [
+        "Initializing neural networks...",
+        "Analyzing image composition...",
+        "Detecting faces and objects...",
+        "Extracting deep metadata...",
+        "Analyzing color patterns...",
+        "Checking for hidden content...",
+        "Running steganography detection...",
+        "Generating comprehensive report...",
+        "Finalizing analysis..."
+    ];
+
+    try {
+        let currentProgress = 0;
+        let currentMessageIndex = 0;
+        
+        progressInterval = setInterval(() => {
+            const elapsedTime = Date.now() - startTime;
+            currentProgress = Math.min((elapsedTime / totalEstimatedTime) * 100, 95);
+            loadingBar.style.width = `${currentProgress}%`;
+            
+            currentMessageIndex = Math.floor((currentProgress / 95) * (loadingMessages.length - 1));
+            loadingText.innerText = loadingMessages[currentMessageIndex];
+        }, 150);
+
+        const response = await fetch('/snapspeak_ai/api/analyze/', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        clearInterval(progressInterval);
+        loadingBar.style.width = '100%';
+        loadingText.innerText = "Analysis complete!";
+
+        setTimeout(() => {
+            loadingDiv.style.display = "none";
+            displayResults(result);
+        }, 800);
+
+    } catch (error) {
+        clearInterval(progressInterval);
+        loadingDiv.style.display = "none";
+        resultsSection.innerHTML = createResultCard(
+            'fas fa-exclamation-triangle',
+            'Analysis Error',
+            `<p style="color: var(--error);">${error.message}</p>`
+        );
+        console.error('Error:', error);
+    }
+}
+
+function displayResults(result) {
+    const resultsSection = document.getElementById('resultsSection');
+    resultsSection.innerHTML = "";
+
+    // 1. STATS OVERVIEW - Quick Summary
+    const statsHtml = `
+        <div class="result-card fade-in">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">${result.processing_time?.toFixed(2)}s</div>
+                    <div class="stat-label">Processing Time</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${result.metadata?.sections_found || 0}</div>
+                    <div class="stat-label">Metadata Sections</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${result.color_analysis?.colors?.length || 0}</div>
+                    <div class="stat-label">Colors Detected</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${result.faces?.count || 0}</div>
+                    <div class="stat-label">Faces Found</div>
+                </div>
+            </div>
+        </div>
+    `;
+    resultsSection.innerHTML += statsHtml;
+
+   // 2. GEMINI AI ANALYSIS - Most Important (Human-readable insights)
+    if (result.gemini_analysis) {
+        const geminiHtml = createResultCard(
+            'fas fa-robot',
+            'AI-Powered Deep Analysis',
+            `<span class="gemini-badge"><i class="fas fa-sparkles"></i> Powered by Gemini AI</span>
+            <div style="margin-top: 1.5rem; line-height: 1.8;">${formatGeminiResponse(result.gemini_analysis.detailed_analysis)}</div>`
+        );
+        resultsSection.innerHTML += geminiHtml;
+    } else if(result.basic_caption) {
+        resultsSection.innerHTML += createResultCard(
+            'fas fa-comment-alt',
+            'Basic Image Caption',
+            `<p>${escapeHtml(result.basic_caption)}</p>
+            ${!result.gemini_enabled ? '<p style="color: var(--warning); margin-top: 1rem;"><i class="fas fa-info-circle"></i> Set GEMINI_API_KEY environment variable for advanced AI analysis</p>' : ''}`
+        );
+    }
+
+    // 2.5 AI GENERATION DETECTION
+    if (result.ai_detection) {
+        const aiHtml = createAIDetectionCard(result.ai_detection);
+        resultsSection.innerHTML += aiHtml;
+    }
+
+    // 3. FACE DETECTION - Important for identifying people
+    if (result.faces && result.faces.count > 0) {
+        const faceHtml = createFaceDetectionCard(result.faces);
+        resultsSection.innerHTML += faceHtml;
+    }
+
+    // 4. STEGANOGRAPHY DETECTION - Security Critical
+    if (result.steganography) {
+        const stegHtml = createSteganographyCard(result.steganography);
+        resultsSection.innerHTML += stegHtml;
+    }
+
+    // 5. COLOR ANALYSIS - Visual Understanding
+    if (result.color_analysis?.colors) {
+        const colorHtml = createColorCard(result.color_analysis);
+        resultsSection.innerHTML += colorHtml;
+    }
+
+    // 6. DEEP METADATA - Technical Details
+    if (result.metadata?.metadata) {
+        const metadataHtml = createMetadataCard(result.metadata);
+        resultsSection.innerHTML += metadataHtml;
+    }
+
+    // 7. TECHNICAL ANALYSIS - Image Quality Metrics
+    if (result.technical_analysis) {
+        const techHtml = createResultCard(
+            'fas fa-chart-line',
+            'Technical Image Analysis',
+            Object.entries(result.technical_analysis).map(([key, value]) => 
+                `<div class="metadata-item">
+                    <span class="metadata-key">${formatKey(key)}</span>
+                    <span class="metadata-value">${escapeHtml(String(value))}</span>
+                </div>`
+            ).join('')
+        );
+        resultsSection.innerHTML += techHtml;
+    }
+
+    // 8. IMAGE HASHES - For Verification & Deduplication
+    if (result.image_hashes) {
+        const hashHtml = createHashCard(result.image_hashes);
+        resultsSection.innerHTML += hashHtml;
+    }
+}
+
+function formatGeminiResponse(text) {
+    // Format the Gemini response for better readability
+    let formatted = escapeHtml(text);
+    
+    // Convert section headers (ALL CAPS with optional punctuation)
+    formatted = formatted.replace(/^([A-Z\s&]+):?\n/gm, '<h3 style="color: var(--primary); margin: 2rem 0 1rem 0; font-size: 1.3rem; font-weight: 700; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem;">$1</h3>\n');
+    
+    // Convert bold text
+    formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong style="color: var(--primary);">$1</strong>');
+    
+    // Convert bullet points
+    formatted = formatted.replace(/^- (.+)$/gm, '<li style="margin: 0.5rem 0 0.5rem 1.5rem;">$1</li>');
+    
+    // Wrap lists
+    formatted = formatted.replace(/(<li[^>]*>.*<\/li>\s*)+/g, '<ul style="margin: 1rem 0;">$&</ul>');
+    
+    // Convert paragraphs
+    formatted = formatted.split('\n\n').map(para => {
+        if (!para.trim() || para.includes('<h3') || para.includes('<ul')) return para;
+        return `<p style="margin: 1rem 0; line-height: 1.8;">${para}</p>`;
+    }).join('\n');
+    
+    return formatted;
+}
+
+function createAIDetectionCard(aiData) {
+    let html = '<div class="result-card fade-in"><div class="result-header">';
+    html += '<div class="result-icon"><i class="fas fa-robot"></i></div>';
+    html += '<div class="result-title">AI Generation & Authenticity Analysis</div></div>';
+    html += '<div class="result-content">';
+    
+    // Overall assessment banner
+    const statusClass = aiData.confidence > 50 ? 'risk-high' : aiData.confidence > 25 ? 'risk-medium' : 'risk-low';
+    const statusIcon = aiData.confidence > 50 ? 'fa-exclamation-triangle' : aiData.confidence > 25 ? 'fa-exclamation-circle' : 'fa-check-circle';
+    
+    html += `<div class="steg-status" style="margin-bottom: 2rem;">
+        <div class="risk-badge ${statusClass}" style="flex: 0 0 auto; font-size: 1.1rem; padding: 0.8rem 1.5rem;">
+            <i class="fas ${statusIcon}"></i> ${escapeHtml(aiData.assessment)}
+        </div>
+        <div style="flex: 1; margin-left: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="color: var(--text-secondary); font-size: 0.95rem;">Authenticity Score</span>
+                <span style="color: var(--success); font-weight: 700; font-size: 1.2rem;">${aiData.authenticity_score.toFixed(1)}%</span>
+            </div>
+            <div class="confidence-bar" style="height: 35px; border-radius: 10px;">
+                <div class="confidence-fill" style="width: ${aiData.authenticity_score}%; background: linear-gradient(90deg, var(--success), var(--primary)); font-size: 1rem;">
+                    Real: ${aiData.authenticity_score.toFixed(1)}%
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);">
+                <span>AI Likelihood: ${aiData.confidence.toFixed(1)}%</span>
+            </div>
+        </div>
+    </div>`;
+    
+    // Detection indicators
+    if (aiData.indicators && aiData.indicators.length > 0) {
+        html += `<div style="margin: 2rem 0;">
+            <h4 style="color: var(--primary); margin-bottom: 1rem; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-microscope"></i> Detection Indicators
+            </h4>
+            <div style="display: grid; gap: 0.8rem;">`;
+        
+        aiData.indicators.forEach(indicator => {
+            html += `<div style="background: rgba(255,170,0,0.1); padding: 0.8rem 1rem; border-radius: 8px; border-left: 3px solid var(--warning); display: flex; align-items: center; gap: 0.8rem;">
+                <i class="fas fa-flag" style="color: var(--warning);"></i>
+                <span style="flex: 1; color: var(--text-primary);">${escapeHtml(indicator)}</span>
+            </div>`;
+        });
+        
+        html += '</div></div>';
+    } else {
+        html += `<div style="background: rgba(0,255,136,0.1); padding: 1.2rem; border-radius: 8px; border-left: 3px solid var(--success); margin: 1.5rem 0;">
+            <i class="fas fa-check-circle" style="color: var(--success);"></i>
+            <strong style="color: var(--success); margin-left: 0.5rem;">No AI generation indicators detected</strong>
+        </div>`;
+    }
+    
+    // Information box
+    html += `<div style="margin-top: 2rem; padding: 1.2rem; background: rgba(0,212,255,0.05); border-radius: 12px; border: 1px solid var(--border);">
+        <div style="display: flex; align-items: start; gap: 1rem;">
+            <i class="fas fa-info-circle" style="color: var(--primary); font-size: 1.5rem; margin-top: 0.2rem;"></i>
+            <div style="flex: 1;">
+                <strong style="color: var(--primary); font-size: 1.05rem;">How AI Detection Works</strong>
+                <p style="margin-top: 0.8rem; font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6;">
+                    Our multi-layered analysis examines smoothness patterns, facial symmetry, frequency anomalies, 
+                    color distribution uniformity, and sensor noise characteristics. These combine to determine 
+                    if an image is photographed, AI-generated, or digitally altered.
+                </p>
+            </div>
+        </div>
+    </div>`;
+    
+    html += '</div></div>';
+    return html;
+}
+
+
+function createResultCard(icon, title, content) {
+    return `
+        <div class="result-card fade-in">
+            <div class="result-header">
+                <div class="result-icon"><i class="${icon}"></i></div>
+                <div class="result-title">${title}</div>
+            </div>
+            <div class="result-content">${content}</div>
+        </div>
+    `;
+}
+
+function createColorCard(colorData) {
+    let html = '<div class="result-card fade-in"><div class="result-header">';
+    html += '<div class="result-icon"><i class="fas fa-palette"></i></div>';
+    html += `<div class="result-title">Color Analysis <span style="font-size: 0.8rem; color: var(--text-secondary);">(${escapeHtml(colorData.color_scheme)})</span></div>`;
+    html += '</div><div class="result-content">';
+    
+    // Summary
+    html += `<p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+        Detected ${colorData.colors.length} dominant colors using K-means clustering. 
+        Overall scheme: <strong style="color: var(--primary);">${escapeHtml(colorData.color_scheme)}</strong>
+    </p>`;
+    
+    html += '<div class="color-grid">';
+
+    colorData.colors.forEach((color, index) => {
+        html += `<div class="color-card">
+            <div class="color-display">
+                <div class="color-box" style="background-color: ${escapeHtml(color.hex)}"></div>
+                <div class="color-details">
+                    <div class="color-name">${escapeHtml(color.name)}</div>
+                    <div class="color-value">${escapeHtml(color.hex)}</div>
+                    <div class="color-value">${escapeHtml(color.rgb)}</div>
+                    <div class="color-value">${escapeHtml(color.hsv)}</div>
+                    <div class="color-value" style="margin-top: 0.5rem;">
+                        <span style="background: rgba(0,212,255,0.2); padding: 0.2rem 0.5rem; border-radius: 4px; margin-right: 0.5rem;">
+                            ${escapeHtml(color.temperature)}
+                        </span>
+                        <span style="background: rgba(123,44,191,0.2); padding: 0.2rem 0.5rem; border-radius: 4px;">
+                            ${escapeHtml(color.saturation)} Sat
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="color-percentage">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span style="color: var(--text-secondary); font-size: 0.9rem;">Image Coverage</span>
+                    <span style="color: var(--primary); font-weight: 600; font-size: 1.1rem;">${color.percentage}%</span>
+                </div>
+                <div class="percentage-bar">
+                    <div class="percentage-fill" style="width: ${color.percentage}%; background: linear-gradient(90deg, ${color.hex}, ${adjustBrightness(color.hex, -20)})"></div>
+                </div>
+            </div>
+        </div>`;
+    });
+
+    html += '</div></div></div>';
+    return html;
+}
+
+function createMetadataCard(metadataResult) {
+    const { metadata, use_cases } = metadataResult;
+    let html = '<div class="result-card fade-in"><div class="result-header">';
+    html += '<div class="result-icon"><i class="fas fa-database"></i></div>';
+    html += '<div class="result-title">Deep Metadata Extraction</div></div>';
+    html += '<div class="result-content">';
+    
+    html += `<p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+        Extracted <strong style="color: var(--primary);">${metadataResult.sections_found}</strong> metadata sections 
+        with ${metadataResult.extraction_depth || 'DEEP'} level analysis.
+    </p>`;
+    
+    html += '<div class="metadata-grid">';
+
+    // Priority order for metadata sections (most to least important)
+    const priorityOrder = [
+        'basic_info',
+        'camera_settings',
+        'gps_location',
+        'timestamps',
+        'software_info',
+        'technical_specs',
+        'color_profile',
+        'compression_info',
+        'hidden_data'
+    ];
+
+    // Icon mapping for sections
+    const sectionIcons = {
+        'basic_info': 'fas fa-info-circle',
+        'camera_settings': 'fas fa-camera',
+        'gps_location': 'fas fa-map-marker-alt',
+        'timestamps': 'fas fa-clock',
+        'software_info': 'fas fa-code',
+        'technical_specs': 'fas fa-cogs',
+        'color_profile': 'fas fa-palette',
+        'compression_info': 'fas fa-compress',
+        'hidden_data': 'fas fa-eye-slash'
+    };
+
+    priorityOrder.forEach(section => {
+        if (metadata[section] && Object.keys(metadata[section]).length > 0) {
+            const icon = sectionIcons[section] || 'fas fa-file';
+            html += `<div class="metadata-section">
+                <div class="section-title">
+                    <i class="${icon}" style="margin-right: 0.5rem;"></i>
+                    ${formatKey(section)}
+                </div>
+                <div class="section-content">`;
+
+            for (const [key, value] of Object.entries(metadata[section])) {
+                const displayValue = typeof value === 'object' ? JSON.stringify(value) : value;
+                html += `<div class="metadata-item">
+                    <span class="metadata-key">${formatKey(key)}</span>
+                    <span class="metadata-value">${escapeHtml(String(displayValue))}</span>
+                </div>`;
+            }
+
+            if (use_cases[section]) {
+                html += `<div class="use-case-badge">
+                    <i class="fas fa-lightbulb"></i> ${escapeHtml(use_cases[section])}
+                </div>`;
+            }
+
+            html += '</div></div>';
+        }
+    });
+
+    html += '</div></div></div>';
+    return html;
+}
+
+function createSteganographyCard(stegData) {
+    let html = '<div class="result-card fade-in"><div class="result-header">';
+    html += '<div class="result-icon"><i class="fas fa-user-secret"></i></div>';
+    html += '<div class="result-title">Steganography Detection</div></div>';
+    html += '<div class="result-content">';
+
+    // Explanation
+    html += `<p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+        Advanced multi-method analysis to detect hidden data or messages embedded within the image using various steganographic techniques.
+    </p>`;
+
+    // Overall Status with visual indicator
+    const riskClass = `risk-${stegData.overall_risk.toLowerCase()}`;
+    const riskIcon = stegData.overall_risk === 'HIGH' ? 'fa-exclamation-triangle' : 
+                     stegData.overall_risk === 'MEDIUM' ? 'fa-exclamation-circle' : 'fa-check-circle';
+    
+    html += `<div class="steg-status">
+        <div class="risk-badge ${riskClass}">
+            <i class="fas ${riskIcon}"></i> ${stegData.overall_risk} RISK
+        </div>
+        <div class="confidence-meter">
+            <div style="margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9rem;">Detection Confidence</div>
+            <div class="confidence-bar">
+                <div class="confidence-fill" style="width: ${stegData.confidence}%">
+                    ${stegData.confidence.toFixed(1)}%
+                </div>
+            </div>
+        </div>
+    </div>`;
+
+    // Detection Methods
+    if (stegData.methods_detected && stegData.methods_detected.length > 0) {
+        html += '<div style="margin-bottom: 1.5rem;">';
+        html += '<h4 style="color: var(--error); margin-bottom: 1rem; font-size: 1.1rem;">';
+        html += '<i class="fas fa-exclamation-triangle"></i> Suspicious Patterns Detected:';
+        html += '</h4>';
+        html += '<div class="detection-methods">';
+        stegData.methods_detected.forEach(method => {
+            html += `<div class="method-tag"><i class="fas fa-bug"></i> ${escapeHtml(method)}</div>`;
+        });
+        html += '</div></div>';
+    } else {
+        html += `<div style="padding: 1rem; background: rgba(0,255,136,0.1); border-radius: 8px; border-left: 3px solid var(--success); margin-bottom: 1.5rem;">
+            <i class="fas fa-check-circle" style="color: var(--success);"></i>
+            <strong style="color: var(--success);"> No suspicious patterns detected</strong>
+        </div>`;
+    }
+
+    // Basic Analysis
+    if (stegData.basic && Object.keys(stegData.basic).length > 0) {
+        html += '<div class="analysis-detail">';
+        html += '<h4 style="color: var(--primary); margin-bottom: 0.8rem; font-size: 1rem;">';
+        html += '<i class="fas fa-microscope"></i> Basic Analysis';
+        html += '</h4>';
+        for (const [key, value] of Object.entries(stegData.basic)) {
+            if (typeof value === 'boolean') {
+                const icon = value ? 'fa-exclamation-circle' : 'fa-check-circle';
+                const color = value ? 'var(--error)' : 'var(--success)';
+                html += `<div style="margin: 0.5rem 0; color: ${color}; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas ${icon}"></i> 
+                    <strong>${formatKey(key)}:</strong> 
+                    <span>${value ? 'Yes' : 'No'}</span>
+                </div>`;
+            } else {
+                html += `<div style="margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <strong>${formatKey(key)}:</strong> 
+                    <span>${escapeHtml(String(value))}</span>
+                </div>`;
+            }
+        }
+        html += '</div>';
+    }
+
+    // Advanced Analysis
+    if (stegData.advanced && Object.keys(stegData.advanced).length > 0) {
+        html += '<div class="analysis-detail" style="margin-top: 1rem;">';
+        html += '<h4 style="color: var(--primary); margin-bottom: 0.8rem; font-size: 1rem;">';
+        html += '<i class="fas fa-flask"></i> Advanced Analysis';
+        html += '</h4>';
+        
+        const analysisOrder = [
+            'Chi_Square_Value',
+            'Chi_Square_Suspicious',
+            'RS_Ratio',
+            'RS_Suspicious',
+            'Pair_Correlation',
+            'Pair_Suspicious',
+            'Histogram_Variance',
+            'Histogram_Suspicious'
+        ];
+        
+        analysisOrder.forEach(key => {
+            if (stegData.advanced.hasOwnProperty(key)) {
+                const value = stegData.advanced[key];
+                if (typeof value === 'boolean') {
+                    const icon = value ? 'fa-exclamation-circle' : 'fa-check-circle';
+                    const color = value ? 'var(--error)' : 'var(--success)';
+                    html += `<div style="margin: 0.5rem 0; color: ${color}; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas ${icon}"></i> 
+                        <strong>${formatKey(key)}:</strong> 
+                        <span>${value ? 'Yes' : 'No'}</span>
+                    </div>`;
+                } else {
+                    html += `<div style="margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <strong>${formatKey(key)}:</strong> 
+                        <span style="font-family: 'Courier New', monospace; color: var(--primary);">${escapeHtml(String(value))}</span>
+                    </div>`;
+                }
+            }
+        });
+        html += '</div>';
+    }
+
+    // Information box
+    html += `<div style="margin-top: 1.5rem; padding: 1rem; background: rgba(0,212,255,0.05); border-radius: 8px; border-left: 3px solid var(--primary);">
+        <strong style="color: var(--primary);"><i class="fas fa-info-circle"></i> What is Steganography?</strong>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+            Steganography is the practice of hiding secret information within ordinary files. 
+            This analysis uses multiple statistical methods (LSB, Chi-Square, RS Analysis, etc.) 
+            to detect anomalies that may indicate hidden data.
+        </p>
+    </div>`;
+
+    html += '</div></div>';
+    return html;
+}
+
+function createHashCard(hashes) {
+    let html = '<div class="result-card fade-in"><div class="result-header">';
+    html += '<div class="result-icon"><i class="fas fa-fingerprint"></i></div>';
+    html += '<div class="result-title">Image Hashes & Fingerprints</div></div>';
+    html += '<div class="result-content">';
+    
+    html += `<p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+        Unique identifiers for this image. Use these to verify authenticity, detect duplicates, 
+        or track modifications across different platforms.
+    </p>`;
+    
+    html += '<div class="hash-grid">';
+
+    // Priority order for hashes with descriptions
+    const hashOrder = [
+        { 
+            key: 'md5', 
+            label: 'MD5 Hash', 
+            icon: 'fas fa-lock',
+            description: 'Cryptographic hash for exact duplicate detection'
+        },
+        { 
+            key: 'sha256', 
+            label: 'SHA-256 Hash', 
+            icon: 'fas fa-shield-alt',
+            description: 'Secure cryptographic hash for verification'
+        },
+        { 
+            key: 'perceptual_hash', 
+            label: 'Perceptual Hash', 
+            icon: 'fas fa-eye',
+            description: 'Detects visually similar images even with modifications'
+        },
+        { 
+            key: 'average_hash', 
+            label: 'Average Hash', 
+            icon: 'fas fa-calculator',
+            description: 'Fast similarity comparison based on average pixel values'
+        },
+        { 
+            key: 'difference_hash', 
+            label: 'Difference Hash', 
+            icon: 'fas fa-exchange-alt',
+            description: 'Tracks gradient changes for similarity detection'
+        },
+        { 
+            key: 'wavelet_hash', 
+            label: 'Wavelet Hash', 
+            icon: 'fas fa-wave-square',
+            description: 'Frequency-based hash for robust comparison'
+        },
+        { 
+            key: 'color_hash', 
+            label: 'Color Hash', 
+            icon: 'fas fa-palette',
+            description: 'Color distribution fingerprint'
+        }
+    ];
+
+    hashOrder.forEach(({ key, label, icon, description }) => {
+        if (hashes[key]) {
+            html += `<div class="hash-item">
+                <div class="hash-label">
+                    <i class="${icon}"></i> ${label}
+                </div>
+                <div class="hash-value">${escapeHtml(hashes[key])}</div>
+                <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary); font-style: italic;">
+                    ${description}
+                </div>
+            </div>`;
+        }
+    });
+
+    html += '</div>';
+    
+    // Usage information
+    html += `<div style="margin-top: 1.5rem; padding: 1rem; background: rgba(0,212,255,0.05); border-radius: 8px; border-left: 3px solid var(--primary);">
+        <strong style="color: var(--primary);"><i class="fas fa-lightbulb"></i> How to Use These Hashes:</strong>
+        <ul style="margin-top: 0.5rem; margin-left: 1.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+            <li>MD5/SHA256: Verify exact file integrity</li>
+            <li>Perceptual hashes: Find similar images across databases</li>
+            <li>Color hash: Match images with similar color schemes</li>
+        </ul>
+    </div>`;
+    
+    html += '</div></div>';
+    return html;
+}
+
+function createFaceDetectionCard(faceData) {
+    let html = '<div class="result-card fade-in"><div class="result-header">';
+    html += '<div class="result-icon"><i class="fas fa-user-circle"></i></div>';
+    html += `<div class="result-title">Face Detection <span style="font-size: 0.8rem; color: var(--text-secondary);">(${faceData.count} ${faceData.count === 1 ? 'face' : 'faces'} detected)</span></div>`;
+    html += '</div><div class="result-content">';
+
+    if (faceData.count > 0) {
+        // Statistics
+        html += '<div class="stats-grid" style="margin-bottom: 1.5rem;">';
+        html += `<div class="stat-card">
+            <div class="stat-value">${faceData.count}</div>
+            <div class="stat-label">Total Faces</div>
+        </div>`;
+        
+        if (faceData.locations && faceData.locations.length > 0) {
+            const avgConfidence = (faceData.locations.reduce((sum, loc) => sum + (loc.confidence || 0), 0) / faceData.locations.length * 100).toFixed(1);
+            html += `<div class="stat-card">
+                <div class="stat-value">${avgConfidence}%</div>
+                <div class="stat-label">Avg Confidence</div>
+            </div>`;
+            
+            // Detection method used
+            const detectors = [...new Set(faceData.locations.map(f => f.detector))];
+            html += `<div class="stat-card">
+                <div class="stat-value">${detectors.length}</div>
+                <div class="stat-label">Detection Methods</div>
+            </div>`;
+        }
+        html += '</div>';
+
+        // Face details with enhanced information
+        if (faceData.locations && faceData.locations.length > 0) {
+            html += '<div class="metadata-grid">';
+            faceData.locations.forEach((face, index) => {
+                const confidencePercent = (face.confidence * 100).toFixed(1);
+                const confidenceColor = face.confidence > 0.9 ? 'var(--success)' : 
+                                       face.confidence > 0.7 ? 'var(--warning)' : 'var(--error)';
+                
+                html += `<div class="metadata-section">
+                    <div class="section-title">
+                        <i class="fas fa-user"></i> Face ${index + 1}
+                        <span style="float: right; font-size: 0.8rem; color: ${confidenceColor};">
+                            ${confidencePercent}% confidence
+                        </span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="metadata-key"><i class="fas fa-map-pin"></i> Position</span>
+                        <span class="metadata-value">X: ${face.x}px, Y: ${face.y}px</span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="metadata-key"><i class="fas fa-expand-arrows-alt"></i> Dimensions</span>
+                        <span class="metadata-value">${face.width} × ${face.height} pixels</span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="metadata-key"><i class="fas fa-percentage"></i> Confidence</span>
+                        <span class="metadata-value" style="color: ${confidenceColor}; font-weight: 600;">
+                            ${confidencePercent}%
+                        </span>
+                    </div>
+                    <div class="metadata-item">
+                        <span class="metadata-key"><i class="fas fa-robot"></i> Detection Method</span>
+                        <span class="metadata-value">
+                            <span style="background: rgba(0,212,255,0.2); padding: 0.2rem 0.6rem; border-radius: 4px;">
+                                ${escapeHtml(face.detector)}
+                            </span>
+                        </span>
+                    </div>
+                </div>`;
+            });
+            html += '</div>';
+        }
+        
+        // Privacy notice
+        html += `<div style="margin-top: 1.5rem; padding: 1rem; background: rgba(255,170,0,0.1); border-radius: 8px; border-left: 3px solid var(--warning);">
+            <strong style="color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> Privacy Notice:</strong>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+                Face detection identifies the presence and location of faces but does not perform facial recognition 
+                or identify specific individuals. No biometric data is stored.
+            </p>
+        </div>`;
+    } else {
+        html += `<div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+            <i class="fas fa-user-slash" style="font-size: 3rem; opacity: 0.3; margin-bottom: 1rem;"></i>
+            <p style="font-size: 1.1rem;">No faces detected in this image</p>
+            <p style="font-size: 0.9rem; margin-top: 0.5rem;">The image may not contain visible human faces, 
+            or faces may be obscured, too small, or at difficult angles.</p>
+        </div>`;
+    }
+
+    html += '</div></div>';
+    return html;
+}
+
+// Utility Functions
+
+function formatKey(key) {
+    return key
+        .replace(/_/g, ' ')
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+}
+
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+function adjustBrightness(hex, percent) {
+    // Remove # if present
+    hex = hex.replace('#', '');
+    
+    // Convert to RGB
+    let r = parseInt(hex.substring(0, 2), 16);
+    let g = parseInt(hex.substring(2, 4), 16);
+    let b = parseInt(hex.substring(4, 6), 16);
+    
+    // Adjust brightness
+    r = Math.max(0, Math.min(255, r + (r * percent / 100)));
+    g = Math.max(0, Math.min(255, g + (g * percent / 100)));
+    b = Math.max(0, Math.min(255, b + (b * percent / 100)));
+    
+    // Convert back to hex
+    const rr = Math.round(r).toString(16).padStart(2, '0');
+    const gg = Math.round(g).toString(16).padStart(2, '0');
+    const bb = Math.round(b).toString(16).padStart(2, '0');
+    
+    return `#${rr}${gg}${bb}`;
+}
+
+function get_color_name(r, g, b) {
+    // Simple color name approximation
+    const colors = {
+        'Black': [0, 0, 0],
+        'White': [255, 255, 255],
+        'Red': [255, 0, 0],
+        'Green': [0, 255, 0],
+        'Blue': [0, 0, 255],
+        'Yellow': [255, 255, 0],
+        'Cyan': [0, 255, 255],
+        'Magenta': [255, 0, 255],
+        'Orange': [255, 165, 0],
+        'Purple': [128, 0, 128],
+        'Pink': [255, 192, 203],
+        'Brown': [165, 42, 42],
+        'Gray': [128, 128, 128],
+        'Olive': [128, 128, 0],
+        'Navy': [0, 0, 128],
+        'Teal': [0, 128, 128],
+        'Maroon': [128, 0, 0]
+    };
+    
+    let closestColor = 'Unknown';
+    let minDistance = Infinity;
+    
+    for (const [name, [cr, cg, cb]] of Object.entries(colors)) {
+        const distance = Math.sqrt(
+            Math.pow(r - cr, 2) + 
+            Math.pow(g - cg, 2) + 
+            Math.pow(b - cb, 2)
+        );
+        
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestColor = name;
+        }
+    }
+    
+    // Add descriptors based on RGB values
+    const brightness = (r + g + b) / 3;
+    const saturation = Math.max(r, g, b) - Math.min(r, g, b);
+    
+    let descriptor = '';
+    if (brightness < 50) {
+        descriptor = 'Dark ';
+    } else if (brightness > 200) {
+        descriptor = 'Light ';
+    } else if (saturation < 30) {
+        descriptor = 'Pale ';
+    }
+    
+    return descriptor + closestColor;
+}
+
+// Add smooth scroll to results when they appear
+function scrollToResults() {
+    const resultsSection = document.getElementById('resultsSection');
+    if (resultsSection && resultsSection.children.length > 0) {
+        setTimeout(() => {
+            resultsSection.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }, 100);
+    }
+}
+
+// Call this after displaying results
+function displayResults(result) {
+    const resultsSection = document.getElementById('resultsSection');
+    resultsSection.innerHTML = "";
+
+    // 1. STATS OVERVIEW - Quick Summary
+    const statsHtml = `
+        <div class="result-card fade-in">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">${result.processing_time?.toFixed(2)}s</div>
+                    <div class="stat-label">Processing Time</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${result.metadata?.sections_found || 0}</div>
+                    <div class="stat-label">Metadata Sections</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${result.color_analysis?.colors?.length || 0}</div>
+                    <div class="stat-label">Colors Detected</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${result.faces?.count || 0}</div>
+                    <div class="stat-label">Faces Found</div>
+                </div>
+            </div>
+        </div>
+    `;
+    resultsSection.innerHTML += statsHtml;
+
+    // 2. GEMINI AI ANALYSIS - Most Important (Human-readable insights)
+    if (result.gemini_analysis) {
+        const geminiHtml = createResultCard(
+            'fas fa-robot',
+            'AI-Powered Deep Analysis',
+            `<span class="gemini-badge"><i class="fas fa-sparkles"></i> Powered by Gemini 1.5 Flash</span>
+            <div style="margin-top: 1.5rem; white-space: pre-line; line-height: 1.8;">${escapeHtml(result.gemini_analysis.detailed_analysis)}</div>`
+        );
+        resultsSection.innerHTML += geminiHtml;
+    } else if(result.basic_caption) {
+        resultsSection.innerHTML += createResultCard(
+            'fas fa-comment-alt',
+            'Basic Image Caption',
+            `<p>${escapeHtml(result.basic_caption)}</p>
+            ${!result.gemini_enabled ? '<p style="color: var(--warning); margin-top: 1rem;"><i class="fas fa-info-circle"></i> Set GEMINI_API_KEY environment variable for advanced AI analysis</p>' : ''}`
+        );
+    }
+
+    // 3. FACE DETECTION - Important for identifying people
+    if (result.faces && result.faces.count > 0) {
+        const faceHtml = createFaceDetectionCard(result.faces);
+        resultsSection.innerHTML += faceHtml;
+    }
+
+    // 4. STEGANOGRAPHY DETECTION - Security Critical
+    if (result.steganography) {
+        const stegHtml = createSteganographyCard(result.steganography);
+        resultsSection.innerHTML += stegHtml;
+    }
+
+    // 5. COLOR ANALYSIS - Visual Understanding
+    if (result.color_analysis?.colors) {
+        const colorHtml = createColorCard(result.color_analysis);
+        resultsSection.innerHTML += colorHtml;
+    }
+
+    // 6. DEEP METADATA - Technical Details
+    if (result.metadata?.metadata) {
+        const metadataHtml = createMetadataCard(result.metadata);
+        resultsSection.innerHTML += metadataHtml;
+    }
+
+    // 7. TECHNICAL ANALYSIS - Image Quality Metrics
+    if (result.technical_analysis) {
+        const techHtml = createResultCard(
+            'fas fa-chart-line',
+            'Technical Image Analysis',
+            Object.entries(result.technical_analysis).map(([key, value]) => 
+                `<div class="metadata-item">
+                    <span class="metadata-key">${formatKey(key)}</span>
+                    <span class="metadata-value">${escapeHtml(String(value))}</span>
+                </div>`
+            ).join('')
+        );
+        resultsSection.innerHTML += techHtml;
+    }
+
+    // 8. IMAGE HASHES - For Verification & Deduplication
+    if (result.image_hashes) {
+        const hashHtml = createHashCard(result.image_hashes);
+        resultsSection.innerHTML += hashHtml;
+    }
+
+    // Scroll to results after rendering
+    scrollToResults();
+}
+
+// Export button functionality (optional enhancement)
+function exportResults() {
+    const resultsSection = document.getElementById('resultsSection');
+    if (!resultsSection || !resultsSection.innerHTML) {
+        alert('No results to export');
+        return;
+    }
+    
+    // Create a simplified text version
+    const textContent = resultsSection.innerText;
+    const blob = new Blob([textContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `image_analysis_${Date.now()}.txt`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+// Copy to clipboard functionality
+function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            showNotification('Copied to clipboard!', 'success');
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+            showNotification('Failed to copy', 'error');
+        });
+    } else {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            showNotification('Copied to clipboard!', 'success');
+        } catch (err) {
+            console.error('Failed to copy:', err);
+            showNotification('Failed to copy', 'error');
+        }
+        document.body.removeChild(textArea);
+    }
+}
+
+// Show notification toast
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 2rem;
+        background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--error)' : 'var(--primary)'};
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+        font-weight: 600;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+// Add these animations to your CSS (if not already present)
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('SnapSpeak AI initialized');
+    
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + U to upload
+        if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+            e.preventDefault();
+            document.getElementById('imageInput').click();
+        }
+        
+        // Ctrl/Cmd + Enter to analyze
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            if (analyzeBtn && currentImage) {
+                analyzeImage();
+            }
+        }
+    });
+});
+    </script>
+</body>
+</html>
+

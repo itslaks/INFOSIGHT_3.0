@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InkWell AI - Prompt Enhancement</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='inkwell_ai.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0a0e27;
+            --bg-darker: #050812;
+            --bg-card: #1a1f3a;
+            --bg-input: #141829;
+            --border-color: #2d3561;
+            --primary: #00d9ff;
+            --primary-hover: #00b8d4;
+            --secondary: #a855f7;
+            --accent: #ff006e;
+            --success: #00ff88;
+            --error: #ff3366;
+            --warning: #ffb300;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b8d4;
+            --text-tertiary: #8892b0;
+            --gradient-1: linear-gradient(135deg, #00d9ff 0%, #a855f7 100%);
+            --gradient-2: linear-gradient(135deg, #ff006e 0%, #a855f7 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--bg-darker) 0%, var(--bg-dark) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, rgba(26, 31, 58, 0.8) 0%, rgba(20, 24, 41, 0.6) 100%);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 48px 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 32px rgba(0, 217, 255, 0.05);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-left h1 {
+            font-size: 3em;
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .header-left p {
+            color: var(--text-secondary);
+            font-size: 1.1em;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-group-header {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 8px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .control-label {
+            font-size: 0.7em;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+            padding: 10px 14px;
+            letter-spacing: 1px;
+        }
+
+        .toggle-btn, .view-btn {
+            padding: 10px 18px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .toggle-btn.active, .view-btn.active {
+            background: rgba(0, 217, 255, 0.1);
+            color: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 16px rgba(0, 217, 255, 0.2);
+        }
+
+        .toggle-btn:hover, .view-btn:hover {
+            color: var(--primary);
+            border-color: rgba(0, 217, 255, 0.5);
+        }
+
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+        }
+
+        .content-wrapper.single-col {
+            grid-template-columns: 1fr;
+        }
+
+        .panel {
+            background: linear-gradient(135deg, rgba(26, 31, 58, 0.6) 0%, rgba(20, 24, 41, 0.4) 100%);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 36px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s ease;
+        }
+
+        .panel:hover {
+            border-color: rgba(0, 217, 255, 0.3);
+            box-shadow: 0 12px 48px rgba(0, 217, 255, 0.1);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            padding-bottom: 18px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .panel-title {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .char-count {
+            font-size: 0.8em;
+            color: var(--text-tertiary);
+            background: rgba(0, 217, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            border: 1px solid rgba(0, 217, 255, 0.2);
+        }
+
+        textarea {
+            width: 100%;
+            padding: 18px;
+            border: 2px solid var(--border-color);
+            border-radius: 14px;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 1em;
+            line-height: 1.8;
+            resize: vertical;
+            min-height: 240px;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(0, 217, 255, 0.02);
+            box-shadow: 0 0 0 4px rgba(0, 217, 255, 0.08);
+        }
+
+        textarea::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .controls-section {
+            display: none;
+            margin-bottom: 28px;
+            padding-bottom: 28px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .controls-section.visible {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .control-group {
+            margin-bottom: 28px;
+        }
+
+        .control-label-main {
+            font-size: 0.75em;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--primary);
+            margin-bottom: 14px;
+            letter-spacing: 1.5px;
+        }
+
+        .level-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .level-btn {
+            padding: 14px;
+            border: 2px solid var(--border-color);
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .level-btn:hover {
+            border-color: var(--secondary);
+            color: var(--secondary);
+        }
+
+        .level-btn.active {
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4);
+            transform: scale(1.05);
+        }
+
+        .enhancement-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .enhancement-item {
+            display: flex;
+            align-items: center;
+            padding: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .enhancement-item:hover {
+            border-color: var(--primary);
+            background: rgba(0, 217, 255, 0.05);
+        }
+
+        .enhancement-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            margin-right: 10px;
+            accent-color: var(--primary);
+        }
+
+        .enhancement-item label {
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 14px;
+            margin-top: 28px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: var(--gradient-1);
+            color: var(--bg-dark);
+            box-shadow: 0 8px 24px rgba(0, 217, 255, 0.4);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            box-shadow: 0 12px 36px rgba(0, 217, 255, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            border-color: var(--primary);
+            background: rgba(0, 217, 255, 0.1);
+            box-shadow: 0 4px 16px rgba(0, 217, 255, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(0, 217, 255, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 28px;
+        }
+
+        .tab-btn {
+            padding: 14px 18px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-weight: 700;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-size: 0.85em;
+            text-transform: uppercase;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .output-box {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 18px;
+            min-height: 140px;
+            max-height: 450px;
+            overflow-y: auto;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.8;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin-bottom: 18px;
+        }
+
+        .output-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .copy-btn, .fav-btn {
+            flex: 1;
+            padding: 12px 18px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.8em;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            background: transparent;
+        }
+
+        .copy-btn {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .copy-btn:hover {
+            background: var(--primary);
+            color: var(--bg-dark);
+        }
+
+        .fav-btn {
+            color: var(--secondary);
+            border-color: var(--secondary);
+        }
+
+        .fav-btn:hover {
+            background: var(--secondary);
+            color: var(--bg-dark);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-4px);
+        }
+
+        .metric-label {
+            font-size: 0.7em;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .metric-value {
+            font-size: 2.4em;
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 18px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: var(--success);
+        }
+
+        .alert-error {
+            background: rgba(255, 51, 102, 0.1);
+            border: 1px solid rgba(255, 51, 102, 0.3);
+            color: var(--error);
+        }
+
+        .alert-info {
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            color: var(--primary);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-input);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 217, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        @media (max-width: 1024px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .enhancement-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 28px 24px;
+            }
+            .header-left h1 {
+                font-size: 2em;
+            }
+            .level-selector {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .enhancement-grid, .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>InkWell AI</h1>
+                    <p>Transform prompts into powerful AI instructions</p>
+                </div>
+                <div class="header-controls">
+                    <div class="control-group-header">
+                        <span class="control-label">Mode</span>
+                        <button class="toggle-btn active" data-mode="simple">Simple</button>
+                        <button class="toggle-btn" data-mode="advanced">Advanced</button>
+                    </div>
+                    <div class="control-group-header">
+                        <span class="control-label">View</span>
+                        <button class="view-btn active" data-view="split">Split</button>
+                        <button class="view-btn" data-view="comparison">Compare</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-wrapper" id="contentWrapper">
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">Your Prompt</span>
+                    <span class="char-count" id="charCount">0 / 5000</span>
+                </div>
+
+                <div id="alertContainer"></div>
+
+                <textarea 
+                    id="promptInput" 
+                    placeholder="Enter your prompt here...&#10;Example: Create a Python function that validates email addresses and handles edge cases..."></textarea>
+
+                <div class="controls-section" id="controlsSection">
+                    <div class="control-group">
+                        <div class="control-label-main">Enhancement Level</div>
+                        <div class="level-selector">
+                            <button class="level-btn" data-level="light">Light</button>
+                            <button class="level-btn active" data-level="moderate">Moderate</button>
+                            <button class="level-btn" data-level="aggressive">Aggressive</button>
+                            <button class="level-btn" data-level="expert">Expert</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-label-main">Enhancements</div>
+                        <div class="enhancement-grid">
+                            <label class="enhancement-item">
+                                <input type="checkbox" name="enhancement" value="clarity" checked>
+                                <label>Clarity</label>
+                            </label>
+                            <label class="enhancement-item">
+                                <input type="checkbox" name="enhancement" value="structure" checked>
+                                <label>Structure</label>
+                            </label>
+                            <label class="enhancement-item">
+                                <input type="checkbox" name="enhancement" value="context">
+                                <label>Context</label>
+                            </label>
+                            <label class="enhancement-item">
+                                <input type="checkbox" name="enhancement" value="specificity" checked>
+                                <label>Specificity</label>
+                            </label>
+                            <label class="enhancement-item">
+                                <input type="checkbox" name="enhancement" value="role_play">
+                                <label>Role-Play</label>
+                            </label>
+                            <label class="enhancement-item">
+                                <input type="checkbox" name="enhancement" value="output_format">
+                                <label>Format</label>
+                            </label>
+                            <label class="enhancement-item">
+                                <input type="checkbox" name="enhancement" value="constraints">
+                                <label>Constraints</label>
+                            </label>
+                            <label class="enhancement-item">
+                                <input type="checkbox" name="enhancement" value="examples">
+                                <label>Examples</label>
+                            </label>
+                            <label class="enhancement-item">
+                                <input type="checkbox" name="enhancement" value="tone_control">
+                                <label>Tone</label>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" id="enhanceBtn">✨ Enhance</button>
+                    <button class="btn btn-secondary" id="analyzeBtn">📊 Analyze</button>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-secondary" id="clearBtn">🗑️ Clear</button>
+                    <button class="btn btn-secondary" id="historyToggle">⏱️ History</button>
+                </div>
+            </div>
+
+            <div class="panel" id="resultsPanel">
+                <div class="panel-header">
+                    <span class="panel-title">Results</span>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="analysis">Analysis</button>
+                    <button class="tab-btn" data-tab="enhanced">Enhanced</button>
+                    <button class="tab-btn" data-tab="ai">AI Enhanced</button>
+                </div>
+
+                <div class="tab-content active" id="analysis-tab">
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-label">Category</div>
+                            <div class="metric-value" id="category">—</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Words</div>
+                            <div class="metric-value" id="wordCount">0</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Clarity</div>
+                            <div class="metric-value" id="clarityScore">—</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">Structure</div>
+                            <div class="metric-value" id="structureScore">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="enhanced-tab">
+                    <div class="output-box" id="enhancedOutput">No results yet</div>
+                    <div class="output-actions">
+                        <button class="copy-btn" onclick="copyToClipboard('enhancedOutput')">📋 Copy</button>
+                        <button class="fav-btn" onclick="addFavorite('enhanced')">❤️ Save</button>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="ai-tab">
+                    <div class="output-box" id="aiOutput">No results yet</div>
+                    <div class="output-actions">
+                        <button class="copy-btn" onclick="copyToClipboard('aiOutput')">📋 Copy</button>
+                        <button class="fav-btn" onclick="addFavorite('ai')">❤️ Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:5000/inkwell_ai/api';;
+        let currentMode = 'simple';
+        let currentData = null;
+        const userId = 'user_' + Math.random().toString(36).substr(2, 9);
+
+        console.log('🚀 InkWell AI initialized');
+        console.log('👤 User ID:', userId);
+
+        // Mode Toggle
+        document.querySelectorAll('[data-mode]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                console.log('Mode changed to:', e.target.dataset.mode);
+                document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentMode = e.target.dataset.mode;
+                
+                const controlsSection = document.getElementById('controlsSection');
+                
+                if (currentMode === 'advanced') {
+                    controlsSection.classList.add('visible');
+                    console.log('✓ Advanced mode enabled');
+                } else {
+                    controlsSection.classList.remove('visible');
+                    console.log('✓ Simple mode enabled');
+                }
+            });
+        });
+
+        // View Toggle
+        document.querySelectorAll('[data-view]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('[data-view]').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+            });
+        });
+
+        // Level Button Toggle
+        document.querySelectorAll('.level-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                console.log('Enhancement level:', e.target.dataset.level);
+            });
+        });
+
+        // Tab Navigation
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tabName = e.target.dataset.tab;
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                e.target.classList.add('active');
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+            });
+        });
+
+        // Character Counter
+        document.getElementById('promptInput').addEventListener('input', (e) => {
+            const count = e.target.value.length;
+            const charCountEl = document.getElementById('charCount');
+            charCountEl.textContent = `${count} / 5000`;
+            
+            if (count > 4500) {
+                charCountEl.style.color = 'var(--error)';
+            } else if (count > 3000) {
+                charCountEl.style.color = 'var(--warning)';
+            } else {
+                charCountEl.style.color = 'var(--text-tertiary)';
+            }
+        });
+
+        // Enhance Button
+        document.getElementById('enhanceBtn').addEventListener('click', enhancePrompt);
+
+        // Analyze Button
+        document.getElementById('analyzeBtn').addEventListener('click', analyzePrompt);
+
+        // Clear Button
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            document.getElementById('promptInput').value = '';
+            document.getElementById('charCount').textContent = '0 / 5000';
+            document.getElementById('charCount').style.color = 'var(--text-tertiary)';
+            document.getElementById('resultsPanel').style.display = 'none';
+            clearAlerts();
+            console.log('✓ Cleared');
+        });
+
+        // History Toggle
+        document.getElementById('historyToggle').addEventListener('click', loadHistory);
+
+        async function enhancePrompt() {
+            const prompt = document.getElementById('promptInput').value.trim();
+            
+            console.log('📝 Enhance button clicked');
+            console.log('Prompt length:', prompt.length);
+            
+            if (!prompt) {
+                showAlert('Please enter a prompt to enhance', 'error');
+                return;
+            }
+
+            if (prompt.length > 5000) {
+                showAlert('Prompt is too long (max 5000 characters)', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('enhanceBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Processing...';
+
+            try {
+                const selectedEnhancements = Array.from(
+                    document.querySelectorAll('input[name="enhancement"]:checked')
+                ).map(input => input.value);
+                
+                const selectedLevel = document.querySelector('.level-btn.active')?.dataset.level || 'moderate';
+
+                console.log('Selected enhancements:', selectedEnhancements);
+                console.log('Selected level:', selectedLevel);
+
+                const requestBody = {
+                    prompt: prompt,
+                    enhancements: selectedEnhancements,
+                    enhancement_level: selectedLevel,
+                    use_gemini: true,
+                    user_id: userId
+                };
+
+                console.log('Sending request to:', `${API_BASE}/optimize`);
+
+                const response = await fetch(`${API_BASE}/optimize`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to enhance prompt');
+                }
+
+                const data = await response.json();
+                console.log('✓ Enhancement successful');
+                console.log('Data received:', data);
+                
+                currentData = data;
+                displayResults(data);
+                document.getElementById('resultsPanel').style.display = 'block';
+                showAlert('✓ Prompt enhanced successfully!', 'success');
+
+            } catch (error) {
+                console.error('❌ Enhancement error:', error);
+                showAlert(error.message || 'Failed to enhance prompt. Make sure the backend is running.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '✨ Enhance';
+            }
+        }
+
+        async function analyzePrompt() {
+            const prompt = document.getElementById('promptInput').value.trim();
+            
+            if (!prompt) {
+                showAlert('Please enter a prompt to analyze', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('analyzeBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Analyzing...';
+
+            try {
+                const response = await fetch(`${API_BASE}/analyze`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        user_id: userId
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to analyze prompt');
+                }
+
+                const data = await response.json();
+                
+                document.getElementById('category').textContent = data.category;
+                document.getElementById('wordCount').textContent = data.word_count;
+                document.getElementById('clarityScore').textContent = Math.round(data.metrics.clarity_score);
+                document.getElementById('structureScore').textContent = Math.round(data.metrics.structure_score);
+
+                document.getElementById('resultsPanel').style.display = 'block';
+                
+                // Switch to analysis tab
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.querySelector('[data-tab="analysis"]').classList.add('active');
+                document.getElementById('analysis-tab').classList.add('active');
+                
+                showAlert('✓ Analysis complete!', 'success');
+
+            } catch (error) {
+                console.error('Analysis error:', error);
+                showAlert('Failed to analyze prompt', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '📊 Analyze';
+            }
+        }
+
+        function displayResults(data) {
+            console.log('Displaying results:', data);
+            
+            if (data.metadata) {
+                document.getElementById('category').textContent = data.metadata.category || '—';
+                document.getElementById('wordCount').textContent = Math.round(data.metadata.original_length / 5) || 0;
+                document.getElementById('clarityScore').textContent = Math.round(data.metadata.metrics.clarity_score) || '—';
+                document.getElementById('structureScore').textContent = Math.round(data.metadata.metrics.structure_score) || '—';
+            }
+
+            document.getElementById('enhancedOutput').textContent = data.optimized_prompt || 'No results';
+            document.getElementById('aiOutput').textContent = data.gemini_enhanced || data.optimized_prompt || 'No results';
+        }
+
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showAlert('✓ Copied to clipboard!', 'success');
+            }).catch(() => {
+                showAlert('Failed to copy', 'error');
+            });
+        }
+
+        async function addFavorite(type) {
+            if (!currentData) {
+                showAlert('No data to save', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/favorites`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        original: currentData.original_prompt,
+                        enhanced: currentData.optimized_prompt,
+                        gemini_enhanced: currentData.gemini_enhanced || ''
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save favorite');
+                }
+
+                const data = await response.json();
+                showAlert(data.message || '❤️ Added to favorites!', 'success');
+
+            } catch (error) {
+                console.error('Favorite error:', error);
+                showAlert('Failed to save favorite', 'error');
+            }
+        }
+
+        async function loadHistory() {
+            try {
+                const response = await fetch(`${API_BASE}/history/${userId}?limit=20`);
+                if (!response.ok) {
+                    throw new Error('Failed to load history');
+                }
+                
+                const data = await response.json();
+                if (data.history && data.history.length > 0) {
+                    showAlert(`Found ${data.history.length} items in history`, 'info');
+                    console.log('History:', data.history);
+                } else {
+                    showAlert('No history found', 'info');
+                }
+            } catch (error) {
+                console.error('History error:', error);
+                showAlert('Failed to load history', 'error');
+            }
+        }
+
+        function showAlert(message, type = 'info') {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = `<span>${message}</span>`;
+            container.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                alert.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => alert.remove(), 300);
+            }, 4000);
+        }
+
+        function clearAlerts() {
+            document.getElementById('alertContainer').innerHTML = '';
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                document.getElementById('enhanceBtn').click();
+            }
+        });
+
+        // Initialize
+        window.addEventListener('load', () => {
+            showAlert('✓ InkWell AI ready! Enter a prompt to get started.', 'info');
+            console.log('✓ Application loaded successfully');
+        });
+
+        // Check backend connectivity
+        fetch(`${API_BASE}/health`)
+            .then(res => res.json())
+            .then(data => {
+                console.log('✓ Backend connected:', data);
+                const geminiStatus = data.gemini_available ? '(Gemini Available)' : '(Rule-based only)';
+                showAlert(`Backend connected ${geminiStatus}`, 'success');
+            })
+            .catch(err => {
+                console.error('❌ Backend connection failed:', err);
+                showAlert('⚠️ Backend not connected. Please start the Flask server.', 'error');
+            });
+    </script>
+</body>
+</html>

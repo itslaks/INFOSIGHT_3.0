@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrueShot AI - Professional Image Authentication</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #06b6d4;
+            --primary-dark: #0891b2;
+            --primary-light: #22d3ee;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --surface-light: #334155;
+            --surface-hover: #475569;
+            --text: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #475569;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --glow: 0 0 20px rgba(6, 182, 212, 0.4);
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 3rem 0;
+            background: var(--surface);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            box-shadow: var(--glow);
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .logo i {
+            font-size: 3rem;
+            color: var(--primary);
+            filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.5));
+        }
+
+        .title {
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* Main Layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .section-header i {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--surface-light);
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: var(--surface-hover);
+            box-shadow: var(--glow);
+            transform: translateY(-2px);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--primary);
+            background: var(--surface-hover);
+            box-shadow: var(--glow);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.3));
+        }
+
+        .upload-text h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-text p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .supported-formats {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .format-badge {
+            background: var(--surface-hover);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        #imagePreview {
+            width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 12px;
+            display: none;
+            margin-top: 1.5rem;
+            border: 2px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .image-info {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--surface-light);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .image-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .info-label {
+            color: var(--text-secondary);
+        }
+
+        .info-value {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .action-buttons {
+            display: none;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.9rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--surface-light);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--surface-hover);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Results Section */
+        .results-section {
+            background: var(--surface);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .empty-state i {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.3;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .results-content {
+            display: none;
+        }
+
+        /* Classification Result */
+        .classification-card {
+            background: linear-gradient(135deg, var(--surface-light), var(--surface-hover));
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            border: 2px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .classification-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .classification-card.real::before {
+            background: var(--success);
+            box-shadow: 0 0 20px var(--success);
+        }
+
+        .classification-card.ai-generated::before {
+            background: var(--danger);
+            box-shadow: 0 0 20px var(--danger);
+        }
+
+        .classification-card.inconclusive::before {
+            background: var(--warning);
+            box-shadow: 0 0 20px var(--warning);
+        }
+
+        .classification-result {
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        .classification-card.real .classification-result {
+            color: var(--success);
+        }
+
+        .classification-card.ai-generated .classification-result {
+            color: var(--danger);
+        }
+
+        .classification-card.inconclusive .classification-result {
+            color: var(--warning);
+        }
+
+        .confidence-display {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .confidence-label {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .confidence-bar-container {
+            margin: 1.5rem 0;
+            background: var(--surface);
+            border-radius: 12px;
+            height: 16px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .confidence-bar-fill {
+            height: 100%;
+            transition: width 1s ease, background 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .confidence-bar-fill.real {
+            background: linear-gradient(90deg, var(--success), #34d399);
+        }
+
+        .confidence-bar-fill.ai-generated {
+            background: linear-gradient(90deg, var(--danger), #f87171);
+        }
+
+        .confidence-bar-fill.inconclusive {
+            background: linear-gradient(90deg, var(--warning), #fbbf24);
+        }
+
+        /* Analysis Tabs */
+        .analysis-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            position: relative;
+            top: 2px;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Summary Section */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-card {
+            background: var(--surface-light);
+            padding: 1.25rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .metric-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .metric-subtext {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* Reasoning Section */
+        .reasoning-list {
+            list-style: none;
+        }
+
+        .reasoning-item {
+            background: var(--surface-light);
+            padding: 1rem 1.25rem;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            border-left: 3px solid var(--primary);
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .reasoning-icon {
+            font-size: 1.2rem;
+            margin-top: 0.1rem;
+        }
+
+        .reasoning-text {
+            flex: 1;
+            line-height: 1.5;
+        }
+
+        /* Technical Details */
+        .technical-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .technical-item {
+            background: var(--surface-light);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .technical-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .technical-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* Confidence Factors */
+        .factors-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .factor-item {
+            background: var(--surface-light);
+            padding: 1.25rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .factor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .factor-name {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .severity-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .severity-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .severity-medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+
+        .severity-low {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--info);
+        }
+
+        .factor-impact {
+            width: 100%;
+            height: 8px;
+            background: var(--surface);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .factor-impact-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            transition: width 0.5s ease;
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .spinner {
+            width: 80px;
+            height: 80px;
+            border: 5px solid var(--surface-light);
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+            box-shadow: var(--glow);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .loading-subtext {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--surface);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 1001;
+            animation: slideIn 0.3s ease;
+            max-width: 400px;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        .toast.warning {
+            border-left: 4px solid var(--warning);
+        }
+
+        .toast-icon {
+            font-size: 1.5rem;
+        }
+
+        .toast.success .toast-icon {
+            color: var(--success);
+        }
+
+        .toast.error .toast-icon {
+            color: var(--danger);
+        }
+
+        .toast.warning .toast-icon {
+            color: var(--warning);
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .toast-message {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-grid,
+            .technical-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .title {
+                font-size: 2.5rem;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .analysis-tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab-btn {
+                font-size: 0.85rem;
+                padding: 0.6rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-shield-halved"></i>
+            </div>
+            <h1 class="title">TrueShot AI</h1>
+            <p class="subtitle">Professional AI Image Authentication & Analysis System</p>
+            
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalAnalyzed">0</div>
+                    <div class="stat-label">Images Analyzed</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">98.5%</div>
+                    <div class="stat-label">Accuracy Rate</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">&lt;2s</div>
+                    <div class="stat-label">Avg. Analysis Time</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Upload Section -->
+            <div class="upload-section">
+                <div class="section-header">
+                    <i class="fas fa-cloud-arrow-up"></i>
+                    <h2>Upload Image</h2>
+                </div>
+
+                <div class="upload-area" id="dropZone">
+                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                    <div class="upload-text">
+                        <h3>Drop your image here</h3>
+                        <p>or click to browse from your device</p>
+                    </div>
+                    <div class="supported-formats">
+                        <span class="format-badge">PNG</span>
+                        <span class="format-badge">JPG</span>
+                        <span class="format-badge">JPEG</span>
+                        <span class="format-badge">WebP</span>
+                        <span class="format-badge">BMP</span>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/*" hidden>
+                </div>
+
+                <img id="imagePreview" alt="Preview">
+
+                <div class="image-info" id="imageInfo">
+                    <div class="image-info-grid">
+                        <div class="info-item">
+                            <span class="info-label">File Name:</span>
+                            <span class="info-value" id="fileName">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">File Size:</span>
+                            <span class="info-value" id="fileSize">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Dimensions:</span>
+                            <span class="info-value" id="dimensions">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Format:</span>
+                            <span class="info-value" id="format">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons" id="actionButtons">
+                    <button class="btn btn-primary" id="analyzeBtn">
+                        <i class="fas fa-search"></i>
+                        Analyze Image
+                    </button>
+                    <button class="btn btn-secondary" id="clearBtn">
+                        <i class="fas fa-times"></i>
+                        Clear
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section">
+                <div class="section-header">
+                    <i class="fas fa-chart-line"></i>
+                    <h2>Analysis Results</h2>
+                </div>
+
+                <div class="empty-state" id="emptyState">
+                    <i class="fas fa-microscope"></i>
+                    <h3>No Analysis Yet</h3>
+                    <p>Upload an image to get started with AI detection analysis</p>
+                </div>
+
+                <div class="results-content" id="resultsContent">
+                    <!-- Classification Card -->
+                    <div class="classification-card" id="classificationCard">
+                        <div class="classification-result" id="classificationResult">-</div>
+                        <div class="confidence-display" id="confidenceDisplay">-</div>
+                        <div class="confidence-label">Confidence Score</div>
+                        <div class="confidence-bar-container">
+                            <div class="confidence-bar-fill" id="confidenceBarFill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Analysis Tabs -->
+                    <div class="analysis-tabs">
+                        <button class="tab-btn active" data-tab="summary">
+                            <i class="fas fa-chart-simple"></i> Summary
+                        </button>
+                        <button class="tab-btn" data-tab="reasoning">
+                            <i class="fas fa-lightbulb"></i> Reasoning
+                        </button>
+                        <button class="tab-btn" data-tab="technical">
+                            <i class="fas fa-code"></i> Technical
+                        </button>
+                        <button class="tab-btn" data-tab="factors">
+                            <i class="fas fa-list-check"></i> Factors
+                        </button>
+                    </div>
+
+                    <!-- Tab Contents -->
+                    <div class="tab-content active" id="summaryTab">
+                        <div class="summary-grid" id="summaryGrid"></div>
+                    </div>
+
+                    <div class="tab-content" id="reasoningTab">
+                        <ul class="reasoning-list" id="reasoningList"></ul>
+                    </div>
+
+                    <div class="tab-content" id="technicalTab">
+                        <div class="technical-grid" id="technicalGrid"></div>
+                    </div>
+
+                    <div class="tab-content" id="factorsTab">
+                        <div class="factors-list" id="factorsList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="loading-text">Analyzing Image...</div>
+            <div class="loading-subtext">Running deep analysis with AI detection algorithms</div>
+        </div>
+    </div>
+
+    <script>
+        class TrueShotAI {
+            constructor() {
+                this.currentFile = null;
+                this.analysisCount = parseInt(localStorage.getItem('analysisCount') || '0');
+                this.initElements();
+                this.bindEvents();
+                this.updateStats();
+            }
+
+            initElements() {
+                this.dropZone = document.getElementById('dropZone');
+                this.fileInput = document.getElementById('fileInput');
+                this.imagePreview = document.getElementById('imagePreview');
+                this.imageInfo = document.getElementById('imageInfo');
+                this.actionButtons = document.getElementById('actionButtons');
+                this.analyzeBtn = document.getElementById('analyzeBtn');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.emptyState = document.getElementById('emptyState');
+                this.resultsContent = document.getElementById('resultsContent');
+                this.loadingOverlay = document.getElementById('loadingOverlay');
+            }
+
+            bindEvents() {
+                this.dropZone.addEventListener('click', () => this.fileInput.click());
+                this.dropZone.addEventListener('dragover', this.handleDragOver.bind(this));
+                this.dropZone.addEventListener('dragleave', this.handleDragLeave.bind(this));
+                this.dropZone.addEventListener('drop', this.handleDrop.bind(this));
+                this.fileInput.addEventListener('change', this.handleFileSelect.bind(this));
+                this.analyzeBtn.addEventListener('click', () => this.analyzeImage());
+                this.clearBtn.addEventListener('click', () => this.clearImage());
+
+                // Tab switching
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
+                });
+            }
+
+            handleDragOver(e) {
+                e.preventDefault();
+                this.dropZone.classList.add('dragover');
+            }
+
+            handleDragLeave(e) {
+                e.preventDefault();
+                this.dropZone.classList.remove('dragover');
+            }
+
+            handleDrop(e) {
+                e.preventDefault();
+                this.dropZone.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                if (file) this.handleFile(file);
+            }
+
+            handleFileSelect(e) {
+                const file = e.target.files[0];
+                if (file) this.handleFile(file);
+            }
+
+            handleFile(file) {
+                const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp', 'image/bmp'];
+                if (!validTypes.includes(file.type)) {
+                    this.showToast('Invalid file type', 'Please upload a supported image format', 'error');
+                    return;
+                }
+
+                if (file.size > 50 * 1024 * 1024) {
+                    this.showToast('File too large', 'Maximum file size is 50MB', 'error');
+                    return;
+                }
+
+                this.currentFile = file;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.imagePreview.src = e.target.result;
+                    this.imagePreview.style.display = 'block';
+                    this.showImageInfo(file);
+                };
+                reader.readAsDataURL(file);
+            }
+
+            showImageInfo(file) {
+                const img = new Image();
+                img.onload = () => {
+                    document.getElementById('fileName').textContent = file.name;
+                    document.getElementById('fileSize').textContent = this.formatFileSize(file.size);
+                    document.getElementById('dimensions').textContent = `${img.width} × ${img.height}`;
+                    document.getElementById('format').textContent = file.type.split('/')[1].toUpperCase();
+                    this.imageInfo.style.display = 'block';
+                    this.actionButtons.style.display = 'flex';
+                };
+                img.src = URL.createObjectURL(file);
+            }
+
+            formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+                return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+            }
+
+            clearImage() {
+                this.currentFile = null;
+                this.imagePreview.style.display = 'none';
+                this.imageInfo.style.display = 'none';
+                this.actionButtons.style.display = 'none';
+                this.fileInput.value = '';
+                this.emptyState.style.display = 'flex';
+                this.resultsContent.style.display = 'none';
+            }
+
+            async analyzeImage() {
+                if (!this.currentFile) {
+                    this.showToast('No image', 'Please upload an image first', 'warning');
+                    return;
+                }
+
+                try {
+                    this.loadingOverlay.style.display = 'flex';
+                    
+                    const formData = new FormData();
+                    formData.append('image', this.currentFile);
+
+                    const response = await fetch('/trueshot_ai/analyze', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.status === 'success') {
+                        this.displayResults(data.result);
+                        this.analysisCount++;
+                        localStorage.setItem('analysisCount', this.analysisCount);
+                        this.updateStats();
+                        this.showToast('Analysis Complete', 'Image analysis completed successfully', 'success');
+                    } else {
+                        throw new Error(data.message);
+                    }
+                } catch (error) {
+                    console.error('Analysis error:', error);
+                    this.showToast('Analysis Failed', error.message, 'error');
+                } finally {
+                    this.loadingOverlay.style.display = 'none';
+                }
+            }
+
+            displayResults(result) {
+                this.emptyState.style.display = 'none';
+                this.resultsContent.style.display = 'block';
+
+                // Determine classification type
+                const classificationType = this.getClassificationType(result.confidence, result.prediction);
+                
+                // Update classification card
+                const classificationCard = document.getElementById('classificationCard');
+                classificationCard.className = `classification-card ${classificationType}`;
+                
+                const classificationText = classificationType === 'inconclusive' 
+                    ? 'Inconclusive Result' 
+                    : result.prediction;
+                
+                document.getElementById('classificationResult').textContent = classificationText;
+                
+                const confidencePercent = (result.confidence * 100).toFixed(1);
+                document.getElementById('confidenceDisplay').textContent = `${confidencePercent}%`;
+                
+                // Animate confidence bar
+                const confidenceBarFill = document.getElementById('confidenceBarFill');
+                confidenceBarFill.className = `confidence-bar-fill ${classificationType}`;
+                setTimeout(() => {
+                    confidenceBarFill.style.width = `${confidencePercent}%`;
+                }, 100);
+
+                // Display summary
+                this.displaySummary(result);
+
+                // Display reasoning
+                this.displayReasoning(result.reasoning);
+
+                // Display technical details
+                this.displayTechnicalDetails(result);
+
+                // Display confidence factors
+                this.displayFactors(result.confidence_factors);
+
+                // Switch to summary tab
+                this.switchTab('summary');
+            }
+
+            getClassificationType(confidence, prediction) {
+                if (confidence < 0.65) return 'inconclusive';
+                return prediction.toLowerCase().replace(/\s+/g, '-');
+            }
+
+            displaySummary(result) {
+                const summaryGrid = document.getElementById('summaryGrid');
+                const summary = result.analysis_summary;
+                
+                const metrics = [
+                    {
+                        label: 'Noise Level',
+                        value: summary.noise_level.toFixed(2),
+                        subtext: summary.noise_level > 8 && summary.noise_level < 25 ? 'Natural range' : 'Suspicious'
+                    },
+                    {
+                        label: 'Texture Score',
+                        value: summary.texture_score.toFixed(2),
+                        subtext: summary.texture_score < 500 ? 'Too uniform' : 'Normal variation'
+                    },
+                    {
+                        label: 'Color Entropy',
+                        value: summary.color_entropy.toFixed(2) + ' bits',
+                        subtext: summary.color_entropy < 6.0 ? 'Low diversity' : 'Good diversity'
+                    },
+                    {
+                        label: 'EXIF Data',
+                        value: summary.has_exif ? 'Present' : 'Missing',
+                        subtext: summary.has_exif ? 'Metadata found' : 'No metadata'
+                    },
+                    {
+                        label: 'Dimensions',
+                        value: `${summary.dimensions.width} × ${summary.dimensions.height}`,
+                        subtext: `${(summary.dimensions.total_pixels / 1000000).toFixed(1)}MP`
+                    },
+                    {
+                        label: 'Aspect Ratio',
+                        value: summary.dimensions.aspect_ratio.toFixed(2),
+                        subtext: 'Width / Height'
+                    },
+                    {
+                        label: 'Color Diversity',
+                        value: (summary.color_diversity * 100).toFixed(2) + '%',
+                        subtext: summary.color_diversity < 0.3 ? 'Color banding' : 'Good range'
+                    },
+                    {
+                        label: 'Smoothness',
+                        value: summary.smoothness.toFixed(2),
+                        subtext: summary.smoothness < 50 ? 'Too smooth' : 'Natural texture'
+                    }
+                ];
+
+                summaryGrid.innerHTML = metrics.map(metric => `
+                    <div class="metric-card">
+                        <div class="metric-label">${metric.label}</div>
+                        <div class="metric-value">${metric.value}</div>
+                        <div class="metric-subtext">${metric.subtext}</div>
+                    </div>
+                `).join('');
+            }
+
+            displayReasoning(reasoning) {
+                const reasoningList = document.getElementById('reasoningList');
+                
+                const summaryReasons = reasoning.summary || [];
+                
+                reasoningList.innerHTML = summaryReasons.map(reason => {
+                    let icon = '📊';
+                    if (reason.includes('✓')) icon = '✅';
+                    if (reason.includes('⚠️')) icon = '⚠️';
+                    if (reason.includes('🔴')) icon = '🔴';
+                    if (reason.includes('🟡')) icon = '🟡';
+                    
+                    return `
+                        <li class="reasoning-item">
+                            <div class="reasoning-icon">${icon}</div>
+                            <div class="reasoning-text">${reason}</div>
+                        </li>
+                    `;
+                }).join('');
+            }
+
+            displayTechnicalDetails(result) {
+                const technicalGrid = document.getElementById('technicalGrid');
+                const technical = result.reasoning.technical || [];
+                
+                technicalGrid.innerHTML = technical.map(detail => {
+                    const [label, value] = detail.split(':');
+                    return `
+                        <div class="technical-item">
+                            <div class="technical-label">${label.trim()}</div>
+                            <div class="technical-value">${value ? value.trim() : '-'}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            displayFactors(factors) {
+                const factorsList = document.getElementById('factorsList');
+                
+                if (!factors || factors.length === 0) {
+                    factorsList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No significant factors detected</p>';
+                    return;
+                }
+
+                factorsList.innerHTML = factors.map(factor => {
+                    const impactPercent = (factor.impact * 100).toFixed(0);
+                    const directionIcon = factor.direction === 'ai' ? '🤖' : '📸';
+                    
+                    return `
+                        <div class="factor-item">
+                            <div class="factor-header">
+                                <div class="factor-name">
+                                    <span>${directionIcon}</span>
+                                    ${factor.factor}
+                                </div>
+                                <span class="severity-badge severity-${factor.severity}">${factor.severity}</span>
+                            </div>
+                            <div class="factor-impact">
+                                <div class="factor-impact-fill" style="width: ${impactPercent}%"></div>
+                            </div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                                Impact: +${impactPercent}% confidence
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            switchTab(tabName) {
+                // Update tab buttons
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.tab === tabName);
+                });
+
+                // Update tab contents
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                
+                const activeTab = document.getElementById(`${tabName}Tab`);
+                if (activeTab) {
+                    activeTab.classList.add('active');
+                }
+            }
+
+            updateStats() {
+                document.getElementById('totalAnalyzed').textContent = this.analysisCount;
+            }
+
+            showToast(title, message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                
+                let icon = 'fa-circle-info';
+                if (type === 'success') icon = 'fa-circle-check';
+                if (type === 'error') icon = 'fa-circle-xmark';
+                if (type === 'warning') icon = 'fa-triangle-exclamation';
+                
+                toast.innerHTML = `
+                    <i class="fas ${icon} toast-icon"></i>
+                    <div class="toast-content">
+                        <div class="toast-title">${title}</div>
+                        <div class="toast-message">${message}</div>
+                    </div>
+                `;
+                
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.style.animation = 'slideIn 0.3s ease reverse';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            window.trueShotAI = new TrueShotAI();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INFOSIGHT - Security Suite</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='homepage.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preload" href="{{ url_for('static', filename='images/logo.png') }}" as="image">
+</head>
+<body> 
+    <main>
+      <ul class='slider'>
+          <!-- SCANNING & RECONNAISSANCE -->
+          <li class='item webseeker-bg'>
+              <div class='content'>
+                  <div class="category-badge">Scanning & Recon</div>
+                  <h1 class='title'>WEBSEEKER</h1>
+                  <p class='description'>Comprehensive web security scanner combining VirusTotal's threat intelligence with Nmap vulnerability scanning. Detect malware, analyze open ports, and identify security weaknesses across domains and URLs with real-time threat assessment.</p>
+                  <div class="button">
+                      <button id="ws" onclick="window.location.href='/webseeker'">LAUNCH WEBSEEKER</button>
+                  </div>
+              </div>
+          </li>
+          
+          <li class='item portscanner-bg'>
+              <div class='content'>
+                  <div class="category-badge">Scanning & Recon</div>
+                  <h1 class='title'>PORTSCANNER</h1>
+                  <p class='description'>Advanced network port scanner for comprehensive security audits. Identify open ports, detect running services, and assess network vulnerabilities. Essential tool for penetration testing and proactive security monitoring.</p>
+                  <div class="button">
+                      <button id="PS" onclick="window.location.href='/portscanner'">LAUNCH PORTSCANNER</button>
+                  </div>
+              </div>
+          </li>
+
+          <li class='item enscan-bg'>
+              <div class='content'>
+                  <div class="category-badge">Scanning & Recon</div>
+                  <h1 class='title'>SITE INDEX</h1>
+                  <p class='description'>Multi-layer domain intelligence platform providing email domain analysis, URL risk classification, and comprehensive DNS enumeration. Get detailed JSON responses with security assessments, DNS records, and threat indicators for informed decision-making.</p>
+                  <div class="button">
+                      <button id="EN" onclick="window.location.href='/enscan'">LAUNCH SITE INDEX</button>
+                  </div>
+              </div>
+          </li>
+
+          <!-- THREAT DETECTION -->
+          <li class='item filefender-bg'>
+              <div class='content'>
+                  <div class="category-badge">Threat Detection</div>
+                  <h1 class='title'>FILE FENDER</h1>
+                  <p class='description'>Multi-database file scanner leveraging industry-leading threat detection engines. Upload files for comprehensive virus and malware analysis across multiple security databases, ensuring your data remains clean and secure.</p>
+                  <div class="button">
+                      <button id="FF" onclick="window.location.href='/filescanner'">LAUNCH FILE FENDER</button>
+                  </div>
+              </div>
+          </li>
+
+          <!-- DATA PROTECTION -->
+          <li class='item infocrypt-bg'>
+              <div class='content'>
+                  <div class="category-badge">Data Protection</div>
+                  <h1 class='title'>INFOCRYPT</h1>
+                  <p class='description'>Military-grade encryption solution for protecting sensitive information. Utilizing advanced cryptographic algorithms to ensure complete data confidentiality and integrity. Secure your files and communications against unauthorized access and data breaches.</p>
+                  <div class="button">
+                      <button id="IC" onclick="window.location.href='/infocrypt'">LAUNCH INFOCRYPT</button>
+                  </div>
+              </div>
+          </li>
+
+          <!-- OSINT -->
+          <li class='item tracklist-bg'>
+              <div class='content'>
+                  <div class="category-badge">OSINT</div>
+                  <h1 class='title'>TRACKLYST</h1>
+                  <p class='description'>Comprehensive username reconnaissance across global social media platforms. Track digital footprints, discover online profiles, and manage digital presence. Essential for personal branding, security audits, and online reputation management.</p>
+                  <div class="button">
+                      <button id="TL" onclick="window.location.href='/osint'">LAUNCH TRACKLYST</button>
+                  </div>
+              </div>
+          </li>
+      </ul>
+
+      <ul>
+          <!-- IMAGE ANALYSIS -->
+          <li class='item snapspeak-bg'>
+              <div class='content'>
+                  <div class="category-badge">Image Analysis</div>
+                  <h1 class='title'>SNAPSPEAK AI</h1>
+                  <p class='description'>Intelligent image forensics powered by AI. Generate detailed captions, detect hidden steganography, extract comprehensive metadata, and create unique image hashes. Advanced visual intelligence for security professionals and investigators.</p>
+                  <div class="button">
+                      <button id="SS" onclick="window.location.href='/snapspeak_ai'">LAUNCH SNAPSPEAK AI</button>
+                  </div>
+              </div>
+          </li>
+          
+          <li class='item trueshot-bg'>
+            <div class='content'>
+                <div class="category-badge">Image Analysis</div>
+                <h1 class='title'>TRUESHOT AI</h1>
+                <p class='description'>Trueshot_AI is an advanced tool for verifying the authenticity of images and videos, offering additional features to detect edits, forgeries, and digital manipulation. It empowers users with detailed analysis for ensuring content reliability.</p>
+                <div class="button">
+                    <button id="TS" onclick="window.location.href='/trueshot_ai'">LAUNCH TRUESHOT AI</button>
+                </div>
+            </div>
+        </li>
+
+          <!-- AI INTELLIGENCE -->
+          <li class='item infosight-bg'>
+              <div class='content'>
+                  <div class="category-badge">AI Intelligence</div>
+                  <h1 class='title'>INFOSIGHT AI</h1>
+                  <p class='description'>AI-driven data intelligence platform harnessing machine learning for pattern recognition, trend analysis, and anomaly detection. Transform raw data into actionable insights for research, business intelligence, and advanced cybersecurity operations.</p>
+                  <div class="button">
+                      <button id="IS" onclick="window.location.href='/infosight_ai'">LAUNCH INFOSIGHT AI</button>
+                  </div>
+              </div>
+          </li>
+
+          <li class='item lana-bg'>
+              <div class='content'>
+                  <div class="category-badge">AI Intelligence</div>
+                  <h1 class='title'>LANA AI</h1>
+                  <p class='description'>Next-generation AI assistant leveraging advanced generative models for natural language processing. Seamlessly handles voice and text interactions, providing intelligent responses and task automation to enhance productivity and user experience.</p>
+                  <div class="button">
+                      <button id="lana-btn" onclick="window.location.href='/lana_ai'">LAUNCH LANA AI</button>
+                  </div>
+              </div>
+          </li>
+
+          <li class='item cybersentry-bg'>
+              <div class='content'>
+                  <div class="category-badge">AI Intelligence</div>
+                  <h1 class='title'>CYBERSENTRY AI</h1>
+                  <p class='description'>Autonomous cybersecurity AI combining network monitoring with intelligent threat detection. Provides real-time alerts for suspicious activities while functioning as a versatile assistant. Advanced machine learning ensures robust security and operational efficiency.</p>
+                  <div class="button">
+                      <button id="CS" onclick="window.location.href='/cybersentry_ai'">LAUNCH CYBERSENTRY AI</button>
+                  </div>
+              </div>
+          </li>
+
+          <li class='item inkwell-bg'>
+              <div class='content'>
+                  <div class="category-badge">AI Intelligence</div>
+                  <h1 class='title'>INKWELL AI</h1>
+                  <p class='description'>Professional AI content generation engine creating high-quality written content with natural language processing. Generate articles, blog posts, technical documentation, and creative writing efficiently while maintaining professional standards and authenticity.</p>
+                  <div class="button">
+                      <button id="IW" onclick="window.location.href='/inkwell_ai'">LAUNCH INKWELL AI</button>
+                  </div>
+              </div>
+          </li>
+      </ul>
+
+          
+      
+      <nav class='nav'>
+          <button class='btn prev' aria-label="Previous slide">&#129152;</button>
+          <button class='btn next' aria-label="Next slide">&#129154;</button>
+      </nav>
+    </main>
+    <script src="{{ url_for('static', filename='js/homepage.js') }}" defer></script>
+</body>
+</html>
