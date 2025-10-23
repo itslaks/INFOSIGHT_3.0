@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FileFender Pro - Advanced File Security Scanner</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>FileFender Pro - Advanced Security Suite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -24,19 +24,29 @@
             --text-primary: #ffffff;
             --text-secondary: #8b94b8;
             --border-color: #1e2849;
+            --accent-purple: #b74aff;
+            --accent-pink: #ff4a9f;
+        }
+
+        [data-theme="light"] {
+            --bg-dark: #f5f7fa;
+            --bg-card: #ffffff;
+            --text-primary: #1a1f3a;
+            --text-secondary: #5a6b8c;
+            --border-color: #e1e8ed;
         }
 
         body {
-            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1f3a 100%);
             color: var(--text-primary);
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
             padding: 20px;
             position: relative;
             overflow-x: hidden;
+            transition: all 0.3s ease;
         }
 
-        /* Animated background */
         body::before {
             content: '';
             position: fixed;
@@ -46,23 +56,55 @@
             height: 100%;
             background: 
                 radial-gradient(circle at 20% 50%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(0, 153, 255, 0.1) 0%, transparent 50%);
+                radial-gradient(circle at 80% 80%, rgba(0, 153, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(183, 74, 255, 0.08) 0%, transparent 50%);
             pointer-events: none;
             z-index: 0;
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             position: relative;
             z-index: 1;
         }
 
-        /* Header */
         .header {
             text-align: center;
             margin-bottom: 40px;
             animation: fadeInDown 0.8s ease;
+            position: relative;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            padding: 10px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        .theme-toggle i {
+            font-size: 1.2em;
+            color: var(--primary-color);
         }
 
         .logo {
@@ -75,17 +117,26 @@
 
         .logo i {
             font-size: 3.5em;
-            color: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 0 20px var(--primary-color));
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         h1 {
             font-size: 3em;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-purple));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            font-weight: 700;
+            font-weight: 800;
             letter-spacing: 2px;
         }
 
@@ -93,9 +144,57 @@
             color: var(--text-secondary);
             font-size: 1.1em;
             margin-top: 10px;
+            font-weight: 500;
         }
 
-        /* Main Layout */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 15px 30px;
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .nav-tab:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-color: var(--primary-color);
+            box-shadow: 0 5px 30px rgba(0, 212, 255, 0.4);
+        }
+
+        .nav-tab i {
+            font-size: 1.2em;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
         .main-content {
             display: grid;
             grid-template-columns: 1.2fr 0.8fr;
@@ -107,22 +206,11 @@
         @media (max-width: 1024px) {
             .main-content {
                 grid-template-columns: 1fr;
-                gap: 20px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-                gap: 20px;
             }
             
-            .card {
-                padding: 25px;
-            }
-            
-            h1 {
-                font-size: 2em;
+            .theme-toggle {
+                position: relative;
+                margin: 0 auto 20px;
             }
         }
 
@@ -134,11 +222,29 @@
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             animation: fadeIn 0.8s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-purple), var(--accent-pink));
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 15px 50px rgba(0, 212, 255, 0.2);
+        }
+
+        .card:hover::before {
+            opacity: 1;
         }
 
         .card-title {
@@ -148,13 +254,13 @@
             align-items: center;
             gap: 12px;
             color: var(--primary-color);
+            font-weight: 700;
         }
 
         .card-title i {
             font-size: 1.2em;
         }
 
-        /* Upload Area */
         .upload-area {
             border: 2px dashed var(--border-color);
             border-radius: 15px;
@@ -190,6 +296,7 @@
             margin-bottom: 10px;
             color: var(--text-primary);
             pointer-events: none;
+            font-weight: 600;
         }
 
         .upload-hint {
@@ -198,7 +305,7 @@
             pointer-events: none;
         }
 
-        #fileInput {
+        #fileInput, #encryptFileInput, #decryptFileInput, #batchFileInput {
             display: none;
         }
 
@@ -208,6 +315,7 @@
             background: rgba(0, 212, 255, 0.1);
             border-radius: 10px;
             display: none;
+            border: 1px solid var(--primary-color);
         }
 
         .file-selected.show {
@@ -230,6 +338,7 @@
 
         .file-details h4 {
             margin-bottom: 5px;
+            font-weight: 600;
         }
 
         .file-size {
@@ -245,6 +354,7 @@
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-weight: 600;
         }
 
         .remove-file:hover {
@@ -252,7 +362,6 @@
             transform: scale(1.05);
         }
 
-        /* Buttons */
         .btn {
             padding: 15px 35px;
             border: none;
@@ -266,6 +375,24 @@
             gap: 10px;
             position: relative;
             overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
         .btn-primary {
@@ -296,17 +423,133 @@
             box-shadow: 0 5px 20px rgba(0, 212, 255, 0.2);
         }
 
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color), #00cc66);
+            color: white;
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-color), #ff0044);
+            color: white;
+            box-shadow: 0 5px 20px rgba(255, 51, 102, 0.3);
+        }
+
         .scan-actions {
             display: flex;
             gap: 15px;
             margin-top: 25px;
+            flex-wrap: wrap;
         }
 
-        /* Hash Checker */
+        .algorithm-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .algorithm-option {
+            padding: 20px;
+            background: var(--bg-dark);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .algorithm-option:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+
+        .algorithm-option.selected {
+            border-color: var(--primary-color);
+            background: rgba(0, 212, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .algorithm-option i {
+            font-size: 2em;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .algorithm-name {
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .algorithm-description {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .password-group {
+            margin: 20px 0;
+            display: none;
+        }
+
+        .password-group.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .input-with-icon {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .input-with-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .input-with-icon input,
+        .input-with-icon textarea {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+        }
+
+        .input-with-icon input:focus,
+        .input-with-icon textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary-color);
+        }
+
         .hash-helper {
             color: var(--text-secondary);
             font-size: 0.95em;
             margin-bottom: 15px;
+            line-height: 1.6;
         }
 
         .hash-input-group {
@@ -332,7 +575,6 @@
             box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
         }
 
-        /* Results */
         .results-container {
             display: none;
             animation: fadeIn 0.5s ease;
@@ -340,16 +582,6 @@
 
         .results-container.show {
             display: block;
-        }
-
-        .results-container .main-content {
-            grid-template-columns: 0.8fr 1.2fr;
-        }
-
-        @media (max-width: 1024px) {
-            .results-container .main-content {
-                grid-template-columns: 1fr;
-            }
         }
 
         .risk-badge {
@@ -391,7 +623,7 @@
 
         .risk-label {
             font-size: 1.8em;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 2px;
         }
@@ -442,6 +674,12 @@
             border-radius: 12px;
             text-align: center;
             border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary-color);
         }
 
         .stat-value {
@@ -466,9 +704,9 @@
         .stat-label {
             color: var(--text-secondary);
             font-size: 0.9em;
+            font-weight: 500;
         }
 
-        /* File Info */
         .info-grid {
             display: grid;
             gap: 15px;
@@ -482,6 +720,11 @@
             background: var(--bg-dark);
             border-radius: 10px;
             border-left: 3px solid var(--primary-color);
+            transition: all 0.3s ease;
+        }
+
+        .info-row:hover {
+            background: rgba(0, 212, 255, 0.05);
         }
 
         .info-label {
@@ -494,17 +737,9 @@
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.9em;
             word-break: break-all;
+            text-align: right;
         }
 
-        /* Detection Summary */
-        .detection-summary {
-            margin-left: auto;
-            color: var(--text-secondary);
-            font-size: 0.9em;
-            font-weight: 500;
-        }
-
-        /* Filter Row */
         .filter-row {
             display: flex;
             gap: 10px;
@@ -523,7 +758,6 @@
             border-color: var(--primary-color);
         }
 
-        /* Vendor Results */
         .vendor-results {
             max-height: 500px;
             overflow-y: auto;
@@ -545,10 +779,11 @@
         .vendor-item:hover {
             background: rgba(0, 212, 255, 0.05);
             border-left-color: var(--primary-color);
+            transform: translateX(5px);
         }
 
         .vendor-name {
-            font-weight: 500;
+            font-weight: 600;
             margin-bottom: 5px;
         }
 
@@ -592,15 +827,128 @@
             font-size: 1.1em;
         }
 
-        /* Loader */
+        .encryption-result {
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid var(--success-color);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            animation: scaleIn 0.5s ease;
+        }
+
+        .encryption-result h3 {
+            color: var(--success-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .key-display {
+            background: var(--bg-dark);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .key-label {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .key-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            word-break: break-all;
+            line-height: 1.6;
+            color: var(--text-primary);
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: var(--secondary-color);
+            transform: scale(1.05);
+        }
+
+        .batch-results {
+            margin-top: 20px;
+        }
+
+        .batch-item {
+            background: var(--bg-dark);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .batch-item:hover {
+            background: rgba(0, 212, 255, 0.05);
+            border-left-color: var(--primary-color);
+        }
+
+        .batch-item-info h4 {
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .batch-item-status {
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-scanned {
+            background: rgba(0, 255, 136, 0.2);
+            color: var(--success-color);
+        }
+
+        .status-pending {
+            background: rgba(255, 170, 0, 0.2);
+            color: var(--warning-color);
+        }
+
+        .status-error {
+            background: rgba(255, 51, 102, 0.2);
+            color: var(--danger-color);
+        }
+
         .loader-container {
             display: none;
             text-align: center;
-            padding: 40px;
+            padding: 60px 40px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            margin: 20px 0;
         }
 
         .loader-container.show {
             display: block;
+            animation: fadeIn 0.3s ease;
         }
 
         .loader {
@@ -608,6 +956,7 @@
             height: 80px;
             border: 5px solid var(--border-color);
             border-top: 5px solid var(--primary-color);
+            border-right: 5px solid var(--accent-purple);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto 20px;
@@ -617,9 +966,31 @@
             color: var(--text-secondary);
             font-size: 1.1em;
             margin-top: 15px;
+            font-weight: 600;
         }
 
-        /* Scrollbar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-dark);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-purple));
+            width: 0%;
+            transition: width 0.3s ease;
+            animation: progressPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes progressPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
         ::-webkit-scrollbar {
             width: 10px;
         }
@@ -637,7 +1008,6 @@
             background: var(--primary-color);
         }
 
-        /* Animations */
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -688,7 +1058,6 @@
             }
         }
 
-        /* Badges */
         .badge {
             display: inline-flex;
             align-items: center;
@@ -710,595 +1079,1988 @@
             color: var(--primary-color);
         }
 
-        /* Features Section */
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
+        .alert {
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
         }
 
-        .feature-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 15px;
-            padding: 25px;
-            text-align: center;
-            transition: all 0.3s ease;
+        .alert i {
+            font-size: 1.3em;
         }
 
-        .feature-card:hover {
-            border-color: var(--primary-color);
-            transform: translateY(-5px);
+        .alert-success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
         }
 
-        .feature-icon {
-            font-size: 2.5em;
+        .alert-warning {
+            background: rgba(255, 170, 0, 0.1);
+            border: 1px solid var(--warning-color);
+            color: var(--warning-color);
+        }
+
+        .alert-danger {
+            background: rgba(255, 51, 102, 0.1);
+            border: 1px solid var(--danger-color);
+            color: var(--danger-color);
+        }
+
+        .alert-info {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--primary-color);
             color: var(--primary-color);
-            margin-bottom: 15px;
         }
 
-        .feature-title {
-            font-size: 1.2em;
-            margin-bottom: 10px;
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
 
-        .feature-description {
-            color: var(--text-secondary);
-            font-size: 0.95em;
-            line-height: 1.6;
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comparison-table th {
+            background: var(--bg-dark);
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .comparison-table tr:hover {
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .download-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .download-link:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .quick-action-btn {
+            padding: 10px 20px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .quick-action-btn:hover {
+            border-color: var(--primary-color);
+            background: rgba(0, 212, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .card {
+                padding: 25px;
+            }
+
+            .scan-actions {
+                flex-direction: column;
+            }
+
+            .scan-actions .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .algorithm-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-tabs {
+                overflow-x: auto;
+                justify-content: flex-start;
+                padding-bottom: 10px;
+            }
+
+            .nav-tab {
+                flex-shrink: 0;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
+        <!-- Header with Theme Toggle -->
         <div class="header">
+            <div class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon" id="themeIcon"></i>
+                <span id="themeText">Dark Mode</span>
+            </div>
             <div class="logo">
                 <i class="fas fa-shield-virus"></i>
                 <h1>FileFender Pro</h1>
             </div>
-            <p class="tagline">Advanced Multi-Engine File Security Scanner</p>
+            <p class="tagline">Advanced Multi-Engine Security Suite with Military-Grade Encryption</p>
         </div>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- File Upload Section -->
-            <div class="card">
-                <h2 class="card-title">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    File Scanner
-                </h2>
-                <form id="uploadForm">
-                    <div class="upload-area" id="uploadArea">
-                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                        <div class="upload-text">Drag & Drop your file here</div>
-                        <div class="upload-hint">or click to browse (Max 32MB)</div>
-                        <input type="file" id="fileInput" name="file">
-                    </div>
-
-                    <div class="file-selected" id="fileSelected">
-                        <div class="file-info">
-                            <i class="fas fa-file file-icon" id="fileIcon"></i>
-                            <div class="file-details">
-                                <h4 id="fileName"></h4>
-                                <div class="file-size" id="fileSize"></div>
-                            </div>
-                        </div>
-                        <button type="button" class="remove-file" id="removeFile">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-
-                    <div class="scan-actions">
-                        <button type="submit" class="btn btn-primary" id="scanBtn">
-                            <i class="fas fa-search"></i>
-                            Scan File
-                        </button>
-                        <button type="button" class="btn btn-secondary" id="clearBtn">
-                            <i class="fas fa-redo"></i>
-                            Clear
-                        </button>
-                    </div>
-                </form>
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <div class="nav-tab active" data-tab="scanner">
+                <i class="fas fa-search"></i>
+                <span>File Scanner</span>
             </div>
-
-            <!-- Hash Checker Section -->
-            <div class="card">
-                <h2 class="card-title">
-                    <i class="fas fa-fingerprint"></i>
-                    Hash Lookup
-                </h2>
-                <p class="hash-helper">
-                    Check a file without uploading by entering its SHA-256 or MD5 hash
-                </p>
-                <div class="hash-input-group">
-                    <input type="text" class="hash-input" id="hashInput" 
-                           placeholder="Enter SHA-256 or MD5 hash...">
-                    <button class="btn btn-primary" id="hashCheckBtn">
-                        <i class="fas fa-search"></i>
-                        Check
-                    </button>
-                </div>
+            <div class="nav-tab" data-tab="encrypt">
+                <i class="fas fa-lock"></i>
+                <span>Encrypt File</span>
+            </div>
+            <div class="nav-tab" data-tab="decrypt">
+                <i class="fas fa-unlock"></i>
+                <span>Decrypt File</span>
+            </div>
+            <div class="nav-tab" data-tab="batch">
+                <i class="fas fa-layer-group"></i>
+                <span>Batch Scan</span>
+            </div>
+            <div class="nav-tab" data-tab="hash">
+                <i class="fas fa-fingerprint"></i>
+                <span>Hash Lookup</span>
             </div>
         </div>
 
-        <!-- Loader -->
-        <div class="loader-container" id="loaderContainer">
-            <div class="loader"></div>
-            <div class="loader-text" id="loaderText">Analyzing file...</div>
-        </div>
-
-        <!-- Results Section -->
-        <div class="results-container" id="resultsContainer">
+        <!-- Scanner Tab -->
+        <div class="tab-content active" id="scanner-tab">
             <div class="main-content">
-                <!-- Risk Score Card -->
+                <!-- File Upload Section -->
                 <div class="card">
                     <h2 class="card-title">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        Threat Assessment
-                        <span id="resultBadge"></span>
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        File Security Scanner
                     </h2>
-                    <div class="risk-badge" id="riskBadge">
-                        <div class="risk-header">
-                            <div class="risk-label" id="riskLevel">CLEAN</div>
-                            <div class="risk-percentage" id="riskScore">0%</div>
+                    <form id="uploadForm">
+                        <div class="upload-area" id="uploadArea">
+                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                            <div class="upload-text">Drag & Drop your file here</div>
+                            <div class="upload-hint">or click to browse (Max 32MB)</div>
+                            <input type="file" id="fileInput" name="file">
                         </div>
-                        <div class="risk-score-bar">
-                            <div class="risk-score-fill" id="riskScoreFill"></div>
-                        </div>
-                    </div>
 
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <div class="stat-value" id="totalScans">0</div>
-                            <div class="stat-label">Total Engines</div>
+                        <div class="file-selected" id="fileSelected">
+                            <div class="file-info">
+                                <i class="fas fa-file file-icon" id="fileIcon"></i>
+                                <div class="file-details">
+                                    <h4 id="fileName"></h4>
+                                    <div class="file-size" id="fileSize"></div>
+                                </div>
+                            </div>
+                            <button type="button" class="remove-file" id="removeFile">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
-                        <div class="stat-item">
-                            <div class="stat-value stat-danger" id="maliciousCount">0</div>
-                            <div class="stat-label">Malicious</div>
+
+                        <div class="scan-actions">
+                            <button type="submit" class="btn btn-primary" id="scanBtn">
+                                <i class="fas fa-search"></i>
+                                Scan File
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="clearBtn">
+                                <i class="fas fa-redo"></i>
+                                Clear
+                            </button>
                         </div>
-                        <div class="stat-item">
-                            <div class="stat-value stat-warning" id="suspiciousCount">0</div>
-                            <div class="stat-label">Suspicious</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value stat-success" id="cleanCount">0</div>
-                            <div class="stat-label">Clean</div>
-                        </div>
-                    </div>
+                    </form>
                 </div>
 
-                <!-- File Information Card -->
+                <!-- Quick Info Card -->
                 <div class="card">
                     <h2 class="card-title">
                         <i class="fas fa-info-circle"></i>
-                        File Information
+                        Scanner Features
                     </h2>
-                    <div class="info-grid" id="fileInfoGrid">
-                        <!-- Dynamic content -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-bolt"></i>
+                        <span>Instant results for previously scanned files</span>
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-row">
+                            <span class="info-label">Engines</span>
+                            <span class="info-value">70+ AV Engines</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Max File Size</span>
+                            <span class="info-value">32 MB</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Scan Time</span>
+                            <span class="info-value">~30 seconds</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Privacy</span>
+                            <span class="info-value">Auto-deleted</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Vendor Results Card -->
-            <div class="card">
-                <h2 class="card-title">
-                    <i class="fas fa-list-check"></i>
-                    Detection Results by Engine
-                    <span class="detection-summary">
-                        <span id="detectionCount">0</span> detections
-                    </span>
-                </h2>
-                
-                <!-- Filter Buttons -->
-                <div class="filter-row">
-                    <button class="btn btn-secondary filter-btn active" data-filter="all">
-                        All Results
-                    </button>
-                    <button class="btn btn-secondary filter-btn" data-filter="malicious">
-                        <i class="fas fa-virus"></i> Malicious
-                    </button>
-                    <button class="btn btn-secondary filter-btn" data-filter="suspicious">
-                        <i class="fas fa-exclamation"></i> Suspicious
-                    </button>
-                    <button class="btn btn-secondary filter-btn" data-filter="clean">
-                        <i class="fas fa-check"></i> Clean
-                    </button>
+            <!-- Loader -->
+            <div class="loader-container" id="loaderContainer">
+                <div class="loader"></div>
+                <div class="loader-text" id="loaderText">Scanning file...</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <!-- Results Container -->
+            <div class="results-container" id="resultsContainer">
+                <div class="main-content">
+                    <!-- Risk Assessment -->
+                    <div class="card">
+                        <h2 class="card-title">
+                            <i class="fas fa-chart-line"></i>
+                            Risk Assessment
+                            <span id="resultBadges"></span>
+                        </h2>
+                        
+                        <div class="risk-badge" id="riskBadge">
+                            <div class="risk-header">
+                                <div class="risk-percentage" id="riskPercentage">0%</div>
+                                <div class="risk-label" id="riskLabel">SAFE</div>
+                            </div>
+                            <div class="risk-score-bar">
+                                <div class="risk-score-fill" id="riskScoreFill" style="width: 0%;">0%</div>
+                            </div>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value" id="totalScans">0</div>
+                                <div class="stat-label">Total Scans</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value stat-danger" id="maliciousCount">0</div>
+                                <div class="stat-label">Malicious</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value stat-warning" id="suspiciousCount">0</div>
+                                <div class="stat-label">Suspicious</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value stat-success" id="undetectedCount">0</div>
+                                <div class="stat-label">Clean</div>
+                            </div>
+                        </div>
+
+                        <div class="scan-actions">
+                            <button class="btn btn-primary" onclick="location.reload()">
+                                <i class="fas fa-redo"></i>
+                                Scan Another File
+                            </button>
+                            <button class="btn btn-secondary" id="exportBtn">
+                                <i class="fas fa-download"></i>
+                                Export Report
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- File Information -->
+                    <div class="card">
+                        <h2 class="card-title">
+                            <i class="fas fa-file-alt"></i>
+                            File Information
+                        </h2>
+                        <div class="info-grid" id="fileInfoGrid">
+                            <!-- File info will be populated here -->
+                        </div>
+                    </div>
                 </div>
 
-                <div class="vendor-results" id="vendorResults">
-                    <!-- Dynamic content -->
+                <!-- Vendor Results -->
+                <div class="card">
+                    <h2 class="card-title">
+                        <i class="fas fa-shield-alt"></i>
+                        Detection Results
+                        <span class="detection-summary" id="detectionSummary"></span>
+                    </h2>
+                    
+                    <div class="filter-row">
+                        <button class="btn btn-secondary filter-btn active" data-filter="all">
+                            <i class="fas fa-list"></i>
+                            All Results
+                        </button>
+                        <button class="btn btn-secondary filter-btn" data-filter="malicious">
+                            <i class="fas fa-virus"></i>
+                            Malicious
+                        </button>
+                        <button class="btn btn-secondary filter-btn" data-filter="suspicious">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Suspicious
+                        </button>
+                        <button class="btn btn-secondary filter-btn" data-filter="clean">
+                            <i class="fas fa-check-circle"></i>
+                            Clean
+                        </button>
+                    </div>
+
+                    <div class="vendor-results" id="vendorResults">
+                        <!-- Vendor results will be populated here -->
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Features Section -->
-        <div class="features">
-            <div class="feature-card">
-                <i class="fas fa-bolt feature-icon"></i>
-                <h3 class="feature-title">Instant Results</h3>
-                <p class="feature-description">
-                    Get immediate results for previously scanned files without re-uploading
-                </p>
+        <!-- Encrypt Tab -->
+        <div class="tab-content" id="encrypt-tab">
+            <div class="main-content">
+                <div class="card">
+                    <h2 class="card-title">
+                        <i class="fas fa-lock"></i>
+                        File Encryption
+                    </h2>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Encrypt your files with military-grade encryption algorithms</span>
+                    </div>
+
+                    <form id="encryptForm">
+                        <div class="upload-area" id="encryptUploadArea">
+                            <i class="fas fa-file-shield upload-icon"></i>
+                            <div class="upload-text">Select file to encrypt</div>
+                            <div class="upload-hint">Maximum file size: 32MB</div>
+                            <input type="file" id="encryptFileInput" name="file">
+                        </div>
+
+                        <div class="file-selected" id="encryptFileSelected">
+                            <div class="file-info">
+                                <i class="fas fa-file file-icon" id="encryptFileIcon"></i>
+                                <div class="file-details">
+                                    <h4 id="encryptFileName"></h4>
+                                    <div class="file-size" id="encryptFileSize"></div>
+                                </div>
+                            </div>
+                            <button type="button" class="remove-file" id="removeEncryptFile">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <h3 style="margin-top: 30px; margin-bottom: 15px; color: var(--text-primary); font-size: 1.2em;">
+                            <i class="fas fa-key"></i> Choose Encryption Algorithm
+                        </h3>
+
+                        <div class="algorithm-selector" id="encryptAlgorithmSelector">
+                            <div class="algorithm-option selected" data-algorithm="aes">
+                                <i class="fas fa-shield-halved"></i>
+                                <div class="algorithm-name">AES-256-GCM</div>
+                                <div class="algorithm-description">Industry standard, fast and secure</div>
+                            </div>
+                            <div class="algorithm-option" data-algorithm="chacha20">
+                                <i class="fas fa-bolt"></i>
+                                <div class="algorithm-name">ChaCha20</div>
+                                <div class="algorithm-description">Modern, extremely fast encryption</div>
+                            </div>
+                            <div class="algorithm-option" data-algorithm="rsa">
+                                <i class="fas fa-lock"></i>
+                                <div class="algorithm-name">RSA-2048</div>
+                                <div class="algorithm-description">Public key encryption, no password needed</div>
+                            </div>
+                        </div>
+
+                        <div class="password-group show" id="encryptPasswordGroup">
+                            <div class="input-with-icon">
+                                <i class="fas fa-key"></i>
+                                <input type="password" id="encryptPassword" placeholder="Enter encryption password" autocomplete="new-password">
+                                <i class="fas fa-eye password-toggle" id="encryptPasswordToggle"></i>
+                            </div>
+                        </div>
+
+                        <div class="scan-actions">
+                            <button type="submit" class="btn btn-success" id="encryptBtn">
+                                <i class="fas fa-lock"></i>
+                                Encrypt File
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="clearEncryptBtn">
+                                <i class="fas fa-redo"></i>
+                                Clear
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="encryptionResult"></div>
+                </div>
+
+                <div class="card">
+                    <h2 class="card-title">
+                        <i class="fas fa-info-circle"></i>
+                        Encryption Methods
+                    </h2>
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Algorithm</th>
+                                <th>Security</th>
+                                <th>Speed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>AES-256-GCM</strong></td>
+                                <td><span class="badge badge-cached">Military Grade</span></td>
+                                <td>Very Fast</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ChaCha20</strong></td>
+                                <td><span class="badge badge-cached">High Security</span></td>
+                                <td>Fastest</td>
+                            </tr>
+                            <tr>
+                                <td><strong>RSA-2048</strong></td>
+                                <td><span class="badge badge-cached">Maximum</span></td>
+                                <td>Fast</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="alert alert-warning" style="margin-top: 20px;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Save your private key or password securely. Lost keys cannot be recovered!</span>
+                    </div>
+                </div>
             </div>
-            <div class="feature-card">
-                <i class="fas fa-shield-alt feature-icon"></i>
-                <h3 class="feature-title">Multi-Engine Scanning</h3>
-                <p class="feature-description">
-                    Powered by 70+ antivirus engines for comprehensive threat detection
-                </p>
+        </div>
+
+        <!-- Decrypt Tab -->
+        <div class="tab-content" id="decrypt-tab">
+            <div class="main-content">
+                <div class="card">
+                    <h2 class="card-title">
+                        <i class="fas fa-unlock"></i>
+                        File Decryption
+                    </h2>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-key"></i>
+                        <span>Decrypt your encrypted files using the correct password or private key</span>
+                    </div>
+
+                    <form id="decryptForm">
+                        <div class="upload-area" id="decryptUploadArea">
+                            <i class="fas fa-file-import upload-icon"></i>
+                            <div class="upload-text">Select encrypted file</div>
+                            <div class="upload-hint">Only .encrypted files</div>
+                            <input type="file" id="decryptFileInput" name="file">
+                        </div>
+
+                        <div class="file-selected" id="decryptFileSelected">
+                            <div class="file-info">
+                                <i class="fas fa-file-shield file-icon" id="decryptFileIcon"></i>
+                                <div class="file-details">
+                                    <h4 id="decryptFileName"></h4>
+                                    <div class="file-size" id="decryptFileSize"></div>
+                                </div>
+                            </div>
+                            <button type="button" class="remove-file" id="removeDecryptFile">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <h3 style="margin-top: 30px; margin-bottom: 15px; color: var(--text-primary); font-size: 1.2em;">
+                            <i class="fas fa-key"></i> Select Decryption Method
+                        </h3>
+
+                        <div class="algorithm-selector" id="decryptAlgorithmSelector">
+                            <div class="algorithm-option selected" data-decrypt-algorithm="aes">
+                                <i class="fas fa-shield-halved"></i>
+                                <div class="algorithm-name">AES-256-GCM</div>
+                                <div class="algorithm-description">Password-based decryption</div>
+                            </div>
+                            <div class="algorithm-option" data-decrypt-algorithm="chacha20">
+                                <i class="fas fa-bolt"></i>
+                                <div class="algorithm-name">ChaCha20</div>
+                                <div class="algorithm-description">Password-based decryption</div>
+                            </div>
+                            <div class="algorithm-option" data-decrypt-algorithm="rsa">
+                                <i class="fas fa-lock"></i>
+                                <div class="algorithm-name">RSA-2048</div>
+                                <div class="algorithm-description">Private key decryption</div>
+                            </div>
+                        </div>
+
+                        <div class="password-group show" id="decryptPasswordGroup">
+                            <div class="input-with-icon">
+                                <i class="fas fa-key"></i>
+                                <input type="password" id="decryptPassword" placeholder="Enter decryption password" autocomplete="off">
+                                <i class="fas fa-eye password-toggle" id="decryptPasswordToggle"></i>
+                            </div>
+                        </div>
+
+                        <div class="password-group" id="decryptKeyGroup">
+                            <label class="key-label">Private Key (Base64)</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-file-code"></i>
+                                <textarea id="decryptPrivateKey" rows="6" placeholder="Paste your RSA private key here..." style="padding-top: 15px;"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="scan-actions">
+                            <button type="submit" class="btn btn-primary" id="decryptBtn">
+                                <i class="fas fa-unlock"></i>
+                                Decrypt File
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="clearDecryptBtn">
+                                <i class="fas fa-redo"></i>
+                                Clear
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2 class="card-title">
+                        <i class="fas fa-question-circle"></i>
+                        Decryption Guide
+                    </h2>
+                    <div class="info-grid">
+                        <div class="info-row">
+                            <span class="info-label">Step 1</span>
+                            <span class="info-value">Upload encrypted file</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Step 2</span>
+                            <span class="info-value">Select encryption method</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Step 3</span>
+                            <span class="info-value">Enter password or key</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Step 4</span>
+                            <span class="info-value">Download decrypted file</span>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-danger" style="margin-top: 20px;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Incorrect password or key will result in decryption failure</span>
+                    </div>
+                </div>
             </div>
-            <div class="feature-card">
-                <i class="fas fa-fingerprint feature-icon"></i>
-                <h3 class="feature-title">Hash Verification</h3>
-                <p class="feature-description">
-                    Verify file integrity using SHA-256 and MD5 cryptographic hashes
-                </p>
+        </div>
+
+        <!-- Batch Scan Tab -->
+        <div class="tab-content" id="batch-tab">
+            <div class="card">
+                <h2 class="card-title">
+                    <i class="fas fa-layer-group"></i>
+                    Batch File Scanner
+                </h2>
+
+                <div class="alert alert-info">
+                    <i class="fas fa-bolt"></i>
+                    <span>Scan multiple files simultaneously for faster threat detection</span>
+                </div>
+
+                <form id="batchScanForm">
+                    <div class="upload-area" id="batchUploadArea">
+                        <i class="fas fa-files upload-icon"></i>
+                        <div class="upload-text">Select multiple files to scan</div>
+                        <div class="upload-hint">Click or drag multiple files (Max 10 files)</div>
+                        <input type="file" id="batchFileInput" name="files[]" multiple>
+                    </div>
+
+                    <div id="batchFileList" style="margin-top: 20px;"></div>
+
+                    <div class="scan-actions">
+                        <button type="submit" class="btn btn-primary" id="batchScanBtn">
+                            <i class="fas fa-search"></i>
+                            Scan All Files
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="clearBatchBtn">
+                            <i class="fas fa-redo"></i>
+                            Clear All
+                        </button>
+                    </div>
+                </form>
+
+                <div id="batchResults" class="batch-results"></div>
             </div>
-            <div class="feature-card">
-                <i class="fas fa-lock feature-icon"></i>
-                <h3 class="feature-title">Secure & Private</h3>
-                <p class="feature-description">
-                    Files are automatically deleted after scanning. Your privacy matters
-                </p>
+        </div>
+
+        <!-- Hash Lookup Tab -->
+        <div class="tab-content" id="hash-tab">
+            <div class="main-content">
+                <div class="card">
+                    <h2 class="card-title">
+                        <i class="fas fa-fingerprint"></i>
+                        Hash Lookup & Verification
+                    </h2>
+                    <p class="hash-helper">
+                        <i class="fas fa-info-circle"></i> 
+                        Verify file integrity by checking SHA-256 or MD5 hash values without uploading the file. 
+                        This is useful for confirming if a file has been previously scanned or modified.
+                    </p>
+                    <div class="hash-input-group">
+                        <input type="text" class="hash-input" id="hashInput" 
+                               placeholder="Enter SHA-256 or MD5 hash value...">
+                        <button class="btn btn-primary" id="hashCheckBtn">
+                            <i class="fas fa-search"></i>
+                            Check Hash
+                        </button>
+                    </div>
+
+                    <div class="quick-actions">
+                        <button class="quick-action-btn" onclick="document.getElementById('hashInput').value = ''">
+                            <i class="fas fa-eraser"></i>
+                            Clear
+                        </button>
+                        <button class="quick-action-btn" onclick="navigator.clipboard.readText().then(text => document.getElementById('hashInput').value = text)">
+                            <i class="fas fa-paste"></i>
+                            Paste
+                        </button>
+                    </div>
+
+                    <div id="hashResults"></div>
+                </div>
+
+                <div class="card">
+                    <h2 class="card-title">
+                        <i class="fas fa-calculator"></i>
+                        Hash Information
+                    </h2>
+                    <div class="info-grid">
+                        <div class="info-row">
+                            <span class="info-label">SHA-256 Length</span>
+                            <span class="info-value">64 characters</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">MD5 Length</span>
+                            <span class="info-value">32 characters</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">SHA-1 Length</span>
+                            <span class="info-value">40 characters</span>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-success" style="margin-top: 20px;">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>Hash lookup is instant and doesn't require file upload</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Footer -->
+    <footer style="text-align: center; margin-top: 60px; padding: 30px 0; border-top: 1px solid var(--border-color);">
+        <div style="color: var(--text-secondary); margin-bottom: 15px;">
+            <i class="fas fa-shield-virus" style="color: var(--primary-color); font-size: 2em;"></i>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.95em; margin-bottom: 10px;">
+            FileFender Pro - Advanced Security Suite
+        </p>
+        <p style="color: var(--text-secondary); font-size: 0.85em;">
+            Powered by VirusTotal API | Military-Grade Encryption
+        </p>
+        <div style="margin-top: 20px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+            <a href="#" style="color: var(--text-secondary); text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">
+                <i class="fas fa-book"></i> Documentation
+            </a>
+            <a href="#" style="color: var(--text-secondary); text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">
+                <i class="fas fa-shield-alt"></i> Privacy Policy
+            </a>
+            <a href="#" style="color: var(--text-secondary); text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">
+                <i class="fas fa-question-circle"></i> Support
+            </a>
+            <a href="https://github.com" target="_blank" style="color: var(--text-secondary); text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </div>
+        <div style="margin-top: 20px; padding: 15px; background: rgba(0, 212, 255, 0.05); border-radius: 10px; max-width: 600px; margin-left: auto; margin-right: auto;">
+            <p style="color: var(--text-secondary); font-size: 0.8em; line-height: 1.6;">
+                <i class="fas fa-info-circle" style="color: var(--primary-color);"></i>
+                <strong>Security Notice:</strong> Files are scanned using VirusTotal's multi-engine platform. 
+                Encrypted files are stored temporarily and automatically deleted after 24 hours. 
+                Never upload sensitive personal information without encryption.
+            </p>
+        </div>
+        <p style="margin-top: 20px; color: var(--text-secondary); font-size: 0.8em;">
+            &copy; 2025 FileFender Pro. All rights reserved.
+        </p>
+    </footer>
+
+    
+    
+    
     <script>
-        let currentFilter = 'all';
-        let vendorData = [];
+        // ==================== GLOBAL VARIABLES ====================
+let currentFile = null;
+let currentEncryptFile = null;
+let currentDecryptFile = null;
+let batchFiles = [];
+let currentFilter = 'all';
+let scanResults = null;
 
-        $(document).ready(function() {
-            // File input handling
-            const uploadArea = $('#uploadArea');
-            const fileInput = $('#fileInput');
-            const fileSelected = $('#fileSelected');
+// ==================== UTILITY FUNCTIONS ====================
 
-            // Click to upload
-            uploadArea.on('click', function() {
-                $('#fileInput').click();
-            });
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
 
-            fileInput.on('click', function(e) {
-                e.stopPropagation();
-            });
+function getFileIcon(filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+    const iconMap = {
+        'exe': 'fa-file-code',
+        'dll': 'fa-file-code',
+        'pdf': 'fa-file-pdf',
+        'doc': 'fa-file-word',
+        'docx': 'fa-file-word',
+        'zip': 'fa-file-archive',
+        'rar': 'fa-file-archive',
+        'jpg': 'fa-file-image',
+        'jpeg': 'fa-file-image',
+        'png': 'fa-file-image',
+        'gif': 'fa-file-image',
+        'txt': 'fa-file-alt',
+        'js': 'fa-file-code',
+        'py': 'fa-file-code',
+        'html': 'fa-file-code'
+    };
+    return iconMap[ext] || 'fa-file';
+}
 
-            // Drag and drop
-            uploadArea.on('dragover', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                $(this).addClass('dragover');
-            });
+function showLoader(text = 'Processing...') {
+    document.getElementById('loaderContainer').classList.add('show');
+    document.getElementById('loaderText').textContent = text;
+    document.getElementById('progressFill').style.width = '0%';
+    
+    // Animate progress bar
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += Math.random() * 15;
+        if (progress > 90) progress = 90;
+        document.getElementById('progressFill').style.width = progress + '%';
+    }, 500);
+    
+    return interval;
+}
 
-            uploadArea.on('dragleave', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                $(this).removeClass('dragover');
-            });
+function hideLoader(interval) {
+    if (interval) clearInterval(interval);
+    document.getElementById('progressFill').style.width = '100%';
+    setTimeout(() => {
+        document.getElementById('loaderContainer').classList.remove('show');
+    }, 300);
+}
 
-            uploadArea.on('drop', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                $(this).removeClass('dragover');
-                
-                const files = e.originalEvent.dataTransfer.files;
-                if (files.length > 0) {
-                    fileInput[0].files = files;
-                    displayFileName();
-                }
-            });
+function showAlert(message, type = 'info') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type}`;
+    alertDiv.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+        <span>${message}</span>
+    `;
+    
+    const container = document.querySelector('.tab-content.active .card');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    setTimeout(() => alertDiv.remove(), 5000);
+}
 
-// File selection
-            fileInput.on('change', displayFileName);
+// ==================== THEME TOGGLE ====================
 
-            // Remove file
-            $('#removeFile').on('click', function(e) {
-                e.stopPropagation();
-                fileInput.val('');
-                fileSelected.removeClass('show');
-            });
+document.getElementById('themeToggle').addEventListener('click', function() {
+    const body = document.body;
+    const themeIcon = document.getElementById('themeIcon');
+    const themeText = document.getElementById('themeText');
+    
+    if (body.hasAttribute('data-theme')) {
+        body.removeAttribute('data-theme');
+        themeIcon.className = 'fas fa-moon';
+        themeText.textContent = 'Dark Mode';
+    } else {
+        body.setAttribute('data-theme', 'light');
+        themeIcon.className = 'fas fa-sun';
+        themeText.textContent = 'Light Mode';
+    }
+});
 
-            // Clear button
-            $('#clearBtn').on('click', function() {
-                fileInput.val('');
-                fileSelected.removeClass('show');
-                $('#resultsContainer').removeClass('show');
-            });
+// ==================== TAB NAVIGATION ====================
 
-            // Upload form submission
-            $('#uploadForm').on('submit', function(e) {
-                e.preventDefault();
-                
-                if (!fileInput[0].files.length) {
-                    alert('Please select a file to scan');
-                    return;
-                }
+document.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+        const tabName = this.getAttribute('data-tab');
+        
+        // Update active tab
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Update active content
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById(tabName + '-tab').classList.add('active');
+    });
+});
 
-                scanFile();
-            });
+// ==================== FILE SCANNER ====================
 
-            // Hash check
-            $('#hashCheckBtn').on('click', function() {
-                const hash = $('#hashInput').val().trim();
-                if (!hash) {
-                    alert('Please enter a hash value');
-                    return;
-                }
-                checkHash(hash);
-            });
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+const fileSelected = document.getElementById('fileSelected');
+const uploadForm = document.getElementById('uploadForm');
 
-            // Filter buttons
-            $('.filter-btn').on('click', function() {
-                $('.filter-btn').removeClass('active');
-                $(this).addClass('active');
-                currentFilter = $(this).data('filter');
-                filterVendorResults();
-            });
+uploadArea.addEventListener('click', () => fileInput.click());
+
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        fileInput.files = files;
+        handleFileSelect(files[0]);
+    }
+});
+
+fileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+        handleFileSelect(e.target.files[0]);
+    }
+});
+
+function handleFileSelect(file) {
+    currentFile = file;
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('fileSize').textContent = formatFileSize(file.size);
+    document.getElementById('fileIcon').className = `fas ${getFileIcon(file.name)} file-icon`;
+    fileSelected.classList.add('show');
+    document.getElementById('scanBtn').disabled = false;
+}
+
+document.getElementById('removeFile').addEventListener('click', () => {
+    currentFile = null;
+    fileInput.value = '';
+    fileSelected.classList.remove('show');
+    document.getElementById('scanBtn').disabled = true;
+});
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+    location.reload();
+});
+
+uploadForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    if (!currentFile) {
+        showAlert('Please select a file first', 'warning');
+        return;
+    }
+    
+    if (currentFile.size > 32 * 1024 * 1024) {
+        showAlert('File size exceeds 32MB limit', 'danger');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', currentFile);
+    
+    const loaderInterval = showLoader('Scanning file...');
+    
+    try {
+        const response = await fetch('/filescanner/upload', {
+            method: 'POST',
+            body: formData
         });
-
-        function displayFileName() {
-            const input = $('#fileInput')[0];
-            if (input.files.length > 0) {
-                const file = input.files[0];
-                const fileName = file.name;
-                const fileSize = formatFileSize(file.size);
-                const fileExt = fileName.split('.').pop().toLowerCase();
-
-                $('#fileName').text(fileName);
-                $('#fileSize').text(fileSize);
-                $('#fileIcon').removeClass().addClass('fas file-icon').addClass(getFileIcon(fileExt));
-                $('#fileSelected').addClass('show');
-            }
+        
+        const data = await response.json();
+        hideLoader(loaderInterval);
+        
+        if (response.ok) {
+            displayScanResults(data);
+        } else {
+            showAlert(data.error || 'Scan failed', 'danger');
         }
+    } catch (error) {
+        hideLoader(loaderInterval);
+        showAlert('Network error: ' + error.message, 'danger');
+    }
+});
 
-        function getFileIcon(ext) {
-            const icons = {
-                'pdf': 'fa-file-pdf',
-                'doc': 'fa-file-word',
-                'docx': 'fa-file-word',
-                'xls': 'fa-file-excel',
-                'xlsx': 'fa-file-excel',
-                'zip': 'fa-file-zipper',
-                'rar': 'fa-file-zipper',
-                'exe': 'fa-file-code',
-                'dll': 'fa-file-code',
-                'sys': 'fa-file-code',
-                'bat': 'fa-file-code',
-                'cmd': 'fa-file-code',
-                'jpg': 'fa-file-image',
-                'jpeg': 'fa-file-image',
-                'png': 'fa-file-image',
-                'gif': 'fa-file-image',
-                'txt': 'fa-file-lines',
-                'js': 'fa-file-code',
-                'html': 'fa-file-code'
-            };
-            return icons[ext] || 'fa-file';
-        }
+function displayScanResults(data) {
+    scanResults = data;
+    document.getElementById('resultsContainer').classList.add('show');
+    
+    // Risk assessment
+    const riskScore = data.risk_score;
+    let riskClass, riskLabel;
+    
+    if (riskScore < 10) {
+        riskClass = 'risk-low';
+        riskLabel = 'SAFE';
+    } else if (riskScore < 40) {
+        riskClass = 'risk-medium';
+        riskLabel = 'SUSPICIOUS';
+    } else {
+        riskClass = 'risk-high';
+        riskLabel = 'DANGEROUS';
+    }
+    
+    const riskBadge = document.getElementById('riskBadge');
+    riskBadge.className = `risk-badge ${riskClass}`;
+    document.getElementById('riskPercentage').textContent = riskScore + '%';
+    document.getElementById('riskLabel').textContent = riskLabel;
+    
+    const riskScoreFill = document.getElementById('riskScoreFill');
+    riskScoreFill.className = `risk-score-fill ${riskClass}`;
+    setTimeout(() => {
+        riskScoreFill.style.width = riskScore + '%';
+        riskScoreFill.textContent = riskScore + '%';
+    }, 100);
+    
+    // Stats
+    document.getElementById('totalScans').textContent = data.total_scans;
+    document.getElementById('maliciousCount').textContent = data.malicious;
+    document.getElementById('suspiciousCount').textContent = data.suspicious;
+    document.getElementById('undetectedCount').textContent = data.undetected;
+    
+    // Badges
+    let badges = '';
+    if (data.cached || data.instant_result) {
+        badges = '<span class="badge badge-instant"><i class="fas fa-bolt"></i> Instant Result</span>';
+    }
+    document.getElementById('resultBadges').innerHTML = badges;
+    
+    // File info
+    const fileInfoGrid = document.getElementById('fileInfoGrid');
+    fileInfoGrid.innerHTML = `
+        <div class="info-row">
+            <span class="info-label">File Name</span>
+            <span class="info-value">${currentFile.name}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">File Size</span>
+            <span class="info-value">${data.file_info.size_readable || formatFileSize(currentFile.size)}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">SHA-256</span>
+            <span class="info-value">${data.hashes.sha256}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">MD5</span>
+            <span class="info-value">${data.hashes.md5}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">SHA-1</span>
+            <span class="info-value">${data.hashes.sha1 || 'N/A'}</span>
+        </div>
+        ${data.scan_date ? `<div class="info-row">
+            <span class="info-label">Scan Date</span>
+            <span class="info-value">${new Date(data.scan_date * 1000).toLocaleString()}</span>
+        </div>` : ''}
+    `;
+    
+    // Vendor results
+    displayVendorResults(data.vendor_results);
+    
+    // Scroll to results
+    document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth' });
+}
 
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-        }
+function displayVendorResults(vendors) {
+    const vendorResults = document.getElementById('vendorResults');
+    
+    if (!vendors || vendors.length === 0) {
+        vendorResults.innerHTML = '<div class="no-results-msg">No vendor results available</div>';
+        return;
+    }
+    
+    vendorResults.innerHTML = vendors.map(vendor => {
+        let statusClass = 'status-undetected';
+        if (vendor.category === 'malicious') statusClass = 'status-malicious';
+        else if (vendor.category === 'suspicious') statusClass = 'status-suspicious';
+        else if (vendor.category === 'undetected' || vendor.category === 'clean') statusClass = 'status-clean';
+        
+        return `
+            <div class="vendor-item" data-category="${vendor.category}">
+                <div>
+                    <div class="vendor-name">${vendor.engine}</div>
+                    <div class="vendor-result-text">${vendor.result}</div>
+                </div>
+                <div class="vendor-status ${statusClass}">${vendor.category}</div>
+            </div>
+        `;
+    }).join('');
+}
 
-        function scanFile() {
-            const formData = new FormData();
-            formData.append('file', $('#fileInput')[0].files[0]);
-
-            showLoader('Uploading file...');
-
-            $.ajax({
-                url: '/filescanner/upload',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                xhr: function() {
-                    const xhr = new window.XMLHttpRequest();
-                    xhr.upload.addEventListener('progress', function(e) {
-                        if (e.lengthComputable) {
-                            const percentComplete = (e.loaded / e.total) * 100;
-                            updateLoader(`Uploading: ${Math.round(percentComplete)}%`);
-                        }
-                    });
-                    return xhr;
-                },
-                success: function(data) {
-                    hideLoader();
-                    if (data.error) {
-                        alert('Error: ' + data.error);
-                    } else {
-                        displayResults(data);
-                    }
-                },
-                error: function(jqXHR) {
-                    hideLoader();
-                    const error = jqXHR.responseJSON ? jqXHR.responseJSON.error : 'Unknown error occurred';
-                    alert('Error: ' + error);
-                }
-            });
-        }
-
-        function checkHash(hash) {
-            showLoader('Checking hash...');
-
-            $.ajax({
-                url: '/filescanner/hash-check',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ hash: hash }),
-                success: function(data) {
-                    hideLoader();
-                    if (data.error) {
-                        alert('Error: ' + data.error);
-                    } else {
-                        displayResults(data);
-                    }
-                },
-                error: function(jqXHR) {
-                    hideLoader();
-                    const error = jqXHR.responseJSON ? jqXHR.responseJSON.error : 'Unknown error occurred';
-                    alert('Error: ' + error);
-                }
-            });
-        }
-
-        function showLoader(text) {
-            $('#loaderText').text(text);
-            $('#loaderContainer').addClass('show');
-            $('#resultsContainer').removeClass('show');
-        }
-
-        function updateLoader(text) {
-            $('#loaderText').text(text);
-        }
-
-        function hideLoader() {
-            $('#loaderContainer').removeClass('show');
-        }
-
-        function displayResults(data) {
-            // Risk score and badge
-            const riskScore = data.risk_score;
-            let riskClass, riskText;
-
-            if (riskScore < 10) {
-                riskClass = 'risk-low';
-                riskText = 'CLEAN';
-            } else if (riskScore < 50) {
-                riskClass = 'risk-medium';
-                riskText = 'SUSPICIOUS';
+// Filter vendor results
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        const filter = this.getAttribute('data-filter');
+        currentFilter = filter;
+        
+        document.querySelectorAll('.vendor-item').forEach(item => {
+            if (filter === 'all') {
+                item.style.display = 'flex';
             } else {
-                riskClass = 'risk-high';
-                riskText = 'MALICIOUS';
+                item.style.display = item.getAttribute('data-category') === filter ? 'flex' : 'none';
             }
+        });
+    });
+});
 
-            $('#riskScore').text(riskScore.toFixed(1) + '%');
-            $('#riskBadge').removeClass('risk-low risk-medium risk-high').addClass(riskClass);
-            $('#riskLevel').text(riskText);
-            $('#riskScoreFill').css('width', riskScore + '%').removeClass('risk-low risk-medium risk-high').addClass(riskClass);
+// Export report
+document.getElementById('exportBtn').addEventListener('click', () => {
+    if (!scanResults) return;
+    
+    const report = {
+        scan_date: new Date().toISOString(),
+        file_name: currentFile.name,
+        risk_score: scanResults.risk_score,
+        statistics: {
+            total_scans: scanResults.total_scans,
+            malicious: scanResults.malicious,
+            suspicious: scanResults.suspicious,
+            undetected: scanResults.undetected
+        },
+        hashes: scanResults.hashes,
+        vendor_results: scanResults.vendor_results
+    };
+    
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `scan_report_${currentFile.name}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+});
 
-            // Add result badges
-            let badges = '';
-            if (data.cached) {
-                badges += '<span class="badge badge-cached"><i class="fas fa-bolt"></i> Cached</span>';
-            }
-            if (data.instant_result) {
-                badges += '<span class="badge badge-instant"><i class="fas fa-rocket"></i> Instant</span>';
-            }
-            $('#resultBadge').html(badges);
+// ==================== ENCRYPTION ====================
 
-            // Stats
-            $('#totalScans').text(data.total_scans);
-            $('#maliciousCount').text(data.malicious);
-            $('#suspiciousCount').text(data.suspicious);
-            $('#cleanCount').text(data.undetected);
-            $('#detectionCount').text(data.malicious + data.suspicious);
+const encryptUploadArea = document.getElementById('encryptUploadArea');
+const encryptFileInput = document.getElementById('encryptFileInput');
+const encryptFileSelected = document.getElementById('encryptFileSelected');
+const encryptForm = document.getElementById('encryptForm');
+let selectedEncryptAlgorithm = 'aes';
 
-            // File information
-            let fileInfoHtml = '';
-            
-            if (data.hashes) {
-                if (data.hashes.sha256) {
-                    fileInfoHtml += createInfoRow('SHA-256', data.hashes.sha256);
-                }
-                if (data.hashes.md5) {
-                    fileInfoHtml += createInfoRow('MD5', data.hashes.md5);
-                }
-            }
+encryptUploadArea.addEventListener('click', () => encryptFileInput.click());
 
-            if (data.file_info) {
-                if (data.file_info.size_readable) {
-                    fileInfoHtml += createInfoRow('File Size', data.file_info.size_readable);
-                }
-                if (data.file_info.modified) {
-                    fileInfoHtml += createInfoRow('Last Modified', data.file_info.modified);
-                }
-            }
+encryptUploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    encryptUploadArea.classList.add('dragover');
+});
 
-            if (data.scan_date) {
-                const date = new Date(data.scan_date * 1000);
-                fileInfoHtml += createInfoRow('Scan Date', date.toLocaleString());
-            }
+encryptUploadArea.addEventListener('dragleave', () => {
+    encryptUploadArea.classList.remove('dragover');
+});
 
-            $('#fileInfoGrid').html(fileInfoHtml);
+encryptUploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    encryptUploadArea.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        encryptFileInput.files = files;
+        handleEncryptFileSelect(files[0]);
+    }
+});
 
-            // Vendor results
-            vendorData = data.vendor_results || [];
-            displayVendorResults();
+encryptFileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+        handleEncryptFileSelect(e.target.files[0]);
+    }
+});
 
-            // Show results
-            $('#resultsContainer').addClass('show');
-            
-            // Scroll to results
-            $('html, body').animate({
-                scrollTop: $('#resultsContainer').offset().top - 20
-            }, 500);
+function handleEncryptFileSelect(file) {
+    currentEncryptFile = file;
+    document.getElementById('encryptFileName').textContent = file.name;
+    document.getElementById('encryptFileSize').textContent = formatFileSize(file.size);
+    document.getElementById('encryptFileIcon').className = `fas ${getFileIcon(file.name)} file-icon`;
+    encryptFileSelected.classList.add('show');
+}
+
+document.getElementById('removeEncryptFile').addEventListener('click', () => {
+    currentEncryptFile = null;
+    encryptFileInput.value = '';
+    encryptFileSelected.classList.remove('show');
+});
+
+document.getElementById('clearEncryptBtn').addEventListener('click', () => {
+    currentEncryptFile = null;
+    encryptFileInput.value = '';
+    encryptFileSelected.classList.remove('show');
+    document.getElementById('encryptPassword').value = '';
+    document.getElementById('encryptionResult').innerHTML = '';
+});
+
+// Algorithm selection
+document.querySelectorAll('#encryptAlgorithmSelector .algorithm-option').forEach(option => {
+    option.addEventListener('click', function() {
+        document.querySelectorAll('#encryptAlgorithmSelector .algorithm-option').forEach(o => o.classList.remove('selected'));
+        this.classList.add('selected');
+        selectedEncryptAlgorithm = this.getAttribute('data-algorithm');
+        
+        const passwordGroup = document.getElementById('encryptPasswordGroup');
+        if (selectedEncryptAlgorithm === 'rsa') {
+            passwordGroup.classList.remove('show');
+        } else {
+            passwordGroup.classList.add('show');
         }
+    });
+});
 
-        function createInfoRow(label, value) {
-            return `
+// Password toggle
+document.getElementById('encryptPasswordToggle').addEventListener('click', function() {
+    const input = document.getElementById('encryptPassword');
+    if (input.type === 'password') {
+        input.type = 'text';
+        this.classList.remove('fa-eye');
+        this.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        this.classList.remove('fa-eye-slash');
+        this.classList.add('fa-eye');
+    }
+});
+
+encryptForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    if (!currentEncryptFile) {
+        showAlert('Please select a file to encrypt', 'warning');
+        return;
+    }
+    
+    const password = document.getElementById('encryptPassword').value;
+    if (selectedEncryptAlgorithm !== 'rsa' && !password) {
+        showAlert('Please enter a password', 'warning');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', currentEncryptFile);
+    formData.append('algorithm', selectedEncryptAlgorithm);
+    if (password) formData.append('password', password);
+    
+    const loaderInterval = showLoader('Encrypting file...');
+    
+    try {
+        const response = await fetch('/filescanner/encrypt', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        hideLoader(loaderInterval);
+        
+        if (response.ok) {
+            displayEncryptionResult(data);
+        } else {
+            showAlert(data.error || 'Encryption failed', 'danger');
+        }
+    } catch (error) {
+        hideLoader(loaderInterval);
+        showAlert('Network error: ' + error.message, 'danger');
+    }
+});
+
+function displayEncryptionResult(data) {
+    const resultDiv = document.getElementById('encryptionResult');
+    resultDiv.innerHTML = `
+        <div class="encryption-result">
+            <h3><i class="fas fa-check-circle"></i> ${data.message}</h3>
+            
+            <div class="info-grid">
                 <div class="info-row">
-                    <span class="info-label">${label}</span>
-                    <span class="info-value">${value}</span>
+                    <span class="info-label">Algorithm</span>
+                    <span class="info-value">${data.algorithm}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Encrypted File</span>
+                    <span class="info-value">${data.encrypted_filename}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">File Size</span>
+                    <span class="info-value">${data.file_size}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">SHA-256</span>
+                    <span class="info-value">${data.encrypted_hash}</span>
+                </div>
+            </div>
+            
+            ${data.private_key ? `
+                <div class="key-display">
+                    <div class="key-label">Private Key (Save this securely!)</div>
+                    <div class="key-value" id="privateKeyValue">${data.private_key}</div>
+                    <button class="copy-btn" onclick="copyToClipboard('privateKeyValue')">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                </div>
+            ` : ''}
+            
+            <a href="/filescanner/download-encrypted/${data.encryption_id}" 
+               class="download-link" 
+               download="${data.encrypted_filename}">
+                <i class="fas fa-download"></i>
+                Download Encrypted File
+            </a>
+        </div>
+    `;
+}
+
+
+
+
+// ==================== DECRYPTION ====================
+
+const decryptUploadArea = document.getElementById('decryptUploadArea');
+const decryptFileInput = document.getElementById('decryptFileInput');
+const decryptFileSelected = document.getElementById('decryptFileSelected');
+const decryptForm = document.getElementById('decryptForm');
+let selectedDecryptAlgorithm = 'aes';
+
+decryptUploadArea.addEventListener('click', () => decryptFileInput.click());
+
+decryptUploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    decryptUploadArea.classList.add('dragover');
+});
+
+decryptUploadArea.addEventListener('dragleave', () => {
+    decryptUploadArea.classList.remove('dragover');
+});
+
+decryptUploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    decryptUploadArea.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        decryptFileInput.files = files;
+        handleDecryptFileSelect(files[0]);
+    }
+});
+
+decryptFileInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+        handleDecryptFileSelect(e.target.files[0]);
+    }
+});
+
+function handleDecryptFileSelect(file) {
+    currentDecryptFile = file;
+    document.getElementById('decryptFileName').textContent = file.name;
+    document.getElementById('decryptFileSize').textContent = formatFileSize(file.size);
+    decryptFileSelected.classList.add('show');
+}
+
+document.getElementById('removeDecryptFile').addEventListener('click', () => {
+    currentDecryptFile = null;
+    decryptFileInput.value = '';
+    decryptFileSelected.classList.remove('show');
+});
+
+document.getElementById('clearDecryptBtn').addEventListener('click', () => {
+    currentDecryptFile = null;
+    decryptFileInput.value = '';
+    decryptFileSelected.classList.remove('show');
+    document.getElementById('decryptPassword').value = '';
+    document.getElementById('decryptPrivateKey').value = '';
+});
+
+// Algorithm selection for decryption
+document.querySelectorAll('#decryptAlgorithmSelector .algorithm-option').forEach(option => {
+    option.addEventListener('click', function() {
+        document.querySelectorAll('#decryptAlgorithmSelector .algorithm-option').forEach(o => o.classList.remove('selected'));
+        this.classList.add('selected');
+        selectedDecryptAlgorithm = this.getAttribute('data-decrypt-algorithm');
+        
+        const passwordGroup = document.getElementById('decryptPasswordGroup');
+        const keyGroup = document.getElementById('decryptKeyGroup');
+        
+        if (selectedDecryptAlgorithm === 'rsa') {
+            passwordGroup.classList.remove('show');
+            keyGroup.classList.add('show');
+        } else {
+            passwordGroup.classList.add('show');
+            keyGroup.classList.remove('show');
+        }
+    });
+});
+
+// Password toggle for decrypt
+document.getElementById('decryptPasswordToggle').addEventListener('click', function() {
+    const input = document.getElementById('decryptPassword');
+    if (input.type === 'password') {
+        input.type = 'text';
+        this.classList.remove('fa-eye');
+        this.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        this.classList.remove('fa-eye-slash');
+        this.classList.add('fa-eye');
+    }
+});
+
+decryptForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    if (!currentDecryptFile) {
+        showAlert('Please select a file to decrypt', 'warning');
+        return;
+    }
+    
+    const password = document.getElementById('decryptPassword').value;
+    const privateKey = document.getElementById('decryptPrivateKey').value;
+    
+    if (selectedDecryptAlgorithm !== 'rsa' && !password) {
+        showAlert('Please enter the decryption password', 'warning');
+        return;
+    }
+    
+    if (selectedDecryptAlgorithm === 'rsa' && !privateKey) {
+        showAlert('Please enter the private key', 'warning');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', currentDecryptFile);
+    formData.append('algorithm', selectedDecryptAlgorithm);
+    if (password) formData.append('password', password);
+    if (privateKey) formData.append('private_key', privateKey);
+    
+    const loaderInterval = showLoader('Decrypting file...');
+    
+    try {
+        const response = await fetch('/filescanner/decrypt', {
+            method: 'POST',
+            body: formData
+        });
+        
+        hideLoader(loaderInterval);
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+
+            let downloadName = currentDecryptFile.name;
+            if (downloadName.endsWith('.encrypted')) {
+                downloadName = downloadName.slice(0, -10);
+            } else {
+                downloadName = 'decrypted_' + downloadName;
+            }
+    
+            a.download = downloadName;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showAlert('File decrypted successfully!', 'success');
+        } else {
+            const data = await response.json();
+            showAlert(data.error || 'Decryption failed', 'danger');
+        }
+    } catch (error) {
+        hideLoader(loaderInterval);
+        showAlert('Network error: ' + error.message, 'danger');
+    }
+});
+
+// ==================== BATCH SCAN ====================
+
+const batchUploadArea = document.getElementById('batchUploadArea');
+const batchFileInput = document.getElementById('batchFileInput');
+const batchScanForm = document.getElementById('batchScanForm');
+
+batchUploadArea.addEventListener('click', () => batchFileInput.click());
+
+batchUploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    batchUploadArea.classList.add('dragover');
+});
+
+batchUploadArea.addEventListener('dragleave', () => {
+    batchUploadArea.classList.remove('dragover');
+});
+
+batchUploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    batchUploadArea.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    handleBatchFileSelect(files);
+});
+
+batchFileInput.addEventListener('change', (e) => {
+    handleBatchFileSelect(e.target.files);
+});
+
+function handleBatchFileSelect(files) {
+    batchFiles = Array.from(files).slice(0, 10);
+    displayBatchFileList();
+}
+
+function displayBatchFileList() {
+    const fileList = document.getElementById('batchFileList');
+    fileList.innerHTML = batchFiles.map((file, index) => `
+        <div class="file-selected show" style="margin-bottom: 10px;">
+            <div class="file-info">
+                <i class="fas ${getFileIcon(file.name)} file-icon"></i>
+                <div class="file-details">
+                    <h4>${file.name}</h4>
+                    <div class="file-size">${formatFileSize(file.size)}</div>
+                </div>
+            </div>
+            <button type="button" class="remove-file" onclick="removeBatchFile(${index})">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `).join('');
+}
+
+function removeBatchFile(index) {
+    batchFiles.splice(index, 1);
+    displayBatchFileList();
+}
+
+document.getElementById('clearBatchBtn').addEventListener('click', () => {
+    batchFiles = [];
+    batchFileInput.value = '';
+    document.getElementById('batchFileList').innerHTML = '';
+    document.getElementById('batchResults').innerHTML = '';
+});
+
+batchScanForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    if (batchFiles.length === 0) {
+        showAlert('Please select files to scan', 'warning');
+        return;
+    }
+    
+    const formData = new FormData();
+    batchFiles.forEach(file => {
+        formData.append('files[]', file);
+    });
+    
+    const loaderInterval = showLoader('Scanning files...');
+    
+    try {
+        const response = await fetch('/filescanner/batch-scan', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        hideLoader(loaderInterval);
+        
+        if (response.ok) {
+            displayBatchResults(data.results);
+        } else {
+            showAlert(data.error || 'Batch scan failed', 'danger');
+        }
+    } catch (error) {
+        hideLoader(loaderInterval);
+        showAlert('Network error: ' + error.message, 'danger');
+    }
+});
+
+function displayBatchResults(results) {
+    const batchResults = document.getElementById('batchResults');
+    batchResults.innerHTML = '<h3 style="margin-bottom: 20px; color: var(--primary-color);"><i class="fas fa-list-check"></i> Scan Results</h3>' +
+        results.map(result => {
+            let statusClass = 'status-pending';
+            let statusText = 'Pending';
+            let detailsHtml = '';
+            
+            if (result.status === 'error') {
+                statusClass = 'status-error';
+                statusText = 'Error';
+                detailsHtml = `<div class="file-size" style="color: var(--danger-color);">${result.message}</div>`;
+            } else if (result.risk_score !== undefined) {
+                if (result.risk_score < 10) {
+                    statusClass = 'status-scanned';
+                    statusText = 'Clean';
+                } else if (result.risk_score < 40) {
+                    statusClass = 'status-pending';
+                    statusText = 'Suspicious';
+                } else {
+                    statusClass = 'status-error';
+                    statusText = 'Dangerous';
+                }
+                detailsHtml = `<div class="file-size">Risk: ${result.risk_score}% | Detections: ${result.malicious}/${result.total_scans}</div>`;
+            } else {
+                detailsHtml = `<div class="file-size">${result.message}</div>`;
+            }
+            
+            return `
+                <div class="batch-item">
+                    <div class="batch-item-info">
+                        <h4>${result.filename}</h4>
+                        ${detailsHtml}
+                    </div>
+                    <div class="batch-item-status ${statusClass}">${statusText}</div>
                 </div>
             `;
+        }).join('');
+}
+
+// ==================== HASH LOOKUP ====================
+
+document.getElementById('hashCheckBtn').addEventListener('click', async () => {
+    const hashInput = document.getElementById('hashInput').value.trim();
+    
+    if (!hashInput) {
+        showAlert('Please enter a hash value', 'warning');
+        return;
+    }
+    
+    // Validate hash length
+    const hashLength = hashInput.length;
+    if (hashLength !== 32 && hashLength !== 40 && hashLength !== 64) {
+        showAlert('Invalid hash format. Please enter a valid MD5 (32), SHA-1 (40), or SHA-256 (64) hash', 'warning');
+        return;
+    }
+    
+    const loaderInterval = showLoader('Checking hash...');
+    
+    try {
+        const response = await fetch('/filescanner/hash-check', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ hash: hashInput })
+        });
+        
+        const data = await response.json();
+        hideLoader(loaderInterval);
+        
+        if (response.ok) {
+            displayHashResults(data, hashInput);
+        } else {
+            displayHashNotFound(hashInput);
         }
+    } catch (error) {
+        hideLoader(loaderInterval);
+        showAlert('Network error: ' + error.message, 'danger');
+    }
+});
 
-        function displayVendorResults() {
-            filterVendorResults();
+function displayHashResults(data, hash) {
+    const hashResults = document.getElementById('hashResults');
+    
+    const riskScore = data.risk_score;
+    let riskClass, riskLabel, alertClass;
+    
+    if (riskScore < 10) {
+        riskClass = 'risk-low';
+        riskLabel = 'SAFE';
+        alertClass = 'success';
+    } else if (riskScore < 40) {
+        riskClass = 'risk-medium';
+        riskLabel = 'SUSPICIOUS';
+        alertClass = 'warning';
+    } else {
+        riskClass = 'risk-high';
+        riskLabel = 'DANGEROUS';
+        alertClass = 'danger';
+    }
+    
+    hashResults.innerHTML = `
+        <div class="alert alert-${alertClass}" style="margin-top: 20px;">
+            <i class="fas fa-${alertClass === 'success' ? 'check-circle' : alertClass === 'warning' ? 'exclamation-triangle' : 'exclamation-circle'}"></i>
+            <span>File found in VirusTotal database</span>
+        </div>
+        
+        <div class="risk-badge ${riskClass}" style="margin-top: 20px;">
+            <div class="risk-header">
+                <div class="risk-percentage">${riskScore}%</div>
+                <div class="risk-label">${riskLabel}</div>
+            </div>
+            <div class="risk-score-bar">
+                <div class="risk-score-fill ${riskClass}" style="width: ${riskScore}%;">${riskScore}%</div>
+            </div>
+        </div>
+        
+        <div class="stats-grid" style="margin-top: 20px;">
+            <div class="stat-item">
+                <div class="stat-value">${data.total_scans}</div>
+                <div class="stat-label">Total Scans</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value stat-danger">${data.malicious}</div>
+                <div class="stat-label">Malicious</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value stat-warning">${data.suspicious}</div>
+                <div class="stat-label">Suspicious</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value stat-success">${data.undetected}</div>
+                <div class="stat-label">Clean</div>
+            </div>
+        </div>
+        
+        <div class="info-grid" style="margin-top: 20px;">
+            <div class="info-row">
+                <span class="info-label">Hash Value</span>
+                <span class="info-value">${hash}</span>
+            </div>
+            ${data.hashes.md5 ? `
+            <div class="info-row">
+                <span class="info-label">MD5</span>
+                <span class="info-value">${data.hashes.md5}</span>
+            </div>` : ''}
+            ${data.hashes.sha1 ? `
+            <div class="info-row">
+                <span class="info-label">SHA-1</span>
+                <span class="info-value">${data.hashes.sha1}</span>
+            </div>` : ''}
+        </div>
+        
+        ${data.vendor_results && data.vendor_results.length > 0 ? `
+            <div style="margin-top: 30px;">
+                <h3 style="color: var(--primary-color); margin-bottom: 15px;">
+                    <i class="fas fa-shield-alt"></i> Detection Details
+                </h3>
+                <div class="vendor-results" style="max-height: 300px;">
+                    ${data.vendor_results.slice(0, 20).map(vendor => {
+                        let statusClass = 'status-undetected';
+                        if (vendor.category === 'malicious') statusClass = 'status-malicious';
+                        else if (vendor.category === 'suspicious') statusClass = 'status-suspicious';
+                        else if (vendor.category === 'undetected' || vendor.category === 'clean') statusClass = 'status-clean';
+                        
+                        return `
+                            <div class="vendor-item">
+                                <div>
+                                    <div class="vendor-name">${vendor.engine}</div>
+                                    <div class="vendor-result-text">${vendor.result}</div>
+                                </div>
+                                <div class="vendor-status ${statusClass}">${vendor.category}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        ` : ''}
+    `;
+}
+
+function displayHashNotFound(hash) {
+    const hashResults = document.getElementById('hashResults');
+    hashResults.innerHTML = `
+        <div class="alert alert-info" style="margin-top: 20px;">
+            <i class="fas fa-info-circle"></i>
+            <span>This file hash was not found in the VirusTotal database</span>
+        </div>
+        
+        <div class="info-grid" style="margin-top: 20px;">
+            <div class="info-row">
+                <span class="info-label">Hash Value</span>
+                <span class="info-value">${hash}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Hash Type</span>
+                <span class="info-value">${hash.length === 32 ? 'MD5' : hash.length === 40 ? 'SHA-1' : 'SHA-256'}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Status</span>
+                <span class="info-value">Not in database</span>
+            </div>
+        </div>
+        
+        <div class="alert alert-warning" style="margin-top: 20px;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>This file has not been previously scanned. Upload it for a full scan.</span>
+        </div>
+    `;
+}
+
+// ==================== UTILITY FUNCTIONS ====================
+
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    const text = element.textContent;
+    
+    navigator.clipboard.writeText(text).then(() => {
+        showAlert('Copied to clipboard!', 'success');
+    }).catch(err => {
+        showAlert('Failed to copy', 'danger');
+    });
+}
+
+// ==================== KEYBOARD SHORTCUTS ====================
+
+document.addEventListener('keydown', (e) => {
+    // Ctrl/Cmd + K to focus hash input
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        const hashTab = document.querySelector('[data-tab="hash"]');
+        if (hashTab) {
+            hashTab.click();
+            setTimeout(() => {
+                document.getElementById('hashInput').focus();
+            }, 100);
         }
+    }
+    
+    // Escape to clear current inputs
+    if (e.key === 'Escape') {
+        const activeTab = document.querySelector('.tab-content.active');
+        if (activeTab.id === 'scanner-tab') {
+            document.getElementById('clearBtn').click();
+        } else if (activeTab.id === 'encrypt-tab') {
+            document.getElementById('clearEncryptBtn').click();
+        } else if (activeTab.id === 'decrypt-tab') {
+            document.getElementById('clearDecryptBtn').click();
+        } else if (activeTab.id === 'batch-tab') {
+            document.getElementById('clearBatchBtn').click();
+        } else if (activeTab.id === 'hash-tab') {
+            document.getElementById('hashInput').value = '';
+            document.getElementById('hashResults').innerHTML = '';
+        }
+    }
+});
 
-        function filterVendorResults() {
-            let filteredData = vendorData;
+// ==================== INITIALIZATION ====================
 
-            if (currentFilter !== 'all') {
-                filteredData = vendorData.filter(item => {
-                    const category = item.category.toLowerCase();
-                    if (currentFilter === 'malicious') return category === 'malicious';
-                    if (currentFilter === 'suspicious') return category === 'suspicious';
-                    if (currentFilter === 'clean') return category === 'undetected' || category === 'clean';
-                    return true;
-                });
+document.addEventListener('DOMContentLoaded', () => {
+    // Disable scan button initially
+    document.getElementById('scanBtn').disabled = true;
+    
+    // Add smooth scroll behavior
+    document.documentElement.style.scrollBehavior = 'smooth';
+    
+    // Log initialization
+    console.log('%c FileFender Pro %c Loaded Successfully ', 
+        'background: linear-gradient(135deg, #00d4ff, #b74aff); color: white; padding: 5px 10px; border-radius: 3px 0 0 3px; font-weight: bold;',
+        'background: #131834; color: #00d4ff; padding: 5px 10px; border-radius: 0 3px 3px 0; font-weight: bold;'
+    );
+    
+    // Show welcome message
+    setTimeout(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.has('nowelcome')) {
+            showAlert('Welcome to FileFender Pro - Your advanced security suite', 'info');
+        }
+    }, 500);
+});
+
+// ==================== ERROR HANDLING ====================
+
+window.addEventListener('error', (e) => {
+    console.error('Global error:', e.error);
+    showAlert('An unexpected error occurred. Please refresh the page.', 'danger');
+});
+
+window.addEventListener('unhandledrejection', (e) => {
+    console.error('Unhandled promise rejection:', e.reason);
+    showAlert('A network error occurred. Please check your connection.', 'danger');
+});
+
+// ==================== FILE SIZE VALIDATION ====================
+
+function validateFileSize(file, maxSize = 32 * 1024 * 1024) {
+    if (file.size > maxSize) {
+        showAlert(`File size exceeds the maximum limit of ${formatFileSize(maxSize)}`, 'danger');
+        return false;
+    }
+    return true;
+}
+
+// ==================== LOADING STATE MANAGEMENT ====================
+
+function setButtonLoading(buttonId, isLoading) {
+    const button = document.getElementById(buttonId);
+    if (!button) return;
+    
+    if (isLoading) {
+        button.disabled = true;
+        button.dataset.originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    } else {
+        button.disabled = false;
+        button.innerHTML = button.dataset.originalText || button.innerHTML;
+    }
+}
+
+// ==================== PERFORMANCE MONITORING ====================
+
+if (window.performance) {
+    window.addEventListener('load', () => {
+        const perfData = window.performance.timing;
+        const loadTime = perfData.loadEventEnd - perfData.navigationStart;
+        console.log(`Page load time: ${loadTime}ms`);
+    });
+}
+
+// ==================== RESPONSIVE BEHAVIOR ====================
+
+let isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+window.addEventListener('resize', () => {
+    isMobile = window.matchMedia("(max-width: 768px)").matches;
+});
+
+// ==================== AUTO-SAVE FORM STATE ====================
+
+// Save form states to sessionStorage
+function saveFormState() {
+    const state = {
+        encryptAlgorithm: selectedEncryptAlgorithm,
+        decryptAlgorithm: selectedDecryptAlgorithm,
+        theme: document.body.getAttribute('data-theme')
+    };
+    sessionStorage.setItem('filefenderState', JSON.stringify(state));
+}
+
+// Restore form state
+function restoreFormState() {
+    const savedState = sessionStorage.getItem('filefenderState');
+    if (savedState) {
+        try {
+            const state = JSON.parse(savedState);
+            
+            // Restore theme
+            if (state.theme === 'light') {
+                document.body.setAttribute('data-theme', 'light');
+                document.getElementById('themeIcon').className = 'fas fa-sun';
+                document.getElementById('themeText').textContent = 'Light Mode';
             }
-
-            let html = '';
-            filteredData.forEach(item => {
-                const statusClass = getStatusClass(item.category);
-                const statusText = item.category === 'undetected' ? 'Clean' : item.category;
-                const resultText = item.result || 'No threats detected';
-
-                html += `
-                    <div class="vendor-item">
-                        <div>
-                            <div class="vendor-name">${item.engine}</div>
-                            <div class="vendor-result-text">${resultText}</div>
-                        </div>
-                        <span class="vendor-status ${statusClass}">${statusText}</span>
-                    </div>
-                `;
-            });
-
-            if (html === '') {
-                html = '<div class="no-results-msg">No results match this filter</div>';
+            
+            // Restore algorithm selections
+            if (state.encryptAlgorithm) {
+                selectedEncryptAlgorithm = state.encryptAlgorithm;
+                const encryptOption = document.querySelector(`#encryptAlgorithmSelector [data-algorithm="${state.encryptAlgorithm}"]`);
+                if (encryptOption) encryptOption.click();
             }
-
-            $('#vendorResults').html(html);
+            
+            if (state.decryptAlgorithm) {
+                selectedDecryptAlgorithm = state.decryptAlgorithm;
+                const decryptOption = document.querySelector(`#decryptAlgorithmSelector [data-decrypt-algorithm="${state.decryptAlgorithm}"]`);
+                if (decryptOption) decryptOption.click();
+            }
+        } catch (e) {
+            console.error('Error restoring state:', e);
         }
+    }
+}
 
-        function getStatusClass(category) {
-            const cat = category.toLowerCase();
-            if (cat === 'malicious') return 'status-malicious';
-            if (cat === 'suspicious') return 'status-suspicious';
-            if (cat === 'undetected' || cat === 'clean') return 'status-clean';
-            return 'status-undetected';
-        }
+// Save state on changes
+window.addEventListener('beforeunload', saveFormState);
+
+// Restore state on load
+restoreFormState();
+
+// ==================== ADVANCED FEATURES ====================
+
+// Double-click to copy hash values
+document.addEventListener('dblclick', (e) => {
+    if (e.target.classList.contains('info-value')) {
+        const text = e.target.textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            showAlert('Copied: ' + text.substring(0, 30) + '...', 'success');
+        });
+    }
+});
+
+// Context menu for hash values
+document.addEventListener('contextmenu', (e) => {
+    if (e.target.classList.contains('info-value') || e.target.classList.contains('key-value')) {
+        e.preventDefault();
+        const text = e.target.textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            showAlert('Hash copied to clipboard', 'success');
+        });
+    }
+});
+
+// ==================== ANALYTICS & TRACKING ====================
+
+function trackEvent(category, action, label) {
+    // Placeholder for analytics tracking
+    console.log(`Event: ${category} - ${action} - ${label}`);
+}
+
+// Track file scans
+uploadForm.addEventListener('submit', () => {
+    trackEvent('Scanner', 'File Scan', currentFile?.name);
+});
+
+// Track encryptions
+encryptForm.addEventListener('submit', () => {
+    trackEvent('Encryption', selectedEncryptAlgorithm.toUpperCase(), currentEncryptFile?.name);
+});
+
+// Track decryptions
+decryptForm.addEventListener('submit', () => {
+    trackEvent('Decryption', selectedDecryptAlgorithm.toUpperCase(), currentDecryptFile?.name);
+});
+
+// Track hash lookups
+document.getElementById('hashCheckBtn').addEventListener('click', () => {
+    trackEvent('Hash', 'Lookup', 'Hash Check');
+});
+
+console.log('%c Security Notice ', 'background: #ff3366; color: white; padding: 5px 10px; border-radius: 3px; font-weight: bold;');
+console.log('This application handles sensitive data. Never share your encryption keys or passwords.');
+console.log('All files are processed securely and deleted after processing.');
+
+
     </script>
 </body>
 </html>
+                        
