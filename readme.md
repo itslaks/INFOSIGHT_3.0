@@ -189,6 +189,9 @@ http://127.0.0.1:5000
 - Upload file scanning
 - Hash-based threat detection
 - Comprehensive virus analysis
+- File Encryption with 3 best Algorithms
+- File Decryption
+- Hash lookup 
 
 ### 5. **INFOCRYPT** - Encryption Suite
 > Military-grade data protection
