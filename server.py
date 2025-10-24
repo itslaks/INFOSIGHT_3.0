@@ -20,6 +20,7 @@ from snapspeak_ai import snapspeak_ai
 from trueshot_ai import trueshot_ai
 from enscan import enscan
 from inkwell_ai import inkwell_ai
+from aegis_ai import aegis_ai
 
 app = Flask(__name__, template_folder='static')
 
@@ -36,7 +37,8 @@ blueprints = {
     '/snapspeak_ai': snapspeak_ai,
     '/trueshot_ai': trueshot_ai,
     '/enscan': enscan,
-    '/inkwell_ai': inkwell_ai
+    '/inkwell_ai': inkwell_ai,
+    '/aegis_ai': aegis_ai
 }
 
 for prefix, blueprint in blueprints.items():
