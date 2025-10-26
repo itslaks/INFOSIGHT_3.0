@@ -1,331 +1,1954 @@
-<!DOCTYPE html>
+<div class="metric-box">
+                            <div class="metric-title">Risk Level</div>
+                            <div class="metric-value">
+                                <span class="badge ${openPorts.risk_level === 'LOW' ? 'badge-success' : openPorts.risk_level === 'MEDIUM' ? 'badge-warning' : 'badge-danger'}">
+                                    ${openPorts.risk_level ||<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SITE INDEX</title>
+    <title>Advanced Security Scanner - Professional DNS & Security Analysis</title>
     <style>
-        :root {
-            --primary: #00ffff;
-            --secondary: #ff00ff;
-            --dark: #0d1117;
-            --light: #c9d1d9;
-            --accent: #58a6ff;
-        }
-        body {
-            background-color: var(--dark);
-            font-family: 'Roboto', sans-serif;
-            color: var(--light);
+        * {
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00d9ff;
+            --primary-dark: #0099cc;
+            --secondary: #7c3aed;
+            --accent: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --dark: #0f172a;
+            --dark-card: #1e293b;
+            --dark-hover: #334155;
+            --light: #f1f5f9;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --border: rgba(148, 163, 184, 0.1);
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+            color: var(--text-primary);
             min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
         }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 217, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
         .container {
-            max-width: 1200px;
+            max-width: 1600px;
             margin: 0 auto;
-            background-color: rgba(22, 27, 34, 0.8);
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 0 50px rgba(0, 255, 255, 0.2), 0 0 50px rgba(255, 0, 255, 0.2);
-            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1;
         }
-        h1 {
-            font-size: 3rem;
-            color: var(--primary);
+
+        header {
             text-align: center;
-            margin-bottom: 1.5rem;
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
         }
-        .search-container {
-            display: flex;
-            justify-content: space-between;
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .search-section {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            padding: 2.5rem;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            margin-bottom: 2rem;
+            animation: fadeIn 1s ease;
+        }
+
+        .input-wrapper {
+            position: relative;
             margin-bottom: 1.5rem;
         }
-        .search-container input {
-            width: 75%;
-            padding: 1rem;
-            font-size: 1.2rem;
-            background-color: rgba(22, 27, 34, 0.6);
-            border: 2px solid var(--secondary);
-            border-radius: 5px;
-            color: var(--light);
+
+        .input-icon {
+            position: absolute;
+            left: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 1.3rem 1.5rem 1.3rem 4rem;
+            font-size: 1.1rem;
+            background: rgba(15, 23, 42, 0.9);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            color: var(--text-primary);
             transition: all 0.3s ease;
+            font-family: inherit;
         }
-        .search-container input:focus {
+
+        input[type="text"]:focus {
             outline: none;
-            box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(0, 217, 255, 0.1);
+            background: rgba(15, 23, 42, 1);
         }
+
+        input[type="text"]::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
         button {
-            padding: 1rem 2rem;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            color: var(--dark);
+            padding: 1.2rem 2.5rem;
+            font-size: 1.05rem;
+            font-weight: 600;
             border: none;
-            border-radius: 5px;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 1.2rem;
-            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-        button:hover {
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 20px rgba(0, 217, 255, 0.3);
+        }
+
+        .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.4), 0 5px 15px rgba(255, 0, 255, 0.4);
+            box-shadow: 0 8px 30px rgba(0, 217, 255, 0.4);
         }
-        #result-container {
+
+        .btn-secondary {
+            background: rgba(148, 163, 184, 0.1);
+            border: 2px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--dark-hover);
+            border-color: var(--primary);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            animation: fadeIn 1s ease;
+        }
+
+        .stat-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            border-color: var(--primary);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 10px currentColor);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text; 
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+            overflow-x: auto;
+            padding-bottom: 0;
+        }
+
+        .tab {
+            padding: 1.2rem 2rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            opacity: 0.7;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab:hover {
+            opacity: 1;
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            opacity: 1;
+            border-bottom-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.6s ease;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 50px rgba(0, 217, 255, 0.15);
+            border-color: var(--primary);
+        }
+
+        .card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 217, 255, 0.3);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: var(--accent);
+            font-weight: 600;
+            flex-shrink: 0;
+            margin-right: 1rem;
+        }
+
+        .info-value {
+            color: var(--text-primary);
+            text-align: right;
+            max-width: 65%;
+            word-break: break-word;
+            font-size: 0.95rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin: 0.2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .badge-info {
+            background: rgba(0, 217, 255, 0.2);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .badge-grade {
+            font-size: 1.8rem;
+            padding: 0.5rem 1.5rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(148, 163, 184, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 10px;
+            transition: width 1s ease;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .spinner {
+            width: 70px;
+            height: 70px;
+            border: 5px solid rgba(0, 217, 255, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 2rem;
+        }
+
+        .loading h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .loading p {
+            color: var(--text-secondary);
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            font-weight: 500;
+        }
+
+        .port-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .port-item {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            padding: 1rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .port-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.2);
+        }
+
+        .port-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--success);
+            margin-bottom: 0.3rem;
+        }
+
+        .port-service {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .tech-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .tech-badge {
+            background: rgba(0, 217, 255, 0.1);
+            border: 1px solid var(--primary);
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .metric-box {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin: 1rem 0;
+        }
+
+        .metric-title {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .security-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .security-item {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .security-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .vulnerability-alert {
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid var(--danger);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .vulnerability-alert h4 {
+            color: var(--danger);
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .scan-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .scan-meta-item {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
-            margin-top: 1.5rem;
         }
-        #result, #definition {
-            padding: 1.5rem;
-            background-color: rgba(22, 27, 34, 0.6);
-            border-radius: 5px;
-            font-family: 'Courier New', monospace;
-            font-size: 1.2rem;
-            color: var(--light);
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.1), 0 0 20px rgba(255, 0, 255, 0.1);
-            overflow: auto;
-            max-height: 500px;
+
+        .scan-meta-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.2rem;
         }
-        #definition {
-            font-family: 'Roboto', sans-serif;
+
+        .scan-meta-value {
             font-size: 1.1rem;
-        }
-        .loading {
+            font-weight: 700;
             color: var(--primary);
-            text-align: center;
-            font-size: 1.2rem;
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
         }
-        .key {
-            color: var(--primary);
-            font-weight: bold;
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-        .value {
-            color: var(--secondary);
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .definition-key {
-            color: var(--accent);
-            font-weight: bold;
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .definition-value {
-            color: var(--light);
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
-        .error {
-            color: #ff6b6b;
-        }
-        .section-title {
-            color: var(--accent);
-            font-size: 1.4rem;
-            margin-top: 1rem;
-            margin-bottom: 0.5rem;
-            border-bottom: 1px solid var(--accent);
-            padding-bottom: 0.3rem;
-        }
-        .nested-content {
-            margin-left: 1rem;
-            border-left: 2px solid var(--secondary);
-            padding-left: 0.5rem;
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .results-container {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tabs {
+                overflow-x: scroll;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>SITE INDEX </h1>
-        <div class="search-container">
-            <input type="text" id="input" placeholder="Enter URL or domain">
-            <button onclick="scan()">Analyze</button>
+        <header>
+            <h1>🔒 ADVANCED SECURITY SCANNER</h1>
+            <p class="subtitle">Professional DNS, SSL, Security Headers & Network Analysis</p>
+        </header>
+
+        <div class="search-section">
+            <div class="input-wrapper">
+                <span class="input-icon">🔍</span>
+                <input type="text" id="domainInput" placeholder="Enter domain (e.g., example.com or https://example.com)" />
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" onclick="startScan()">
+                    <span>🚀</span> Start Deep Scan
+                </button>
+                <button class="btn-secondary" onclick="clearResults()">
+                    <span>🗑️</span> Clear Results
+                </button>
+                <button class="btn-secondary" onclick="exportResults()">
+                    <span>📥</span> Export JSON
+                </button>
+                <button class="btn-secondary" onclick="exportPDF()">
+                    <span>📄</span> Export PDF
+                </button>
+            </div>
         </div>
-        <div id="result-container">
-            <div id="result"></div>
-            <div id="definition"></div>
-        </div>
+
+        <div id="statsContainer" style="display: none;"></div>
+        <div id="scanMeta" style="display: none;"></div>
+        <div id="loadingContainer"></div>
+        <div id="resultsContainer"></div>
     </div>
 
     <script>
-        async function scan() {
-    const query = document.getElementById('input').value.trim();
-    const resultDiv = document.getElementById('result');
-    const definitionDiv = document.getElementById('definition');
-    
-    if (!query) {
-        resultDiv.innerHTML = '<span class="error">Please enter a valid domain.</span>';
-        definitionDiv.innerHTML = '';
-        return;
-    }
+        let scanData = null;
 
-    resultDiv.innerHTML = '<p class="loading">Analyzing domain security and DNS records...</p>';
-    definitionDiv.innerHTML = '';
+        async function startScan() {
+            const domain = document.getElementById('domainInput').value.trim();
+            const loadingContainer = document.getElementById('loadingContainer');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const statsContainer = document.getElementById('statsContainer');
+            const scanMeta = document.getElementById('scanMeta');
 
-    try {
-        const response = await fetch('/enscan/api/scan', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ input: query })
-        });
+            if (!domain) {
+                showError('Please enter a domain name');
+                return;
+            }
 
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            loadingContainer.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <h3>🔎 Scanning ${domain}</h3>
+                    <p>Performing comprehensive security analysis...</p>
+                    <p style="margin-top: 1rem; color: var(--text-secondary);">This may take 10-20 seconds</p>
+                </div>
+            `;
+            resultsContainer.innerHTML = '';
+            statsContainer.style.display = 'none';
+            scanMeta.style.display = 'none';
 
-        const data = await response.json();
-        if (data.error) {
-            resultDiv.innerHTML = `<span class="error">${data.error}</span>`;
-            return;
+            try {
+                const response = await fetch('/enscan/api/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ input: domain })
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                scanData = await response.json();
+                
+                if (scanData.error) {
+                    showError(scanData.error);
+                    return;
+                }
+
+                loadingContainer.innerHTML = '';
+                displayScanMeta(scanData);
+                displayStats(scanData);
+                displayResults(scanData);
+            } catch (error) {
+                showError(`Scan failed: ${error.message}`);
+            }
         }
 
-        displayResults(data, resultDiv);
-        displayDefinitions(definitionDiv);
-    } catch (error) {
-        resultDiv.innerHTML = `<span class="error">Analysis failed: ${error.message}</span>`;
-        definitionDiv.innerHTML = '';
-    }
-}
-
-function displayResults(data, resultDiv) {
-    let content = '<div class="results-container">';
-
-    // Domain Info Section
-    if (data.domain_info) {
-        content += createSection('Domain Information', formatDomainInfo(data.domain_info));
-    }
-
-    // SSL Info Section
-    if (data.ssl_info) {
-        content += createSection('SSL Certificate', formatSSLInfo(data.ssl_info));
-    }
-
-    // Security Headers Section
-    if (data.security_headers) {
-        content += createSection('Security Headers', formatSecurityHeaders(data.security_headers));
-    }
-
-    // Email Security Section
-    if (data.email_security) {
-        content += createSection('Email Security', formatEmailSecurity(data.email_security));
-    }
-
-    // DNS Records Section
-    const dnsRecords = ['A', 'AAAA', 'NS', 'MX', 'TXT', 'SOA', 'CNAME', 'PTR', 'SRV']
-        .filter(type => data[type])
-        .map(type => `<div class="record-type">
-            <strong>${type} Record${Array.isArray(data[type]) ? 's' : ''}</strong>
-            <div class="record-value">${formatDNSRecord(data[type])}</div>
-        </div>`).join('');
-
-    if (dnsRecords) {
-        content += createSection('DNS Records', dnsRecords);
-    }
-
-    content += '</div>';
-    resultDiv.innerHTML = content;
-}
-
-function formatDNSRecord(record) {
-    if (Array.isArray(record)) {
-        return record.map(r => `<div>${r}</div>`).join('');
-    }
-    return `<div>${record}</div>`;
-}
-
-function formatDomainInfo(info) {
-    return Object.entries(info)
-        .filter(([_, value]) => value)
-        .map(([key, value]) => `
-            <div class="info-row">
-                <span class="info-label">${formatLabel(key)}:</span>
-                <span class="info-value">${Array.isArray(value) ? value.join(', ') : value}</span>
-            </div>
-        `).join('');
-}
-
-function formatSSLInfo(info) {
-    if (info.error) return `<div class="error">${info.error}</div>`;
-    
-    return `
-        <div class="info-row">
-            <span class="info-label">Issuer:</span>
-            <span class="info-value">${info.issuer.CN || 'N/A'}</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Expires:</span>
-            <span class="info-value">${info.expires}</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">Version:</span>
-            <span class="info-value">${info.version}</span>
-        </div>
-    `;
-}
-
-function formatSecurityHeaders(headers) {
-    return Object.entries(headers)
-        .map(([header, value]) => `
-            <div class="info-row">
-                <span class="info-label">${header}:</span>
-                <span class="info-value ${value === 'Not set' ? 'warning' : ''}">${value}</span>
-            </div>
-        `).join('');
-}
-
-function formatEmailSecurity(security) {
-    return `
-        <div class="info-row">
-            <span class="info-label">SPF:</span>
-            <span class="info-value">${security.spf_record}</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label">DMARC:</span>
-            <span class="info-value">${security.dmarc_record}</span>
-        </div>
-    `;
-}
-
-function createSection(title, content) {
-    return `
-        <div class="section">
-            <div class="section-title">${title}</div>
-            <div class="section-content">${content}</div>
-        </div>
-    `;
-}
-
-function displayDefinitions(definitionDiv) {
-    const definitions = {
-        "Domain Information": "Basic details about domain registration and ownership",
-        "SSL Certificate": "Security certificate details for encrypted connections",
-        "Security Headers": "HTTP headers that enhance website security",
-        "Email Security": "Email authentication and security configurations",
-        "A": "IPv4 address record",
-        "AAAA": "IPv6 address record",
-        "CNAME": "Canonical name record for domain aliases",
-        "MX": "Mail exchange servers",
-        "NS": "Authoritative name servers",
-        "PTR": "Pointer record for reverse DNS",
-        "SOA": "Start of Authority record",
-        "TXT": "Text records for various purposes",
-        "SRV": "Service location records"
-    };
-
-    definitionDiv.innerHTML = `
-        <div class="section-title">Record Types Explanation</div>
-        ${Object.entries(definitions)
-            .map(([key, value]) => `
-                <div class="definition-item">
-                    <span class="definition-key">${key}:</span>
-                    <span class="definition-value">${value}</span>
+        function displayScanMeta(data) {
+            const scanMeta = document.getElementById('scanMeta');
+            scanMeta.style.display = 'flex';
+            
+            const overallScore = data.overall_security_score || 0;
+            const scanTime = data.scan_time || 'N/A';
+            const reasoning = getOverallSecurityReasoning(overallScore);
+            
+            scanMeta.innerHTML = `
+                <div class="scan-meta-item">
+                    <span class="scan-meta-label">Domain Scanned</span>
+                    <span class="scan-meta-value">${data.domain}</span>
                 </div>
-            `).join('')}
-    `;
-}
+                <div class="scan-meta-item">
+                    <span class="scan-meta-label">Overall Security Score</span>
+                    <span class="scan-meta-value">${overallScore}/10</span>
+                    <span style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.3rem; display: block;">${reasoning}</span>
+                </div>
+                <div class="scan-meta-item">
+                    <span class="scan-meta-label">Scan Duration</span>
+                    <span class="scan-meta-value">${scanTime}s</span>
+                </div>
+                <div class="scan-meta-item">
+                    <span class="scan-meta-label">Timestamp</span>
+                    <span class="scan-meta-value">${new Date().toLocaleTimeString()}</span>
+                </div>
+            `;
+        }
 
-function formatLabel(str) {
-    return str.split('_')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-}
+        function displayStats(data) {
+            const statsContainer = document.getElementById('statsContainer');
+            statsContainer.style.display = 'block';
+
+            const openPorts = data.open_ports?.total_open || 0;
+            const securityScore = data.security_headers?.security_score || 0;
+            const securityGrade = data.security_headers?.grade || 'F';
+            const domainAge = data.domain_info?.domain_age_years || 'N/A';
+            const sslDays = data.ssl_info?.days_remaining || 'N/A';
+            const emailScore = data.email_security?.email_security_score || 0;
+
+            statsContainer.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🛡️</div>
+                        <div class="stat-value">${securityGrade}</div>
+                        <div class="stat-label">Security Grade</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-value">${securityScore}/10</div>
+                        <div class="stat-label">Header Security</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🔌</div>
+                        <div class="stat-value">${openPorts}</div>
+                        <div class="stat-label">Open Ports</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📅</div>
+                        <div class="stat-value">${domainAge !== 'N/A' ? domainAge + 'y' : 'N/A'}</div>
+                        <div class="stat-label">Domain Age</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🔒</div>
+                        <div class="stat-value">${sslDays !== 'N/A' ? sslDays + 'd' : 'N/A'}</div>
+                        <div class="stat-label">SSL Expires</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📧</div>
+                        <div class="stat-value">${emailScore}/3</div>
+                        <div class="stat-label">Email Security</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayResults(data) {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = `
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab(event, 'overview')">
+                        <span>📊</span> Overview
+                    </button>
+                    <button class="tab" onclick="switchTab(event, 'security')">
+                        <span>🔐</span> Security Analysis
+                    </button>
+                    <button class="tab" onclick="switchTab(event, 'dns')">
+                        <span>🌐</span> DNS Records
+                    </button>
+                    <button class="tab" onclick="switchTab(event, 'ssl')">
+                        <span>🔒</span> SSL/TLS Certificate
+                    </button>
+                    <button class="tab" onclick="switchTab(event, 'network')">
+                        <span>🌍</span> Network & Geo
+                    </button>
+                    <button class="tab" onclick="switchTab(event, 'technology')">
+                        <span>⚙️</span> Technologies
+                    </button>
+                </div>
+
+                <div id="overview" class="tab-content active">
+                    ${createOverviewTab(data)}
+                </div>
+
+                <div id="security" class="tab-content">
+                    ${createSecurityTab(data)}
+                </div>
+
+                <div id="dns" class="tab-content">
+                    ${createDNSTab(data)}
+                </div>
+
+                <div id="ssl" class="tab-content">
+                    ${createSSLTab(data)}
+                </div>
+
+                <div id="network" class="tab-content">
+                    ${createNetworkTab(data)}
+                </div>
+
+                <div id="technology" class="tab-content">
+                    ${createTechnologyTab(data)}
+                </div>
+            `;
+        }
+
+        function createOverviewTab(data) {
+            const domainInfo = data.domain_info || {};
+            const ssl = data.ssl_info || {};
+            const security = data.security_headers || {};
+
+            return `
+                <div class="results-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🌍</div>
+                            <div class="card-title">Domain Information</div>
+                        </div>
+                        ${domainInfo.error ? `<div class="error">${domainInfo.error}</div>` : `
+                            <div class="info-row">
+                                <span class="info-label">Registrar</span>
+                                <span class="info-value">${domainInfo.registrar || 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Created</span>
+                                <span class="info-value">${domainInfo.creation_date || 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Expires</span>
+                                <span class="info-value">${domainInfo.expiration_date || 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Last Updated</span>
+                                <span class="info-value">${domainInfo.updated_date || 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Domain Age</span>
+                                <span class="info-value">${domainInfo.domain_age_years !== 'N/A' ? domainInfo.domain_age_years + ' years (' + domainInfo.domain_age_days + ' days)' : 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Days Until Expiration</span>
+                                <span class="info-value">
+                                    ${domainInfo.days_until_expiration !== 'N/A' ? domainInfo.days_until_expiration + ' days' : 'N/A'}
+                                    ${domainInfo.days_until_expiration !== 'N/A' && domainInfo.days_until_expiration < 30 ? '<span class="badge badge-danger">⚠️ Expiring Soon</span>' : ''}
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Registrant Country</span>
+                                <span class="info-value">${domainInfo.registrant_country || 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">DNSSEC</span>
+                                <span class="info-value">${domainInfo.dnssec || 'N/A'}</span>
+                            </div>
+                            ${domainInfo.status && domainInfo.status.length ? `
+                                <div class="info-row">
+                                    <span class="info-label">Status</span>
+                                    <span class="info-value">
+                                        ${Array.isArray(domainInfo.status) ? 
+                                            domainInfo.status.map(s => `<span class="badge badge-info">${s}</span>`).join('') : 
+                                            domainInfo.status}
+                                    </span>
+                                </div>
+                            ` : ''}
+                        `}
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🔒</div>
+                            <div class="card-title">SSL Certificate Status</div>
+                        </div>
+                        ${ssl.error ? `<div class="error">${ssl.error}</div>` : `
+                            <div class="metric-box">
+                                <div class="metric-title">Certificate Validity</div>
+                                <div class="metric-value">${ssl.days_remaining !== undefined ? ssl.days_remaining + ' Days' : 'N/A'}</div>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Issuer</span>
+                                <span class="info-value">${ssl.issuer?.CN || ssl.issuer?.O || 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Subject</span>
+                                <span class="info-value">${ssl.subject?.CN || 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Valid From</span>
+                                <span class="info-value">${ssl.valid_from || 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Expires</span>
+                                <span class="info-value">
+                                    ${ssl.expires || 'N/A'}
+                                    ${ssl.days_remaining !== undefined ? 
+                                        `<span class="badge ${ssl.days_remaining > 30 ? 'badge-success' : ssl.days_remaining > 7 ? 'badge-warning' : 'badge-danger'}">
+                                            ${ssl.days_remaining} days
+                                        </span>` : ''}
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Protocol</span>
+                                <span class="info-value">${ssl.protocol_version || 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Cipher Suite</span>
+                                <span class="info-value">${ssl.cipher_suite?.name || 'N/A'}</span>
+                            </div>
+                        `}
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🛡️</div>
+                            <div class="card-title">Security Overview</div>
+                        </div>
+                        ${security.error ? `<div class="error">${security.error}</div>` : `
+                            <div style="text-align: center; margin-bottom: 1.5rem;">
+                                <span class="badge badge-grade ${security.grade === 'A+' || security.grade === 'A' ? 'badge-success' : security.grade === 'B' || security.grade === 'C' ? 'badge-warning' : 'badge-danger'}">
+                                    ${security.grade || 'N/A'}
+                                </span>
+                                <p style="margin-top: 1rem; color: var(--text-secondary); line-height: 1.6;">
+                                    ${security.grade_reasoning || 'Security assessment completed'}
+                                </p>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${(security.security_score / security.max_score) * 100}%"></div>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Security Score</span>
+                                <span class="info-value">${security.security_score}/${security.max_score}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Headers Present</span>
+                                <span class="info-value">${security.headers_present || 0}/${security.headers_total || 10}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Server</span>
+                                <span class="info-value">${security.server || 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Final URL</span>
+                                <span class="info-value" style="word-break: break-all;">${security.final_url || 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Status Code</span>
+                                <span class="info-value">
+                                    <span class="badge ${security.status_code === 200 ? 'badge-success' : 'badge-warning'}">
+                                        ${security.status_code || 'N/A'}
+                                    </span>
+                                </span>
+                            </div>
+                            ${security.cookies ? `
+                                <div class="info-row">
+                                    <span class="info-label">Cookies</span>
+                                    <span class="info-value">
+                                        Total: ${security.cookies.total}, 
+                                        Secure: ${security.cookies.secure}, 
+                                        HttpOnly: ${security.cookies.httponly}
+                                    </span>
+                                </div>
+                            ` : ''}
+                            ${security.missing_headers && security.missing_headers.length > 0 ? `
+                                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+                                    <h4 style="color: var(--warning); margin-bottom: 0.8rem; font-size: 1rem;">⚠️ Missing Headers (${security.missing_headers.length})</h4>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                        ${security.missing_headers.map(h => `<span class="badge badge-warning">${h}</span>`).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        `}
+                    </div>
+
+                    ${domainInfo.name_servers && domainInfo.name_servers.length ? `
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-icon">🖥️</div>
+                                <div class="card-title">Name Servers</div>
+                            </div>
+                            ${domainInfo.name_servers.map(ns => `
+                                <div class="info-row">
+                                    <span class="info-value" style="max-width: 100%;">${ns}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function createSecurityTab(data) {
+            const headers = data.security_headers?.headers || {};
+            const security = data.security_headers || {};
+            const emailSec = data.email_security || {};
+            const httpMethods = data.http_methods || {};
+            const openPorts = data.open_ports || {};
+            const subdomain = data.subdomain_takeover || {};
+
+            return `
+                <div class="results-container">
+                    ${security.grade_reasoning ? `
+                        <div class="card full-width">
+                            <div class="card-header">
+                                <div class="card-icon">📊</div>
+                                <div class="card-title">Security Grade Analysis</div>
+                            </div>
+                            <div style="text-align: center; margin-bottom: 2rem;">
+                                <span class="badge badge-grade ${security.grade === 'A+' || security.grade === 'A' ? 'badge-success' : security.grade === 'B' || security.grade === 'C' ? 'badge-warning' : 'badge-danger'}">
+                                    Grade: ${security.grade}
+                                </span>
+                                <div style="font-size: 2rem; font-weight: 700; color: var(--primary); margin: 1rem 0;">
+                                    ${security.security_score}/10
+                                </div>
+                                <p style="color: var(--text-secondary); line-height: 1.8; max-width: 800px; margin: 0 auto;">
+                                    ${security.grade_reasoning}
+                                </p>
+                            </div>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
+                                <div class="metric-box">
+                                    <div class="metric-title">Headers Present</div>
+                                    <div class="metric-value">${security.headers_present || 0}/${security.headers_total || 10}</div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-title">Missing Headers</div>
+                                    <div class="metric-value" style="color: var(--warning);">${security.missing_headers?.length || 0}</div>
+                                </div>
+                                <div class="metric-box">
+                                    <div class="metric-title">Critical Issues</div>
+                                    <div class="metric-value" style="color: var(--danger);">${security.critical_issues?.length || 0}</div>
+                                </div>
+                            </div>
+
+                            ${security.critical_issues && security.critical_issues.length > 0 ? `
+                                <div class="vulnerability-alert" style="margin-top: 1.5rem;">
+                                    <h4>⚠️ Critical Security Issues Detected</h4>
+                                    ${security.critical_issues.map(issue => `
+                                        <div class="metric-box" style="margin-top: 1rem; border-left: 3px solid var(--danger);">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                                <strong style="color: var(--text-primary);">${issue.issue}</strong>
+                                                <span class="badge badge-danger">${issue.severity}</span>
+                                            </div>
+                                            <p style="color: var(--text-secondary); margin: 0.5rem 0; font-size: 0.9rem;">
+                                                <strong>Impact:</strong> ${issue.impact}
+                                            </p>
+                                            <p style="color: var(--accent); margin: 0.5rem 0; font-size: 0.9rem;">
+                                                <strong>Fix:</strong> ${issue.fix}
+                                            </p>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : `
+                                <div style="text-align: center; padding: 1.5rem; background: rgba(16, 185, 129, 0.1); border-radius: 12px; border: 1px solid var(--success); margin-top: 1.5rem;">
+                                    <p style="color: var(--success); font-weight: 600;">✅ No critical security issues detected</p>
+                                </div>
+                            `}
+
+                            ${security.improvements && security.improvements.length > 0 ? `
+                                <div style="margin-top: 2rem;">
+                                    <h4 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1.2rem;">💡 Recommended Improvements</h4>
+                                    ${security.improvements.map(imp => `
+                                        <div class="metric-box" style="margin-bottom: 0.8rem;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                                <strong style="color: var(--primary);">${imp.header}</strong>
+                                                <span class="badge ${imp.priority === 'High' ? 'badge-danger' : 'badge-warning'}">${imp.priority} Priority</span>
+                                            </div>
+                                            <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">
+                                                ${imp.recommendation}
+                                            </p>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+
+                    <div class="card full-width">
+                        <div class="card-header">
+                            <div class="card-icon">🛡️</div>
+                            <div class="card-title">Security Headers Details</div>
+                        </div>
+                        <div class="security-grid">
+                            ${Object.entries(headers).map(([key, data]) => `
+                                <div class="security-item">
+                                    <div>
+                                        <div class="security-name">${key}</div>
+                                        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.3rem;">
+                                            ${data.description || ''}
+                                        </div>
+                                        ${data.value !== 'Not set' ? `
+                                            <div style="font-size: 0.8rem; color: var(--primary); margin-top: 0.5rem; font-family: monospace; word-break: break-all;">
+                                                ${data.value.length > 50 ? data.value.substring(0, 50) + '...' : data.value}
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                    <span class="badge ${data.value === 'Not set' ? 'badge-danger' : 'badge-success'}">
+                                        ${data.value === 'Not set' ? '❌' : '✅'}
+                                    </span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">📧</div>
+                            <div class="card-title">Email Security (SPF/DMARC/DKIM)</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-title">Email Security Score</div>
+                            <div class="metric-value">${emailSec.email_security_score || 0}/3</div>
+                            <p style="margin-top: 0.8rem; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                                ${getEmailSecurityReasoning(emailSec)}
+                            </p>
+                        </div>
+                        
+                        <h4 style="margin: 1.5rem 0 1rem; color: var(--text-primary); font-size: 1.1rem;">SPF Record</h4>
+                        <div class="info-row">
+                            <span class="info-label">Status</span>
+                            <span class="info-value">
+                                <span class="badge ${emailSec.spf?.present ? 'badge-success' : 'badge-danger'}">
+                                    ${emailSec.spf?.present ? '✅ Present' : '❌ Missing'}
+                                </span>
+                            </span>
+                        </div>
+                        ${emailSec.spf?.present ? `
+                            <div class="info-row">
+                                <span class="info-label">Record</span>
+                                <span class="info-value" style="font-size: 0.85rem; max-width: 100%; font-family: monospace;">
+                                    ${emailSec.spf.record}
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Mechanisms</span>
+                                <span class="info-value">${emailSec.spf.mechanism_count || 0}</span>
+                            </div>
+                        ` : ''}
+
+                        <h4 style="margin: 1.5rem 0 1rem; color: var(--text-primary); font-size: 1.1rem;">DMARC Record</h4>
+                        <div class="info-row">
+                            <span class="info-label">Status</span>
+                            <span class="info-value">
+                                <span class="badge ${emailSec.dmarc?.present ? 'badge-success' : 'badge-danger'}">
+                                    ${emailSec.dmarc?.present ? '✅ Present' : '❌ Missing'}
+                                </span>
+                            </span>
+                        </div>
+                        ${emailSec.dmarc?.present ? `
+                            <div class="info-row">
+                                <span class="info-label">Policy</span>
+                                <span class="info-value">
+                                    <span class="badge ${emailSec.dmarc.policy === 'reject' ? 'badge-success' : emailSec.dmarc.policy === 'quarantine' ? 'badge-warning' : 'badge-danger'}">
+                                        ${emailSec.dmarc.policy}
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Record</span>
+                                <span class="info-value" style="font-size: 0.85rem; max-width: 100%; font-family: monospace;">
+                                    ${emailSec.dmarc.record}
+                                </span>
+                            </div>
+                        ` : ''}
+
+                        <h4 style="margin: 1.5rem 0 1rem; color: var(--text-primary); font-size: 1.1rem;">DKIM Records</h4>
+                        <div class="info-row">
+                            <span class="info-label">Selectors Found</span>
+                            <span class="info-value">${emailSec.dkim?.selectors_found?.length || 0}/${emailSec.dkim?.total_selectors_checked || 0}</span>
+                        </div>
+                        ${emailSec.dkim?.selectors_found?.length > 0 ? `
+                            <div class="info-row">
+                                <span class="info-label">Active Selectors</span>
+                                <span class="info-value">
+                                    ${emailSec.dkim.selectors_found.map(s => `<span class="badge badge-success">${s}</span>`).join('')}
+                                </span>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🔌</div>
+                            <div class="card-title">Open Ports Scan</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-title">Risk Level</div>
+                            <div class="metric-value">
+                                <span class="badge ${openPorts.risk_level === 'LOW' ? 'badge-success' : openPorts.risk_level === 'MEDIUM' ? 'badge-warning' : 'badge-danger'}">
+                                    ${openPorts.risk_level || 'N/A'}
+                                </span>
+                            </div>
+                            <p style="margin-top: 0.8rem; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                                ${getPortRiskReasoning(openPorts)}
+                            </p>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Open Ports</span>
+                            <span class="info-value">${openPorts.total_open || 0}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Ports Scanned</span>
+                            <span class="info-value">${openPorts.total_scanned || 0}</span>
+                        </div>
+                        ${openPorts.open_ports && openPorts.open_ports.length > 0 ? `
+                            <div class="port-grid">
+                                ${openPorts.open_ports.map(port => `
+                                    <div class="port-item">
+                                        <div class="port-number">${port.port}</div>
+                                        <div class="port-service">${port.service}</div>
+                                        ${port.banner && port.banner !== 'N/A' ? `
+                                            <div style="font-size: 0.75rem; margin-top: 0.5rem; color: var(--text-secondary); word-break: break-all;">
+                                                ${port.banner}
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : '<p style="opacity: 0.7; margin-top: 1rem;">No open ports detected</p>'}
+                    </div>
+
+                    ${subdomain.vulnerable ? `
+                        <div class="card full-width">
+                            <div class="card-header">
+                                <div class="card-icon">⚠️</div>
+                                <div class="card-title">Subdomain Takeover Vulnerabilities</div>
+                            </div>
+                            <div class="vulnerability-alert">
+                                <h4>⚠️ Warning: Potential Vulnerabilities Detected</h4>
+                                <p style="margin-top: 0.5rem;">Risk Level: <span class="badge badge-danger">${subdomain.risk_level || 'HIGH'}</span></p>
+                            </div>
+                            ${subdomain.vulnerabilities?.map(vuln => `
+                                <div class="metric-box">
+                                    <div class="info-row">
+                                        <span class="info-label">CNAME</span>
+                                        <span class="info-value">${vuln.cname}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Service</span>
+                                        <span class="info-value">${vuln.service}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">Pattern</span>
+                                        <span class="info-value">${vuln.pattern}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+
+                    ${httpMethods.allowed_methods ? `
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-icon">🔧</div>
+                                <div class="card-title">HTTP Methods</div>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Risk Level</span>
+                                <span class="info-value">
+                                    <span class="badge ${httpMethods.risk_level === 'LOW' ? 'badge-success' : httpMethods.risk_level === 'MEDIUM' ? 'badge-warning' : 'badge-danger'}">
+                                        ${httpMethods.risk_level || 'N/A'}
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Allowed Methods</span>
+                                <span class="info-value">${httpMethods.allowed_methods}</span>
+                            </div>
+                            ${httpMethods.dangerous_methods && httpMethods.dangerous_methods !== 'None detected' ? `
+                                <div class="info-row">
+                                    <span class="info-label">Dangerous Methods</span>
+                                    <span class="info-value">
+                                        ${Array.isArray(httpMethods.dangerous_methods) ? 
+                                            httpMethods.dangerous_methods.map(m => `<span class="badge badge-danger">${m}</span>`).join('') : 
+                                            httpMethods.dangerous_methods}
+                                    </span>
+                                </div>
+                            ` : `
+                                <div class="info-row">
+                                    <span class="info-label">Status</span>
+                                    <span class="info-value"><span class="badge badge-success">✅ Safe</span></span>
+                                </div>
+                            `}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function createDNSTab(data) {
+            const recordTypes = ['A', 'AAAA', 'CNAME', 'MX', 'NS', 'TXT', 'SOA', 'PTR', 'SRV', 'CAA'];
+            
+            return `
+                <div class="results-container">
+                    ${recordTypes.map(type => {
+                        const records = data[type];
+                        if (!records || (typeof records === 'string' && (records.includes('Error') || records.includes('No ') || records.includes('does not exist')))) {
+                            return '';
+                        }
+                        
+                        return `
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="card-icon">${getRecordIcon(type)}</div>
+                                    <div class="card-title">${type} Records</div>
+                                </div>
+                                <div style="font-size: 0.9rem; opacity: 0.7; margin-bottom: 1.5rem; line-height: 1.5;">
+                                    ${getRecordDescription(type)}
+                                </div>
+                                ${Array.isArray(records) ? 
+                                    records.map(record => `
+                                        <div class="metric-box" style="margin-bottom: 0.8rem;">
+                                            <div style="font-family: 'Monaco', 'Courier New', monospace; font-size: 0.9rem; word-break: break-all; color: var(--primary);">
+                                                ${record}
+                                            </div>
+                                        </div>
+                                    `).join('') :
+                                    `<div class="metric-box">
+                                        <div style="font-family: 'Monaco', 'Courier New', monospace; font-size: 0.9rem; word-break: break-all; color: var(--primary);">
+                                            ${records}
+                                        </div>
+                                    </div>`
+                                }
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function createSSLTab(data) {
+            const ssl = data.ssl_info || {};
+            
+            if (ssl.error) {
+                return `
+                    <div class="card">
+                        <div class="error">
+                            <strong>❌ SSL Certificate Error:</strong> ${ssl.error}
+                        </div>
+                    </div>
+                `;
+            }
+
+            const daysRemaining = ssl.days_remaining || 0;
+
+            return `
+                <div class="results-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🔒</div>
+                            <div class="card-title">Certificate Information</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-title">Days Until Expiration</div>
+                            <div class="metric-value">
+                                <span class="badge ${daysRemaining > 30 ? 'badge-success' : daysRemaining > 7 ? 'badge-warning' : 'badge-danger'}" style="font-size: 2rem;">
+                                    ${daysRemaining} days
+                                </span>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Valid Status</span>
+                            <span class="info-value">
+                                <span class="badge ${ssl.is_valid ? 'badge-success' : 'badge-danger'}">
+                                    ${ssl.is_valid ? '✅ Valid' : '❌ Invalid'}
+                                </span>
+                            </span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Issuer</span>
+                            <span class="info-value">${ssl.issuer?.CN || ssl.issuer?.O || 'N/A'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Subject</span>
+                            <span class="info-value">${ssl.subject?.CN || 'N/A'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Valid From</span>
+                            <span class="info-value">${ssl.valid_from || 'N/A'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Valid Until</span>
+                            <span class="info-value">${ssl.expires || 'N/A'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Certificate Version</span>
+                            <span class="info-value">v${ssl.version || 'N/A'}</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🔐</div>
+                            <div class="card-title">Cryptographic Details</div>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Protocol Version</span>
+                            <span class="info-value">
+                                <span class="badge badge-info">${ssl.protocol_version || 'N/A'}</span>
+                            </span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Cipher Suite</span>
+                            <span class="info-value">${ssl.cipher_suite?.name || 'N/A'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Key Size</span>
+                            <span class="info-value">${ssl.cipher_suite?.bits || 'N/A'} bits</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Public Key Bits</span>
+                            <span class="info-value">${ssl.public_key_bits || 'N/A'} bits</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Signature Algorithm</span>
+                            <span class="info-value">${ssl.signature_algorithm || 'N/A'}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Serial Number</span>
+                            <span class="info-value" style="font-family: monospace; font-size: 0.85rem; word-break: break-all;">
+                                ${ssl.serial_number || 'N/A'}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🔍</div>
+                            <div class="card-title">Certificate Fingerprints</div>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">SHA-256</span>
+                            <span class="info-value" style="font-family: monospace; font-size: 0.75rem; word-break: break-all;">
+                                ${ssl.fingerprint_sha256 || 'N/A'}
+                            </span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">SHA-1</span>
+                            <span class="info-value" style="font-family: monospace; font-size: 0.75rem; word-break: break-all;">
+                                ${ssl.fingerprint_sha1 || 'N/A'}
+                            </span>
+                        </div>
+                    </div>
+
+                    ${ssl.san && ssl.san.length > 0 ? `
+                        <div class="card full-width">
+                            <div class="card-header">
+                                <div class="card-icon">🌐</div>
+                                <div class="card-title">Subject Alternative Names (SAN)</div>
+                            </div>
+                            <div class="tech-grid">
+                                ${ssl.san.map(([type, name]) => `
+                                    <div class="tech-badge">
+                                        <strong>${type}:</strong> ${name}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">⚙️</div>
+                            <div class="card-title">Advanced Features</div>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">OCSP Stapling</span>
+                            <span class="info-value">
+                                <span class="badge ${ssl.ocsp_stapling ? 'badge-success' : 'badge-warning'}">
+                                    ${ssl.ocsp_stapling ? '✅ Enabled' : '⚠️ Not Enabled'}
+                                </span>
+                            </span>
+                        </div>
+                        ${ssl.key_usage && ssl.key_usage !== 'N/A' ? `
+                            <div class="info-row">
+                                <span class="info-label">Key Usage</span>
+                                <span class="info-value" style="font-size: 0.85rem;">${ssl.key_usage}</span>
+                            </div>
+                        ` : ''}
+                        ${ssl.extended_key_usage && ssl.extended_key_usage !== 'N/A' ? `
+                            <div class="info-row">
+                                <span class="info-label">Extended Key Usage</span>
+                                <span class="info-value" style="font-size: 0.85rem;">${ssl.extended_key_usage}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function createNetworkTab(data) {
+            const geo = data.geolocation || {};
+            const ipAddress = Array.isArray(data.A) ? data.A[0] : 'N/A';
+
+            return `
+                <div class="results-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🌍</div>
+                            <div class="card-title">IP & Location Information</div>
+                        </div>
+                        ${geo.error ? `<div class="error">${geo.error}</div>` : `
+                            <div class="info-row">
+                                <span class="info-label">IP Address</span>
+                                <span class="info-value" style="font-family: monospace; font-size: 1.1rem; color: var(--primary);">
+                                    ${geo.ip || ipAddress}
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Location</span>
+                                <span class="info-value">
+                                    ${geo.city || 'N/A'}, ${geo.region || 'N/A'}, ${geo.country || 'N/A'}
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Country Code</span>
+                                <span class="info-value">
+                                    <span class="badge badge-info">${geo.country_code || 'N/A'}</span>
+                                </span>
+                            </div>
+                            ${geo.zip && geo.zip !== 'N/A' ? `
+                                <div class="info-row">
+                                    <span class="info-label">Postal Code</span>
+                                    <span class="info-value">${geo.zip}</span>
+                                </div>
+                            ` : ''}
+                            ${geo.latitude && geo.longitude ? `
+                                <div class="info-row">
+                                    <span class="info-label">Coordinates</span>
+                                    <span class="info-value">${geo.latitude}, ${geo.longitude}</span>
+                                </div>
+                            ` : ''}
+                            ${geo.timezone ? `
+                                <div class="info-row">
+                                    <span class="info-label">Timezone</span>
+                                    <span class="info-value">${geo.timezone}</span>
+                                </div>
+                            ` : ''}
+                        `}
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🏢</div>
+                            <div class="card-title">Network Provider</div>
+                        </div>
+                        ${geo.error ? `<div class="error">${geo.error}</div>` : `
+                            <div class="info-row">
+                                <span class="info-label">ISP</span>
+                                <span class="info-value">${geo.isp || 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Organization</span>
+                                <span class="info-value">${geo.org || 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">AS Number</span>
+                                <span class="info-value">${geo.as || 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">AS Name</span>
+                                <span class="info-value">${geo.asname || 'N/A'}</span>
+                            </div>
+                            ${geo.reverse_dns && geo.reverse_dns !== 'N/A' ? `
+                                <div class="info-row">
+                                    <span class="info-label">Reverse DNS</span>
+                                    <span class="info-value">${geo.reverse_dns}</span>
+                                </div>
+                            ` : ''}
+                        `}
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🔍</div>
+                            <div class="card-title">Connection Type</div>
+                        </div>
+                        ${geo.error ? `<div class="error">${geo.error}</div>` : `
+                            <div class="info-row">
+                                <span class="info-label">Mobile Network</span>
+                                <span class="info-value">
+                                    <span class="badge ${geo.mobile ? 'badge-info' : 'badge-success'}">
+                                        ${geo.mobile ? '📱 Yes' : '🖥️ No'}
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Proxy/VPN</span>
+                                <span class="info-value">
+                                    <span class="badge ${geo.proxy ? 'badge-warning' : 'badge-success'}">
+                                        ${geo.proxy ? '⚠️ Detected' : '✅ Not Detected'}
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Hosting Provider</span>
+                                <span class="info-value">
+                                    <span class="badge ${geo.hosting ? 'badge-info' : 'badge-success'}">
+                                        ${geo.hosting ? '🏢 Yes' : '🏠 No'}
+                                    </span>
+                                </span>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+        }
+
+        function createTechnologyTab(data) {
+            const tech = data.technologies || {};
+
+            if (tech.error) {
+                return `
+                    <div class="card">
+                        <div class="error">
+                            <strong>❌ Technology Detection Error:</strong> ${tech.error}
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="results-container">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🖥️</div>
+                            <div class="card-title">Server Information</div>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Web Server</span>
+                            <span class="info-value">
+                                <span class="badge badge-info">${tech.server || 'Not disclosed'}</span>
+                            </span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Powered By</span>
+                            <span class="info-value">
+                                <span class="badge badge-info">${tech.powered_by || 'Not disclosed'}</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    ${tech.cms && tech.cms.length > 0 ? `
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-icon">📝</div>
+                                <div class="card-title">Content Management System</div>
+                            </div>
+                            <div class="tech-grid">
+                                ${tech.cms.map(cms => `
+                                    <div class="tech-badge">${cms}</div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${tech.frameworks && tech.frameworks.length > 0 ? `
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-icon">⚙️</div>
+                                <div class="card-title">Frameworks & Libraries</div>
+                            </div>
+                            <div class="tech-grid">
+                                ${tech.frameworks.map(framework => `
+                                    <div class="tech-badge">${framework}</div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${tech.analytics && tech.analytics.length > 0 ? `
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-icon">📊</div>
+                                <div class="card-title">Analytics & Tracking</div>
+                            </div>
+                            <div class="tech-grid">
+                                ${tech.analytics.map(analytics => `
+                                    <div class="tech-badge">${analytics}</div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${tech.cdn && tech.cdn.length > 0 ? `
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-icon">🌐</div>
+                                <div class="card-title">Content Delivery Network</div>
+                            </div>
+                            <div class="tech-grid">
+                                ${tech.cdn.map(cdn => `
+                                    <div class="tech-badge">${cdn}</div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${(!tech.cms || tech.cms.length === 0) && (!tech.frameworks || tech.frameworks.length === 0) && (!tech.analytics || tech.analytics.length === 0) && (!tech.cdn || tech.cdn.length === 0) ? `
+                        <div class="card full-width">
+                            <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                <p>No specific technologies detected. The website may be using custom solutions or technologies that are not easily identifiable.</p>
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function getRecordIcon(type) {
+            const icons = {
+                'A': '🌐', 'AAAA': '🌏', 'CNAME': '🔗', 'MX': '📧',
+                'NS': '🖥️', 'TXT': '📝', 'SOA': '👑', 'PTR': '🔄',
+                'SRV': '⚙️', 'CAA': '🔐'
+            };
+            return icons[type] || '📄';
+        }
+
+        function getRecordDescription(type) {
+            const descriptions = {
+                'A': 'Maps domain names to IPv4 addresses, directing traffic to the correct server location.',
+                'AAAA': 'Maps domain names to IPv6 addresses for next-generation internet protocol support.',
+                'CNAME': 'Creates aliases for domain names, allowing one domain to point to another.',
+                'MX': 'Specifies mail servers responsible for receiving email on behalf of the domain.',
+                'NS': 'Identifies authoritative name servers that contain the actual DNS records for the domain.',
+                'TXT': 'Stores text-based information for various purposes including verification and security policies.',
+                'SOA': 'Contains administrative information about the DNS zone including the primary nameserver.',
+                'PTR': 'Maps IP addresses back to domain names, used primarily for reverse DNS lookups.',
+                'SRV': 'Defines the location of servers for specific services, including port and priority information.',
+                'CAA': 'Specifies which certificate authorities are authorized to issue SSL/TLS certificates for the domain.'
+            };
+            return descriptions[type] || 'DNS record information for the domain.';
+        }
+
+        function switchTab(event, tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.currentTarget.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        function showError(message) {
+            const loadingContainer = document.getElementById('loadingContainer');
+            loadingContainer.innerHTML = `
+                <div class="card">
+                    <div class="error">
+                        <strong>❌ Error:</strong> ${message}
+                    </div>
+                </div>
+            `;
+        }
+
+        function clearResults() {
+            document.getElementById('domainInput').value = '';
+            document.getElementById('loadingContainer').innerHTML = '';
+            document.getElementById('resultsContainer').innerHTML = '';
+            document.getElementById('statsContainer').style.display = 'none';
+            document.getElementById('scanMeta').style.display = 'none';
+            scanData = null;
+        }
+
+        function exportResults() {
+            if (!scanData) {
+                alert('No scan data available to export');
+                return;
+            }
+
+            const dataStr = JSON.stringify(scanData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            link.download = `security-scan-${scanData.domain}-${timestamp}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportPDF() {
+            if (!scanData) {
+                alert('No scan data available to export');
+                return;
+            }
+
+            // Create a formatted text version for simple export
+            let report = `SECURITY SCAN REPORT\n`;
+            report += `===================\n\n`;
+            report += `Domain: ${scanData.domain}\n`;
+            report += `Scan Date: ${new Date().toLocaleString()}\n`;
+            report += `Overall Security Score: ${scanData.overall_security_score || 0}/10\n`;
+            report += `Scan Duration: ${scanData.scan_time || 'N/A'}s\n\n`;
+
+            // Add key findings
+            report += `KEY FINDINGS\n`;
+            report += `============\n\n`;
+
+            if (scanData.security_headers) {
+                report += `Security Grade: ${scanData.security_headers.grade || 'N/A'}\n`;
+                report += `Security Score: ${scanData.security_headers.security_score || 0}/10\n\n`;
+            }
+
+            if (scanData.ssl_info && !scanData.ssl_info.error) {
+                report += `SSL Certificate:\n`;
+                report += `  - Issuer: ${scanData.ssl_info.issuer?.CN || 'N/A'}\n`;
+                report += `  - Expires: ${scanData.ssl_info.expires || 'N/A'}\n`;
+                report += `  - Days Remaining: ${scanData.ssl_info.days_remaining || 'N/A'}\n\n`;
+            }
+
+            if (scanData.open_ports) {
+                report += `Open Ports: ${scanData.open_ports.total_open || 0}\n`;
+                report += `Risk Level: ${scanData.open_ports.risk_level || 'N/A'}\n\n`;
+            }
+
+            // Export as text file
+            const textBlob = new Blob([report], { type: 'text/plain' });
+            const url = URL.createObjectURL(textBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            link.download = `security-report-${scanData.domain}-${timestamp}.txt`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Enter key support
+        document.getElementById('domainInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                startScan();
+            }
+        });
+
+        // Auto-focus input on page load
+        window.addEventListener('load', function() {
+            document.getElementById('domainInput').focus();
+        });
+
+        // Helper function for email security reasoning
+        function getEmailSecurityReasoning(emailSec) {
+            const score = emailSec.email_security_score || 0;
+            const hasSPF = emailSec.spf?.present;
+            const hasDMARC = emailSec.dmarc?.present;
+            const hasDKIM = emailSec.dkim?.selectors_found?.length > 0;
+
+            if (score === 3) {
+                return "Excellent! Your domain has all three email authentication methods (SPF, DMARC, and DKIM) properly configured. This provides strong protection against email spoofing and phishing attacks.";
+            } else if (score === 2) {
+                let missing = [];
+                if (!hasSPF) missing.push("SPF");
+                if (!hasDMARC) missing.push("DMARC");
+                if (!hasDKIM) missing.push("DKIM");
+                return `Good email security, but missing ${missing.join(', ')}. Consider implementing ${missing.length === 1 ? 'this' : 'these'} to further protect your domain's email reputation.`;
+            } else if (score === 1) {
+                let present = [];
+                if (hasSPF) present.push("SPF");
+                if (hasDMARC) present.push("DMARC");
+                if (hasDKIM) present.push("DKIM");
+                return `Basic email security with ${present.join(', ')} configured. However, you should implement all three mechanisms (SPF, DMARC, and DKIM) for comprehensive email authentication and to prevent domain spoofing.`;
+            } else {
+                return "Critical: No email authentication mechanisms detected! Your domain is highly vulnerable to email spoofing and phishing attacks. Immediately implement SPF, DMARC, and DKIM records to protect your domain reputation and recipients.";
+            }
+        }
+
+        // Helper function for port scanning reasoning
+        function getPortRiskReasoning(openPorts) {
+            const riskLevel = openPorts.risk_level;
+            const totalOpen = openPorts.total_open || 0;
+            const ports = openPorts.open_ports || [];
+            
+            const dangerousPorts = ports.filter(p => [21, 23, 3389, 5900].includes(p.port));
+            
+            if (riskLevel === 'HIGH') {
+                return `High Risk: Found ${totalOpen} open ports including dangerous unencrypted services (${dangerousPorts.map(p => p.port).join(', ')}). These ports are commonly targeted by attackers. Consider closing unnecessary ports and using encrypted alternatives (SSH instead of Telnet, SFTP instead of FTP).`;
+            } else if (riskLevel === 'MEDIUM') {
+                return `Medium Risk: Detected ${totalOpen} open ports. While not immediately dangerous, having many open ports increases your attack surface. Review each service and close any that aren't essential for your operations.`;
+            } else if (riskLevel === 'LOW') {
+                if (totalOpen === 0) {
+                    return "Low Risk: No common open ports detected on standard scan. This is good for security, but ensure legitimate services are accessible on their intended ports.";
+                }
+                return `Low Risk: Found ${totalOpen} open port(s). These appear to be standard services (HTTP/HTTPS). Ensure all services are properly secured with strong authentication and up-to-date software.`;
+            }
+            return "Port scan analysis completed.";
+        }
+
+        // Helper function for overall security score reasoning
+        function getOverallSecurityReasoning(score) {
+            if (score >= 8) {
+                return "Excellent overall security posture! Your website implements strong security measures across multiple areas.";
+            } else if (score >= 6) {
+                return "Good security foundation with room for improvement in some areas. Review the recommendations below.";
+            } else if (score >= 4) {
+                return "Moderate security - several important protections are missing. Prioritize implementing security headers and email authentication.";
+            } else {
+                return "Poor security configuration with critical vulnerabilities. Immediate action required to protect your domain and users.";
+            }
+        }
     </script>
 </body>
 </html>
