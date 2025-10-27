@@ -38,7 +38,7 @@ def load_data():
                         if isinstance(value, dict) and 'url' in value:
                             valid_data[key] = value
                         else:
-                            print(f"⚠️ Skipping invalid entry: {key}")
+                            print(f" Skipping entry: {key}")
                     
                     if len(valid_data) == 0:
                         print(f"⚠️ WARNING: No valid platforms in data.json. Using sample data...")

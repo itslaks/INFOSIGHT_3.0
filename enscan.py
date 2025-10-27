@@ -3,790 +3,1484 @@ import re
 import dns.resolver
 import requests
 from urllib.parse import urlparse
-import tldextract
 import concurrent.futures
 import whois
 from datetime import datetime
 import socket
 import ssl
 import OpenSSL
-from typing import Dict, List, Union
-import json
+from typing import Dict, List, Union, Optional
 import hashlib
-import ipaddress
-from collections import defaultdict
 import time
+import json
+from dataclasses import dataclass, asdict
+import logging
+from functools import wraps
+import traceback
+import pytz
+from dateutil import parser as date_parser
 
-enscan = Blueprint('enscan', __name__, template_folder='templates')
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
-@enscan.route('/')
-def index():
-    return render_template('enscan.html')
+# Create Blueprint
+enscan = Blueprint("enscan", __name__, template_folder="templates")
 
-class AdvancedScanner:
+
+@dataclass
+class ScanResult:
+    """Structured scan result"""
+
+    success: bool
+    data: Optional[Dict] = None
+    error: Optional[str] = None
+    timing: float = 0.0
+
+
+class DNSResolver:
+    """Dedicated DNS resolution handler with multiple fallback servers"""
+
     def __init__(self):
-        self.timeout = 8
-        self.dns_servers = [
-            '8.8.8.8',      # Google
-            '8.8.4.4',      # Google
-            '1.1.1.1',      # Cloudflare
-            '1.0.0.1',      # Cloudflare
-            '208.67.222.222' # OpenDNS
+        self.resolver = dns.resolver.Resolver(configure=False)
+        # Multiple DNS servers for reliability
+        self.resolver.nameservers = [
+            "8.8.8.8",  # Google Primary
+            "8.8.4.4",  # Google Secondary
+            "1.1.1.1",  # Cloudflare Primary
+            "1.0.0.1",  # Cloudflare Secondary
+            "208.67.222.222",  # OpenDNS
+            "9.9.9.9",  # Quad9
         ]
-    
-    def is_valid_domain(self, domain: str) -> bool:
-        pattern = r'^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$'
-        return bool(re.match(pattern, domain))
-    
-    def dns_query(self, domain: str, record_type: str) -> Union[List[str], str]:
-        """Enhanced DNS query with multiple nameservers"""
-        resolver = dns.resolver.Resolver(configure=False)
-        resolver.nameservers = self.dns_servers
-        resolver.timeout = 5
-        resolver.lifetime = 5
-        
+        self.resolver.timeout = 5
+        self.resolver.lifetime = 10
+
+    def query(self, domain: str, record_type: str) -> List[str]:
+        """Query DNS with error handling and retries"""
         try:
-            answers = resolver.resolve(domain, record_type)
-            return [str(record).strip('"') for record in answers]
+            answers = self.resolver.resolve(domain, record_type)
+            results = []
+            for rdata in answers:
+                value = str(rdata).strip('"').rstrip(".")
+                results.append(value)
+            return results
         except dns.resolver.NoAnswer:
-            return f"No {record_type} records found"
+            return []
         except dns.resolver.NXDOMAIN:
-            return f"Domain does not exist"
+            raise ValueError(f"Domain {domain} does not exist")
         except dns.resolver.Timeout:
-            return f"DNS query timeout"
+            raise TimeoutError(f"DNS query timeout for {record_type}")
         except Exception as e:
-            return f"Error: {str(e)}"
-    
-    def get_ssl_info(self, domain: str) -> Dict:
-        """Enhanced SSL certificate analysis"""
+            logger.error(f"DNS query failed for {domain} ({record_type}): {str(e)}")
+            raise Exception(f"DNS query failed: {str(e)}")
+
+
+class SSLAnalyzer:
+    """Advanced SSL/TLS certificate analyzer with comprehensive checks"""
+
+    @staticmethod
+    def analyze(domain: str) -> Dict:
+        """Comprehensive SSL analysis with vulnerability checks"""
         try:
             context = ssl.create_default_context()
-            with socket.create_connection((domain, 443), timeout=self.timeout) as sock:
-                with context.wrap_socket(sock, server_hostname=domain) as ssock:
-                    cert_bin = ssock.getpeercert(binary_form=True)
-                    x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_ASN1, cert_bin)
-                    cert = ssock.getpeercert()
-                    
-                    # Enhanced certificate analysis
-                    fingerprint_sha256 = hashlib.sha256(cert_bin).hexdigest()
-                    fingerprint_sha1 = hashlib.sha1(cert_bin).hexdigest()
-                    
-                    # Get protocol version
-                    protocol_version = ssock.version()
-                    cipher = ssock.cipher()
-                    
-                    # Parse dates
-                    not_before = datetime.strptime(cert['notBefore'], '%b %d %H:%M:%S %Y %Z')
-                    not_after = datetime.strptime(cert['notAfter'], '%b %d %H:%M:%S %Y %Z')
+
+            with socket.create_connection((domain, 443), timeout=10) as sock:
+                with context.wrap_socket(sock, server_hostname=domain) as secure_sock:
+                    # Get binary certificate
+                    cert_bin = secure_sock.getpeercert(binary_form=True)
+                    cert_dict = secure_sock.getpeercert()
+
+                    # Parse with OpenSSL
+                    x509 = OpenSSL.crypto.load_certificate(
+                        OpenSSL.crypto.FILETYPE_ASN1, cert_bin
+                    )
+
+                    # Extract dates
+                    not_before = datetime.strptime(
+                        cert_dict["notBefore"], "%b %d %H:%M:%S %Y %Z"
+                    )
+                    not_after = datetime.strptime(
+                        cert_dict["notAfter"], "%b %d %H:%M:%S %Y %Z"
+                    )
                     days_remaining = (not_after - datetime.now()).days
-                    
+
+                    # Get subject and issuer
+                    subject = dict(x[0] for x in cert_dict.get("subject", []))
+                    issuer = dict(x[0] for x in cert_dict.get("issuer", []))
+
+                    # Get cipher and protocol
+                    cipher = secure_sock.cipher()
+                    protocol = secure_sock.version()
+
                     # Get extensions
-                    extensions = {}
-                    for i in range(x509.get_extension_count()):
-                        ext = x509.get_extension(i)
-                        extensions[ext.get_short_name().decode()] = str(ext)
-                    
+                    san_list = cert_dict.get("subjectAltName", [])
+
+                    # Calculate fingerprints
+                    sha256_fp = hashlib.sha256(cert_bin).hexdigest().upper()
+                    sha1_fp = hashlib.sha1(cert_bin).hexdigest().upper()
+                    md5_fp = hashlib.md5(cert_bin).hexdigest().upper()
+
+                    # Format fingerprints
+                    sha256_formatted = ":".join(
+                        [sha256_fp[i : i + 2] for i in range(0, len(sha256_fp), 2)]
+                    )
+                    sha1_formatted = ":".join(
+                        [sha1_fp[i : i + 2] for i in range(0, len(sha1_fp), 2)]
+                    )
+                    md5_formatted = ":".join(
+                        [md5_fp[i : i + 2] for i in range(0, len(md5_fp), 2)]
+                    )
+
+                    # Check for vulnerabilities
+                    vulnerabilities = SSLAnalyzer._check_vulnerabilities(
+                        protocol, cipher, days_remaining
+                    )
+
+                    # Calculate SSL score
+                    ssl_score = SSLAnalyzer._calculate_ssl_score(
+                        protocol, cipher, days_remaining, vulnerabilities
+                    )
+
                     return {
-                        "issuer": dict(x[0] for x in cert['issuer']),
-                        "subject": dict(x[0] for x in cert['subject']),
-                        "version": cert['version'],
-                        "valid_from": cert['notBefore'],
-                        "expires": cert['notAfter'],
+                        "valid": days_remaining > 0,
                         "days_remaining": days_remaining,
-                        "is_valid": days_remaining > 0,
-                        "fingerprint_sha256": fingerprint_sha256,
-                        "fingerprint_sha1": fingerprint_sha1,
-                        "serial_number": format(x509.get_serial_number(), 'X'),
+                        "subject": subject,
+                        "issuer": issuer,
+                        "common_name": subject.get("commonName", "N/A"),
+                        "organization": issuer.get("organizationName", "N/A"),
+                        "valid_from": not_before.strftime("%Y-%m-%d %H:%M:%S UTC"),
+                        "valid_until": not_after.strftime("%Y-%m-%d %H:%M:%S UTC"),
+                        "serial_number": format(x509.get_serial_number(), "X"),
                         "signature_algorithm": x509.get_signature_algorithm().decode(),
-                        "san": cert.get('subjectAltName', []),
-                        "protocol_version": protocol_version,
+                        "version": cert_dict["version"],
+                        "san": san_list,
+                        "san_count": len(san_list),
+                        "protocol_version": protocol,
                         "cipher_suite": {
-                            "name": cipher[0],
-                            "protocol": cipher[1],
-                            "bits": cipher[2]
+                            "name": cipher[0] if cipher else "Unknown",
+                            "protocol": cipher[1] if cipher else "Unknown",
+                            "bits": cipher[2] if cipher else 0,
                         },
                         "public_key_bits": x509.get_pubkey().bits(),
-                        "ocsp_stapling": "Must-Staple" in extensions.get('tlsfeature', ''),
-                        "key_usage": extensions.get('keyUsage', 'N/A'),
-                        "extended_key_usage": extensions.get('extendedKeyUsage', 'N/A')
+                        "fingerprint_sha256": sha256_formatted,
+                        "fingerprint_sha1": sha1_formatted,
+                        "fingerprint_md5": md5_formatted,
+                        "self_signed": subject == issuer,
+                        "vulnerabilities": vulnerabilities,
+                        "ssl_score": ssl_score,
+                        "expires_soon": days_remaining < 30,
                     }
+        except socket.timeout:
+            raise TimeoutError("SSL connection timeout")
+        except ssl.SSLError as e:
+            raise Exception(f"SSL Error: {str(e)}")
         except Exception as e:
-            return {"error": str(e)}
-    
-    def get_security_headers(self, domain: str) -> Dict:
-        """Comprehensive security headers analysis"""
+            logger.error(f"SSL analysis failed: {str(e)}")
+            raise Exception(f"SSL analysis failed: {str(e)}")
+
+    @staticmethod
+    def _check_vulnerabilities(
+        protocol: str, cipher: tuple, days_remaining: int
+    ) -> List[str]:
+        """Check for SSL/TLS vulnerabilities"""
+        vulnerabilities = []
+
+        # Check protocol version
+        if protocol in ["SSLv2", "SSLv3"]:
+            vulnerabilities.append(f"Insecure protocol {protocol} (deprecated)")
+        elif protocol in ["TLSv1.0", "TLSv1.1"]:
+            vulnerabilities.append(
+                f"Outdated protocol {protocol} (should upgrade to TLS 1.2+)"
+            )
+
+        # Check cipher strength
+        if cipher and cipher[2] < 128:
+            vulnerabilities.append(f"Weak cipher strength ({cipher[2]} bits)")
+
+        # Check certificate expiration
+        if days_remaining < 0:
+            vulnerabilities.append("Certificate expired")
+        elif days_remaining < 7:
+            vulnerabilities.append("Certificate expires in less than 7 days")
+        elif days_remaining < 30:
+            vulnerabilities.append("Certificate expires in less than 30 days")
+
+        return vulnerabilities
+
+    @staticmethod
+    def _calculate_ssl_score(
+        protocol: str, cipher: tuple, days_remaining: int, vulnerabilities: List[str]
+    ) -> float:
+        """Calculate SSL security score"""
+        score = 10.0
+
+        # Deduct for protocol issues
+        if protocol in ["SSLv2", "SSLv3"]:
+            score -= 5
+        elif protocol in ["TLSv1.0", "TLSv1.1"]:
+            score -= 2
+
+        # Deduct for cipher issues
+        if cipher and cipher[2] < 128:
+            score -= 3
+        elif cipher and cipher[2] < 256:
+            score -= 1
+
+        # Deduct for expiration issues
+        if days_remaining < 0:
+            score -= 5
+        elif days_remaining < 7:
+            score -= 3
+        elif days_remaining < 30:
+            score -= 1
+
+        return max(0, round(score, 1))
+
+
+class SecurityHeadersAnalyzer:
+    """Advanced security headers analyzer with detailed grading"""
+
+    HEADERS_CONFIG = {
+        "Strict-Transport-Security": {
+            "weight": 2.5,
+            "category": "critical",
+            "description": "Enforces HTTPS connections and prevents protocol downgrade attacks",
+            "recommendation": "Add: Strict-Transport-Security: max-age=31536000; includeSubDomains; preload",
+        },
+        "Content-Security-Policy": {
+            "weight": 2.5,
+            "category": "critical",
+            "description": "Prevents XSS, clickjacking, and code injection attacks",
+            "recommendation": "Implement a strict CSP policy with specific directives",
+        },
+        "X-Frame-Options": {
+            "weight": 1.5,
+            "category": "important",
+            "description": "Protects against clickjacking attacks",
+            "recommendation": "Add: X-Frame-Options: DENY or SAMEORIGIN",
+        },
+        "X-Content-Type-Options": {
+            "weight": 1.0,
+            "category": "important",
+            "description": "Prevents MIME-type sniffing attacks",
+            "recommendation": "Add: X-Content-Type-Options: nosniff",
+        },
+        "Referrer-Policy": {
+            "weight": 0.8,
+            "category": "recommended",
+            "description": "Controls referrer information leakage",
+            "recommendation": "Add: Referrer-Policy: strict-origin-when-cross-origin",
+        },
+        "Permissions-Policy": {
+            "weight": 1.0,
+            "category": "important",
+            "description": "Controls browser feature access",
+            "recommendation": "Add: Permissions-Policy with restricted features",
+        },
+        "X-XSS-Protection": {
+            "weight": 0.5,
+            "category": "legacy",
+            "description": "Legacy XSS protection for older browsers",
+            "recommendation": "Add: X-XSS-Protection: 1; mode=block",
+        },
+        "Cross-Origin-Embedder-Policy": {
+            "weight": 0.7,
+            "category": "advanced",
+            "description": "Enables cross-origin isolation",
+            "recommendation": "Add: Cross-Origin-Embedder-Policy: require-corp",
+        },
+        "Cross-Origin-Opener-Policy": {
+            "weight": 0.7,
+            "category": "advanced",
+            "description": "Isolates browsing context group",
+            "recommendation": "Add: Cross-Origin-Opener-Policy: same-origin",
+        },
+        "Cross-Origin-Resource-Policy": {
+            "weight": 0.8,
+            "category": "advanced",
+            "description": "Prevents cross-origin resource loading",
+            "recommendation": "Add: Cross-Origin-Resource-Policy: same-origin",
+        },
+    }
+
+    @classmethod
+    def analyze(cls, domain: str) -> Dict:
+        """Analyze security headers with detailed assessment"""
         try:
-            # Try both HTTP and HTTPS
-            urls = [f"https://{domain}", f"http://{domain}"]
             response = None
-            
-            for url in urls:
+            final_url = None
+
+            # Try HTTPS first, then HTTP
+            for protocol in ["https", "http"]:
                 try:
-                    response = requests.get(url, timeout=self.timeout, allow_redirects=True, verify=True)
+                    url = f"{protocol}://{domain}"
+                    response = requests.get(
+                        url,
+                        timeout=10,
+                        allow_redirects=True,
+                        headers={
+                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                        },
+                        verify=True,
+                    )
+                    final_url = response.url
                     break
+                except requests.exceptions.SSLError:
+                    if protocol == "https":
+                        try:
+                            response = requests.get(
+                                url,
+                                timeout=10,
+                                allow_redirects=True,
+                                headers={
+                                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                                },
+                                verify=False,
+                            )
+                            final_url = response.url
+                            break
+                        except:
+                            continue
                 except:
                     continue
-            
+
             if not response:
-                return {"error": "Could not connect to domain"}
-            
+                raise Exception("Could not connect to domain")
+
             headers = response.headers
-            
-            # Comprehensive security header checks
-            security_checks = {
-                "Strict-Transport-Security": {
-                    "value": headers.get("Strict-Transport-Security", "Not set"),
-                    "weight": 2,
-                    "description": "Forces HTTPS connections",
-                    "recommendation": "Add 'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload'"
-                },
-                "Content-Security-Policy": {
-                    "value": headers.get("Content-Security-Policy", "Not set"),
-                    "weight": 2,
-                    "description": "Prevents XSS and injection attacks",
-                    "recommendation": "Implement a strict CSP policy to control resource loading"
-                },
-                "X-Frame-Options": {
-                    "value": headers.get("X-Frame-Options", "Not set"),
-                    "weight": 1,
-                    "description": "Prevents clickjacking",
-                    "recommendation": "Set to 'DENY' or 'SAMEORIGIN'"
-                },
-                "X-Content-Type-Options": {
-                    "value": headers.get("X-Content-Type-Options", "Not set"),
-                    "weight": 1,
-                    "description": "Prevents MIME sniffing",
-                    "recommendation": "Set to 'nosniff'"
-                },
-                "X-XSS-Protection": {
-                    "value": headers.get("X-XSS-Protection", "Not set"),
-                    "weight": 1,
-                    "description": "Legacy XSS protection",
-                    "recommendation": "Set to '1; mode=block' (legacy browsers)"
-                },
-                "Referrer-Policy": {
-                    "value": headers.get("Referrer-Policy", "Not set"),
-                    "weight": 1,
-                    "description": "Controls referrer information",
-                    "recommendation": "Set to 'strict-origin-when-cross-origin' or 'no-referrer'"
-                },
-                "Permissions-Policy": {
-                    "value": headers.get("Permissions-Policy", "Not set"),
-                    "weight": 1,
-                    "description": "Controls browser features",
-                    "recommendation": "Define allowed features like camera, microphone, geolocation"
-                },
-                "Cross-Origin-Embedder-Policy": {
-                    "value": headers.get("Cross-Origin-Embedder-Policy", "Not set"),
-                    "weight": 1,
-                    "description": "Prevents cross-origin resource loading",
-                    "recommendation": "Set to 'require-corp' for enhanced security"
-                },
-                "Cross-Origin-Opener-Policy": {
-                    "value": headers.get("Cross-Origin-Opener-Policy", "Not set"),
-                    "weight": 1,
-                    "description": "Isolates browsing context",
-                    "recommendation": "Set to 'same-origin' to prevent attacks"
-                },
-                "Cross-Origin-Resource-Policy": {
-                    "value": headers.get("Cross-Origin-Resource-Policy", "Not set"),
-                    "weight": 1,
-                    "description": "Protects resources from cross-origin access",
-                    "recommendation": "Set to 'same-origin' or 'same-site'"
+            analyzed_headers = {}
+            score = 0
+            max_score = sum(h["weight"] for h in cls.HEADERS_CONFIG.values())
+
+            for header_name, config in cls.HEADERS_CONFIG.items():
+                value = headers.get(header_name, None)
+                present = value is not None
+
+                analyzed_headers[header_name] = {
+                    "present": present,
+                    "value": value if present else "Not Set",
+                    "category": config["category"],
+                    "description": config["description"],
+                    "recommendation": config["recommendation"],
+                    "weight": config["weight"],
                 }
-            }
-            
-            # Calculate weighted security score
-            total_weight = sum(h["weight"] for h in security_checks.values())
-            earned_score = sum(h["weight"] for h in security_checks.values() if h["value"] != "Not set")
-            security_score = round((earned_score / total_weight) * 10, 1)
-            
-            # Get security grade and reasoning
-            grade_info = self._calculate_grade(security_score, security_checks)
-            
+
+                if present:
+                    score += config["weight"]
+
+            # Calculate normalized score (0-10)
+            normalized_score = round((score / max_score) * 10, 1)
+
+            # Determine grade
+            grade, grade_reasoning = cls._calculate_grade(
+                normalized_score, analyzed_headers
+            )
+
+            # Analyze cookies
+            cookies_analysis = cls._analyze_cookies(response.cookies)
+
+            # Check for information disclosure
+            info_disclosure = cls._check_info_disclosure(headers)
+
             return {
-                "headers": security_checks,
-                "security_score": security_score,
+                "score": normalized_score,
                 "max_score": 10,
-                "grade": grade_info["grade"],
-                "grade_reasoning": grade_info["reasoning"],
-                "missing_headers": grade_info["missing_headers"],
-                "critical_issues": grade_info["critical_issues"],
-                "improvements": grade_info["improvements"],
-                "server": headers.get("Server", "Not disclosed"),
-                "powered_by": headers.get("X-Powered-By", "Not disclosed"),
-                "final_url": response.url,
+                "grade": grade,
+                "grade_reasoning": grade_reasoning,
+                "headers": analyzed_headers,
+                "missing_critical": [
+                    name
+                    for name, data in analyzed_headers.items()
+                    if not data["present"] and data["category"] == "critical"
+                ],
+                "missing_important": [
+                    name
+                    for name, data in analyzed_headers.items()
+                    if not data["present"] and data["category"] == "important"
+                ],
+                "server": headers.get("Server", "Not Disclosed"),
+                "powered_by": headers.get("X-Powered-By", "Not Disclosed"),
+                "final_url": final_url,
                 "status_code": response.status_code,
-                "redirect_chain": len(response.history),
-                "cookies": {
-                    "total": len(response.cookies),
-                    "secure": sum(1 for c in response.cookies if c.secure),
-                    "httponly": sum(1 for c in response.cookies if c.has_nonstandard_attr('HttpOnly'))
-                }
+                "redirect_count": len(response.history),
+                "cookies": cookies_analysis,
+                "https_enabled": (
+                    final_url.startswith("https://") if final_url else False
+                ),
+                "info_disclosure": info_disclosure,
+                "response_time": response.elapsed.total_seconds(),
             }
         except Exception as e:
-            return {"error": str(e)}
-    
-    def _calculate_grade(self, score: float, headers: Dict) -> Dict:
-        """Calculate security grade with detailed reasoning"""
-        missing_headers = [name for name, data in headers.items() if data["value"] == "Not set"]
-        critical_missing = []
-        important_missing = []
-        
-        for name, data in headers.items():
-            if data["value"] == "Not set":
-                if data["weight"] == 2:
-                    critical_missing.append(name)
-                else:
-                    important_missing.append(name)
-        
-        # Determine grade
-        if score >= 9:
+            logger.error(f"Security headers analysis failed: {str(e)}")
+            raise Exception(f"Security headers analysis failed: {str(e)}")
+
+    @staticmethod
+    def _calculate_grade(score: float, headers: Dict) -> tuple:
+        """Calculate letter grade and reasoning"""
+        if score >= 9.5:
             grade = "A+"
-            reasoning = "Excellent security posture! Your site has implemented nearly all modern security headers."
-        elif score >= 8:
+            reasoning = "Exceptional security configuration with comprehensive protection mechanisms"
+        elif score >= 9.0:
             grade = "A"
-            reasoning = "Very good security configuration with most important headers in place."
-        elif score >= 7:
+            reasoning = (
+                "Excellent security with all critical protections properly implemented"
+            )
+        elif score >= 8.0:
+            grade = "A-"
+            reasoning = "Very good security posture with minor improvements possible"
+        elif score >= 7.0:
             grade = "B"
-            reasoning = "Good security foundation, but missing some important protections."
-        elif score >= 5:
+            reasoning = (
+                "Good security foundation but missing some important protections"
+            )
+        elif score >= 6.0:
             grade = "C"
-            reasoning = "Basic security measures present, but significant gaps exist that should be addressed."
-        elif score >= 3:
+            reasoning = "Adequate security with several areas requiring improvement"
+        elif score >= 4.0:
             grade = "D"
-            reasoning = "Poor security configuration. Critical security headers are missing, leaving your site vulnerable."
+            reasoning = "Poor security configuration with significant vulnerabilities"
         else:
             grade = "F"
-            reasoning = "Critical security failure! Your site lacks essential security headers and is highly vulnerable to attacks."
-        
-        # Build critical issues list
-        critical_issues = []
-        if "Strict-Transport-Security" in critical_missing:
-            critical_issues.append({
-                "issue": "Missing HSTS Header",
-                "severity": "HIGH",
-                "impact": "Vulnerable to man-in-the-middle attacks and SSL stripping",
-                "fix": "Add Strict-Transport-Security header with long max-age"
-            })
-        
-        if "Content-Security-Policy" in critical_missing:
-            critical_issues.append({
-                "issue": "Missing Content Security Policy",
-                "severity": "HIGH",
-                "impact": "Vulnerable to XSS attacks, data injection, and resource hijacking",
-                "fix": "Implement a strict CSP policy tailored to your site's needs"
-            })
-        
-        if "X-Frame-Options" in important_missing:
-            critical_issues.append({
-                "issue": "Missing X-Frame-Options",
-                "severity": "MEDIUM",
-                "impact": "Vulnerable to clickjacking attacks",
-                "fix": "Set X-Frame-Options to DENY or SAMEORIGIN"
-            })
-        
-        if "X-Content-Type-Options" in important_missing:
-            critical_issues.append({
-                "issue": "Missing X-Content-Type-Options",
-                "severity": "MEDIUM",
-                "impact": "Vulnerable to MIME-type sniffing attacks",
-                "fix": "Set X-Content-Type-Options to nosniff"
-            })
-        
-        # Build improvements list
-        improvements = []
-        for header in missing_headers:
-            improvements.append({
-                "header": header,
-                "priority": "High" if headers[header]["weight"] == 2 else "Medium",
-                "recommendation": headers[header]["recommendation"]
-            })
-        
+            reasoning = "Critical security failure requiring immediate remediation"
+
+        return grade, reasoning
+
+    @staticmethod
+    def _analyze_cookies(cookies) -> Dict:
+        """Comprehensive cookie security analysis"""
+        total = len(cookies)
+        secure = 0
+        httponly = 0
+        samesite = 0
+        insecure = []
+
+        for cookie in cookies:
+            if cookie.secure:
+                secure += 1
+            if cookie.has_nonstandard_attr("HttpOnly"):
+                httponly += 1
+            if cookie.has_nonstandard_attr("SameSite"):
+                samesite += 1
+
+            # Track insecure cookies
+            if not cookie.secure or not cookie.has_nonstandard_attr("HttpOnly"):
+                insecure.append(cookie.name)
+
         return {
-            "grade": grade,
-            "reasoning": reasoning,
-            "missing_headers": missing_headers,
-            "critical_issues": critical_issues,
-            "improvements": improvements,
-            "headers_present": len(headers) - len(missing_headers),
-            "headers_total": len(headers)
+            "total": total,
+            "secure": secure,
+            "httponly": httponly,
+            "samesite": samesite,
+            "insecure_cookies": insecure,
+            "security_score": (
+                round((secure + httponly + samesite) / (total * 3) * 10, 1)
+                if total > 0
+                else 10
+            ),
         }
-    
-    def get_domain_info(self, domain: str) -> Dict:
-        """Enhanced WHOIS information"""
+
+    @staticmethod
+    def _check_info_disclosure(headers: Dict) -> List[str]:
+        """Check for information disclosure in headers"""
+        disclosures = []
+
+        if "Server" in headers:
+            disclosures.append(f"Server version disclosed: {headers['Server']}")
+        if "X-Powered-By" in headers:
+            disclosures.append(f"Technology stack disclosed: {headers['X-Powered-By']}")
+        if "X-AspNet-Version" in headers:
+            disclosures.append(
+                f"ASP.NET version disclosed: {headers['X-AspNet-Version']}"
+            )
+        if "X-AspNetMvc-Version" in headers:
+            disclosures.append(
+                f"ASP.NET MVC version disclosed: {headers['X-AspNetMvc-Version']}"
+            )
+
+        return disclosures
+
+
+class EmailSecurityAnalyzer:
+    """Comprehensive email security analyzer"""
+
+    def __init__(self, dns_resolver: DNSResolver):
+        self.resolver = dns_resolver
+
+    def analyze(self, domain: str) -> Dict:
+        """Analyze email security records with detailed assessment"""
+        spf_analysis = self._analyze_spf(domain)
+        dmarc_analysis = self._analyze_dmarc(domain)
+        dkim_analysis = self._analyze_dkim(domain)
+        mx_analysis = self._analyze_mx(domain)
+
+        # Calculate email security score (0-10)
+        score = 0
+        max_score = 10
+
+        # SPF scoring (3.3 points)
+        if spf_analysis["configured"]:
+            score += 2.5
+            if spf_analysis.get("strict"):
+                score += 0.8
+
+        # DMARC scoring (3.3 points)
+        if dmarc_analysis["configured"]:
+            score += 2.0
+            policy = dmarc_analysis.get("policy", "none")
+            if policy == "reject":
+                score += 1.3
+            elif policy == "quarantine":
+                score += 0.8
+
+        # DKIM scoring (3.0 points)
+        if dkim_analysis["configured"]:
+            score += 3.0
+
+        # MX records bonus (0.4 points)
+        if mx_analysis["configured"]:
+            score += 0.4
+
+        return {
+            "score": round(min(score, max_score), 1),
+            "max_score": max_score,
+            "spf": spf_analysis,
+            "dmarc": dmarc_analysis,
+            "dkim": dkim_analysis,
+            "mx": mx_analysis,
+            "recommendation": self._get_recommendation(
+                spf_analysis, dmarc_analysis, dkim_analysis
+            ),
+            "risk_level": self._calculate_risk_level(score),
+        }
+
+    def _analyze_spf(self, domain: str) -> Dict:
+        """Detailed SPF record analysis"""
         try:
-            w = whois.whois(domain)
-            
-            def format_date(date_obj):
-                if isinstance(date_obj, datetime):
-                    return date_obj.strftime("%Y-%m-%d %H:%M:%S")
-                elif isinstance(date_obj, list) and date_obj:
-                    return date_obj[0].strftime("%Y-%m-%d %H:%M:%S") if isinstance(date_obj[0], datetime) else str(date_obj[0])
-                return str(date_obj) if date_obj else "N/A"
-            
-            creation = format_date(w.creation_date)
-            expiration = format_date(w.expiration_date)
-            updated = format_date(w.updated_date)
-            
-            # Calculate domain age
-            age_days = "N/A"
-            age_years = "N/A"
-            if isinstance(w.creation_date, datetime):
-                age_days = (datetime.now() - w.creation_date).days
-                age_years = round(age_days / 365.25, 1)
-            elif isinstance(w.creation_date, list) and w.creation_date:
-                if isinstance(w.creation_date[0], datetime):
-                    age_days = (datetime.now() - w.creation_date[0]).days
-                    age_years = round(age_days / 365.25, 1)
-            
-            # Days until expiration
-            days_until_expiration = "N/A"
-            if isinstance(w.expiration_date, datetime):
-                days_until_expiration = (w.expiration_date - datetime.now()).days
-            elif isinstance(w.expiration_date, list) and w.expiration_date:
-                if isinstance(w.expiration_date[0], datetime):
-                    days_until_expiration = (w.expiration_date[0] - datetime.now()).days
-            
+            records = self.resolver.query(domain, "TXT")
+            spf_record = None
+
+            for record in records:
+                if record.startswith("v=spf1"):
+                    spf_record = record
+                    break
+
+            if not spf_record:
+                return {
+                    "configured": False,
+                    "record": None,
+                    "issues": ["SPF record not found"],
+                }
+
+            # Parse SPF mechanisms
+            mechanisms = spf_record.split()[1:]
+
+            # Check for common issues
+            issues = []
+            if len(mechanisms) > 10:
+                issues.append(
+                    "Too many DNS lookups (>10) - may cause validation failures"
+                )
+
+            all_mechanism = None
+            for m in mechanisms:
+                if "all" in m:
+                    all_mechanism = m
+
+            if not all_mechanism:
+                issues.append('No "all" mechanism found')
+            elif all_mechanism == "+all":
+                issues.append("Permits all senders (+all) - extremely permissive")
+
             return {
-                "registrar": w.registrar or "N/A",
-                "creation_date": creation,
-                "expiration_date": expiration,
-                "updated_date": updated,
-                "domain_age_days": age_days,
-                "domain_age_years": age_years,
-                "days_until_expiration": days_until_expiration,
-                "name_servers": w.name_servers if hasattr(w, 'name_servers') and w.name_servers else [],
-                "status": w.status if hasattr(w, 'status') and w.status else [],
-                "emails": w.emails if hasattr(w, 'emails') and w.emails else [],
-                "registrant_name": w.name if hasattr(w, 'name') else "N/A",
-                "registrant_org": w.org if hasattr(w, 'org') else "N/A",
-                "registrant_country": w.country if hasattr(w, 'country') else "N/A",
-                "registrant_state": w.state if hasattr(w, 'state') else "N/A",
-                "registrant_city": w.city if hasattr(w, 'city') else "N/A",
-                "dnssec": w.dnssec if hasattr(w, 'dnssec') else "N/A"
+                "configured": True,
+                "record": spf_record,
+                "mechanisms": mechanisms,
+                "mechanism_count": len(mechanisms),
+                "includes_all": all_mechanism is not None,
+                "strict": "-all" in spf_record,
+                "softfail": "~all" in spf_record,
+                "all_mechanism": all_mechanism,
+                "issues": issues,
             }
         except Exception as e:
-            return {"error": str(e)}
-    
-    def check_email_security(self, domain: str) -> Dict:
-        """Enhanced email security checks"""
-        spf = self.dns_query(domain, 'TXT')
-        dmarc = self.dns_query(f"_dmarc.{domain}", 'TXT')
-        
-        # Try multiple DKIM selectors
-        dkim_selectors = ['default', 'google', 'k1', 'selector1', 'selector2', 'dkim']
-        dkim_results = {}
-        
-        for selector in dkim_selectors:
-            result = self.dns_query(f"{selector}._domainkey.{domain}", 'TXT')
-            if isinstance(result, list):
-                dkim_results[selector] = result
-        
-        # Parse SPF
-        spf_record = None
-        spf_mechanisms = []
-        if isinstance(spf, list):
-            for record in spf:
-                if "v=spf1" in str(record):
-                    spf_record = str(record)
-                    spf_mechanisms = [m.strip() for m in spf_record.split() if m.strip() != "v=spf1"]
-        
-        # Parse DMARC
-        dmarc_record = None
-        dmarc_policy = "None"
-        dmarc_pct = "N/A"
-        if isinstance(dmarc, list):
-            for record in dmarc:
-                if "v=DMARC1" in str(record):
-                    dmarc_record = str(record)
-                    # Extract policy
-                    if "p=reject" in dmarc_record:
-                        dmarc_policy = "reject"
-                    elif "p=quarantine" in dmarc_record:
-                        dmarc_policy = "quarantine"
-                    elif "p=none" in dmarc_record:
-                        dmarc_policy = "none"
-                    
-                    # Extract percentage
-                    import re
-                    pct_match = re.search(r'pct=(\d+)', dmarc_record)
-                    if pct_match:
-                        dmarc_pct = pct_match.group(1) + "%"
-        
+            return {"configured": False, "record": None, "error": str(e)}
+
+    def _analyze_dmarc(self, domain: str) -> Dict:
+        """Detailed DMARC record analysis"""
+        try:
+            records = self.resolver.query(f"_dmarc.{domain}", "TXT")
+            dmarc_record = None
+
+            for record in records:
+                if record.startswith("v=DMARC1"):
+                    dmarc_record = record
+                    break
+
+            if not dmarc_record:
+                return {
+                    "configured": False,
+                    "record": None,
+                    "issues": ["DMARC record not found"],
+                }
+
+            # Parse DMARC policy
+            policy = "none"
+            if "p=reject" in dmarc_record:
+                policy = "reject"
+            elif "p=quarantine" in dmarc_record:
+                policy = "quarantine"
+            elif "p=none" in dmarc_record:
+                policy = "none"
+
+            # Extract percentage
+            pct = "100"
+            pct_match = re.search(r"pct=(\d+)", dmarc_record)
+            if pct_match:
+                pct = pct_match.group(1)
+
+            # Extract reporting addresses
+            rua = re.search(r"rua=([^;]+)", dmarc_record)
+            ruf = re.search(r"ruf=([^;]+)", dmarc_record)
+
+            # Check for issues
+            issues = []
+            if policy == "none":
+                issues.append('Policy set to "none" - monitoring only, no enforcement')
+            if int(pct) < 100:
+                issues.append(f"Only {pct}% of emails are checked")
+            if not rua:
+                issues.append("No aggregate report address (rua) configured")
+
+            return {
+                "configured": True,
+                "record": dmarc_record,
+                "policy": policy,
+                "percentage": f"{pct}%",
+                "strict": policy == "reject",
+                "rua": rua.group(1) if rua else None,
+                "ruf": ruf.group(1) if ruf else None,
+                "issues": issues,
+            }
+        except Exception as e:
+            return {"configured": False, "record": None, "error": str(e)}
+
+    def _analyze_dkim(self, domain: str) -> Dict:
+        """Comprehensive DKIM analysis with extended selector list"""
+        selectors = [
+            "default",
+            "google",
+            "k1",
+            "k2",
+            "k3",
+            "s1",
+            "s2",
+            "selector1",
+            "selector2",
+            "dkim",
+            "mail",
+            "mta",
+            "smtp",
+            "mandrill",
+            "mailgun",
+            "sendgrid",
+            "amazonses",
+            "dkim1",
+            "dkim2",
+            "key1",
+            "key2",
+            "mx",
+            "email",
+        ]
+
+        found_selectors = []
+        selector_details = {}
+
+        for selector in selectors:
+            try:
+                records = self.resolver.query(f"{selector}._domainkey.{domain}", "TXT")
+                if records:
+                    found_selectors.append(selector)
+                    selector_details[selector] = (
+                        records[0] if records else "Record found"
+                    )
+            except:
+                continue
+
         return {
-            "spf": {
-                "present": spf_record is not None,
-                "record": spf_record or "No SPF record found",
-                "mechanisms": spf_mechanisms,
-                "mechanism_count": len(spf_mechanisms)
-            },
-            "dmarc": {
-                "present": dmarc_record is not None,
-                "record": dmarc_record or "No DMARC record found",
-                "policy": dmarc_policy,
-                "percentage": dmarc_pct
-            },
-            "dkim": {
-                "selectors_found": list(dkim_results.keys()),
-                "total_selectors_checked": len(dkim_selectors),
-                "records": dkim_results
-            },
-            "email_security_score": sum([
-                spf_record is not None,
-                dmarc_record is not None,
-                len(dkim_results) > 0
-            ])
+            "configured": len(found_selectors) > 0,
+            "selectors_found": found_selectors,
+            "selector_details": selector_details,
+            "total_checked": len(selectors),
+            "issues": [] if len(found_selectors) > 0 else ["No DKIM selectors found"],
         }
-    
-    def check_subdomain_takeover(self, domain: str) -> Dict:
-        """Enhanced subdomain takeover detection"""
-        vulnerable_patterns = {
-            'github.io': 'GitHub Pages',
-            'herokuapp.com': 'Heroku',
-            'azurewebsites.net': 'Azure',
-            'cloudapp.net': 'Azure',
-            'amazonaws.com': 'AWS',
-            'bitbucket.io': 'Bitbucket',
-            'shopify.com': 'Shopify',
-            'tumblr.com': 'Tumblr',
-            'wordpress.com': 'WordPress',
-            'ghost.io': 'Ghost',
-            'pantheonsite.io': 'Pantheon',
-            'acquia-sites.com': 'Acquia'
-        }
-        
+
+    def _analyze_mx(self, domain: str) -> Dict:
+        """Analyze MX records"""
         try:
-            cname_records = self.dns_query(domain, 'CNAME')
-            vulnerabilities = []
-            
-            if isinstance(cname_records, list):
-                for cname in cname_records:
-                    cname_str = str(cname).lower()
-                    for pattern, service in vulnerable_patterns.items():
-                        if pattern in cname_str:
-                            vulnerabilities.append({
-                                "cname": str(cname),
-                                "service": service,
-                                "pattern": pattern
-                            })
-            
-            if vulnerabilities:
-                return {
-                    "vulnerable": True,
-                    "vulnerabilities": vulnerabilities,
-                    "count": len(vulnerabilities),
-                    "risk_level": "HIGH"
-                }
-            else:
-                return {
-                    "vulnerable": False,
-                    "status": "No obvious subdomain takeover vulnerabilities detected"
-                }
+            records = self.resolver.query(domain, "MX")
+            mx_records = []
+
+            for rdata in records:
+                mx_records.append(
+                    {
+                        "priority": rdata.preference,
+                        "host": str(rdata.exchange).rstrip("."),
+                    }
+                )
+
+            # Sort by priority
+            mx_records.sort(key=lambda x: x["priority"])
+
+            return {
+                "configured": len(mx_records) > 0,
+                "records": mx_records,
+                "count": len(mx_records),
+            }
         except:
-            return {"error": "Could not check subdomain takeover"}
-    
-    def get_geolocation(self, ip: str) -> Dict:
-        """Enhanced geolocation with multiple providers"""
+            return {"configured": False, "records": [], "count": 0}
+
+    def _get_recommendation(self, spf: Dict, dmarc: Dict, dkim: Dict) -> str:
+        """Generate detailed security recommendation"""
+        if spf["configured"] and dmarc["configured"] and dkim["configured"]:
+            if dmarc.get("policy") == "reject" and spf.get("strict"):
+                return (
+                    "✅ Excellent email security! All protections properly configured."
+                )
+            elif dmarc.get("policy") == "reject":
+                return "⚠️ Good configuration. Consider using strict SPF (-all) for maximum protection."
+            else:
+                return '⚠️ Upgrade DMARC policy to "reject" for full protection against spoofing.'
+
+        missing = []
+        if not spf["configured"]:
+            missing.append("SPF")
+        if not dmarc["configured"]:
+            missing.append("DMARC")
+        if not dkim["configured"]:
+            missing.append("DKIM")
+
+        return f'🔴 Critical: Configure {", ".join(missing)} immediately to prevent email spoofing and phishing attacks.'
+
+    def _calculate_risk_level(self, score: float) -> str:
+        """Calculate overall email security risk level"""
+        if score >= 8.5:
+            return "LOW"
+        elif score >= 6.0:
+            return "MEDIUM"
+        elif score >= 3.0:
+            return "HIGH"
+        else:
+            return "CRITICAL"
+
+
+class AdvancedSecurityScanner:
+    """Main scanner orchestrator with comprehensive security assessment"""
+
+    def __init__(self):
+        self.dns_resolver = DNSResolver()
+        self.email_analyzer = EmailSecurityAnalyzer(self.dns_resolver)
+        self.timeout = 15
+
+    def scan(self, domain: str) -> Dict:
+        """Execute comprehensive security scan"""
+        start_time = time.time()
+
+        # Validate domain
+        if not self._validate_domain(domain):
+            return {"error": "Invalid domain format", "success": False}
+
+        results = {
+            "domain": domain,
+            "scan_timestamp": datetime.now().isoformat(),
+            "scanner_version": "2.0.0",
+        }
+
+        # Execute scans in parallel for maximum efficiency
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            futures = {
+                "dns": executor.submit(self._scan_dns, domain),
+                "ssl": executor.submit(self._scan_ssl, domain),
+                "security_headers": executor.submit(
+                    self._scan_security_headers, domain
+                ),
+                "email_security": executor.submit(self._scan_email_security, domain),
+                "whois": executor.submit(self._scan_whois, domain),
+                "geolocation": executor.submit(self._scan_geolocation, domain),
+                "ports": executor.submit(self._scan_ports, domain),
+                "http_methods": executor.submit(self._scan_http_methods, domain),
+                "subdomain_takeover": executor.submit(
+                    self._check_subdomain_takeover, domain
+                ),
+                "technology_detection": executor.submit(
+                    self._detect_technologies, domain
+                ),
+            }
+
+            for key, future in futures.items():
+                try:
+                    result = future.result(timeout=20)
+                    results[key] = result
+                except Exception as e:
+                    logger.error(
+                        f"{key} scan failed: {str(e)}\n{traceback.format_exc()}"
+                    )
+                    results[key] = {"error": str(e), "success": False}
+
+        # Calculate overall security score
+        results["overall_score"] = self._calculate_overall_score(results)
+        results["risk_assessment"] = self._generate_risk_assessment(results)
+        results["scan_duration"] = round(time.time() - start_time, 2)
+        results["success"] = True
+
+        return results
+
+    def _validate_domain(self, domain: str) -> bool:
+        """Validate domain format"""
+        pattern = r"^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$"
+        return bool(re.match(pattern, domain))
+
+    def _scan_dns(self, domain: str) -> Dict:
+        """Comprehensive DNS records scan"""
+        record_types = [
+            "A",
+            "AAAA",
+            "MX",
+            "NS",
+            "TXT",
+            "CNAME",
+            "SOA",
+            "CAA",
+            "SRV",
+            "PTR",
+        ]
+        records = {}
+
+        for record_type in record_types:
+            try:
+                result = self.dns_resolver.query(domain, record_type)
+                records[record_type] = result if result else []
+            except Exception as e:
+                records[record_type] = []
+                logger.debug(f"DNS {record_type} query failed: {str(e)}")
+
+        return {
+            "records": records,
+            "total_records": sum(len(v) for v in records.values()),
+            "success": True,
+        }
+
+    def _scan_ssl(self, domain: str) -> Dict:
+        """Scan SSL certificate"""
         try:
-            # Primary: ip-api.com
-            response = requests.get(f"http://ip-api.com/json/{ip}?fields=status,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,asname,reverse,mobile,proxy,hosting", timeout=5)
+            data = SSLAnalyzer.analyze(domain)
+            return {**data, "success": True}
+        except Exception as e:
+            return {"error": str(e), "success": False}
+
+    def _scan_security_headers(self, domain: str) -> Dict:
+        """Scan security headers"""
+        try:
+            data = SecurityHeadersAnalyzer.analyze(domain)
+            return {**data, "success": True}
+        except Exception as e:
+            return {"error": str(e), "success": False}
+
+    def _scan_email_security(self, domain: str) -> Dict:
+        """Scan email security"""
+        try:
+            data = self.email_analyzer.analyze(domain)
+            return {**data, "success": True}
+        except Exception as e:
+            return {"error": str(e), "success": False}
+
+    def _scan_whois(self, domain: str) -> Dict:
+        """Scan WHOIS information with enhanced data extraction"""
+        try:
+            # Perform WHOIS lookup
+            w = whois.whois(domain)
             
+            # Check if WHOIS data is actually available
+            if not w:
+                raise Exception("WHOIS lookup returned no data")
+            
+            def normalize_datetime(date_obj):
+                """Normalize datetime to timezone-naive UTC"""
+                if not date_obj:
+                    return None
+                
+                # Handle list of dates
+                if isinstance(date_obj, list):
+                    date_obj = [d for d in date_obj if d]  # Filter out None values
+                    if not date_obj:
+                        return None
+                    date_obj = date_obj[0]
+                
+                if not date_obj:
+                    return None
+                
+                # If it's a string, parse it
+                if isinstance(date_obj, str):
+                    try:
+                        date_obj = date_parser.parse(date_obj)
+                    except:
+                        return None
+                
+                # Ensure it's a datetime
+                if not isinstance(date_obj, datetime):
+                    return None
+                
+                # Convert to naive datetime (remove timezone)
+                if date_obj.tzinfo is not None and date_obj.tzinfo.utcoffset(date_obj) is not None:
+                    # Convert to UTC first, then make naive
+                    utc_dt = date_obj.astimezone(pytz.UTC)
+                    return utc_dt.replace(tzinfo=None)
+                
+                return date_obj
+            
+            def extract_string(value):
+                """Extract string from various formats"""
+                if not value:
+                    return None
+                if isinstance(value, list):
+                    value = [v for v in value if v]
+                    if not value:
+                        return None
+                    value = value[0]
+                return str(value).strip() if value else None
+            
+            def extract_list(value):
+                """Extract list from various formats"""
+                if not value:
+                    return []
+                if isinstance(value, list):
+                    return [str(v).strip().lower() for v in value if v]
+                return [str(value).strip().lower()]
+            
+            # Get current time as naive datetime
+            now = datetime.now()
+            
+            # Extract and normalize dates
+            creation_dt = normalize_datetime(w.creation_date) if hasattr(w, 'creation_date') else None
+            expiration_dt = normalize_datetime(w.expiration_date) if hasattr(w, 'expiration_date') else None
+            updated_dt = normalize_datetime(w.updated_date) if hasattr(w, 'updated_date') else None
+            
+            # Extract registrar
+            registrar = extract_string(w.registrar) if hasattr(w, 'registrar') else None
+            
+            # Extract name servers
+            name_servers = extract_list(w.name_servers) if hasattr(w, 'name_servers') else []
+            
+            # Extract status
+            status_list = extract_list(w.status) if hasattr(w, 'status') else []
+            
+            # Extract country
+            country = extract_string(w.country) if hasattr(w, 'country') else None
+            
+            # Extract DNSSEC
+            dnssec = extract_string(w.dnssec) if hasattr(w, 'dnssec') else None
+            
+            # Build result
+            result = {
+                'success': True
+            }
+            
+            # Add registrar
+            if registrar:
+                result['registrar'] = registrar
+            
+            # Add dates and calculations
+            if creation_dt:
+                result['creation_date'] = creation_dt.strftime('%Y-%m-%d %H:%M:%S')
+                age_days = (now - creation_dt).days
+                result['age_days'] = age_days
+                result['age_years'] = round(age_days / 365.25, 1)
+            
+            if expiration_dt:
+                result['expiration_date'] = expiration_dt.strftime('%Y-%m-%d %H:%M:%S')
+                result['days_until_expiration'] = (expiration_dt - now).days
+            
+            if updated_dt:
+                result['updated_date'] = updated_dt.strftime('%Y-%m-%d %H:%M:%S')
+            
+            # Add name servers
+            if name_servers:
+                result['name_servers'] = name_servers
+            
+            # Add status
+            if status_list:
+                result['status'] = status_list
+            
+            # Add country
+            if country:
+                result['registrant_country'] = country
+            
+            # Add DNSSEC
+            if dnssec:
+                result['dnssec'] = dnssec
+            
+            # Check if we got meaningful data
+            if not registrar and not creation_dt and not name_servers:
+                raise Exception("WHOIS data incomplete or unavailable")
+            
+            return result
+            
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f"WHOIS lookup failed for {domain}: {error_msg}")
+            return {
+                'error': error_msg,
+                'success': False
+            }
+
+    def _scan_geolocation(self, domain: str) -> Dict:
+        """Get comprehensive geolocation data"""
+        try:
+            # Get IP first
+            ip_list = self.dns_resolver.query(domain, "A")
+            if not ip_list:
+                return {"error": "No A records found", "success": False}
+
+            ip = ip_list[0]
+
+            # Try multiple geolocation APIs for better accuracy
+            response = requests.get(f"http://ip-api.com/json/{ip}", timeout=5)
+
             if response.status_code == 200:
                 data = response.json()
-                if data.get('status') == 'success':
-                    return {
-                        "ip": ip,
-                        "country": data.get("country", "N/A"),
-                        "country_code": data.get("countryCode", "N/A"),
-                        "region": data.get("regionName", "N/A"),
-                        "city": data.get("city", "N/A"),
-                        "zip": data.get("zip", "N/A"),
-                        "latitude": data.get("lat", "N/A"),
-                        "longitude": data.get("lon", "N/A"),
-                        "timezone": data.get("timezone", "N/A"),
-                        "isp": data.get("isp", "N/A"),
-                        "org": data.get("org", "N/A"),
-                        "as": data.get("as", "N/A"),
-                        "asname": data.get("asname", "N/A"),
-                        "reverse_dns": data.get("reverse", "N/A"),
-                        "mobile": data.get("mobile", False),
-                        "proxy": data.get("proxy", False),
-                        "hosting": data.get("hosting", False)
-                    }
-        except:
-            pass
-        
-        return {"error": "Geolocation lookup failed"}
-    
-    def check_open_ports(self, domain: str) -> Dict:
-        """Enhanced port scanning"""
+                return {
+                    "ip": ip,
+                    "country": data.get("country", "N/A"),
+                    "country_code": data.get("countryCode", "N/A"),
+                    "city": data.get("city", "N/A"),
+                    "region": data.get("regionName", "N/A"),
+                    "latitude": data.get("lat", "N/A"),
+                    "longitude": data.get("lon", "N/A"),
+                    "isp": data.get("isp", "N/A"),
+                    "org": data.get("org", "N/A"),
+                    "as": data.get("as", "N/A"),
+                    "timezone": data.get("timezone", "N/A"),
+                    "zip": data.get("zip", "N/A"),
+                    "success": True,
+                }
+            else:
+                return {"error": "Geolocation API failed", "success": False}
+        except Exception as e:
+            return {"error": str(e), "success": False}
+
+    def _scan_ports(self, domain: str) -> Dict:
+        """Comprehensive port scan with service detection"""
         common_ports = {
-            20: "FTP Data",
-            21: "FTP Control",
+            20: "FTP-DATA",
+            21: "FTP",
             22: "SSH",
             23: "Telnet",
             25: "SMTP",
             53: "DNS",
             80: "HTTP",
             110: "POP3",
+            111: "RPC",
+            135: "MSRPC",
+            139: "NetBIOS",
             143: "IMAP",
+            161: "SNMP",
             443: "HTTPS",
-            465: "SMTPS",
-            587: "SMTP (Submission)",
+            445: "SMB",
+            587: "SMTP",
             993: "IMAPS",
             995: "POP3S",
+            1433: "MSSQL",
+            1521: "Oracle",
             3306: "MySQL",
             3389: "RDP",
             5432: "PostgreSQL",
             5900: "VNC",
             6379: "Redis",
-            8080: "HTTP Proxy",
-            8443: "HTTPS Alt",
-            27017: "MongoDB"
+            8080: "HTTP-Proxy",
+            8443: "HTTPS-Alt",
+            27017: "MongoDB",
         }
-        
+
         open_ports = []
-        
-        def check_port(port, name):
+        dangerous_ports = [21, 23, 135, 139, 445, 3389, 5900]
+        sensitive_ports = [22, 1433, 3306, 5432, 6379, 27017]
+
+        def check_port(port, service):
             try:
-                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                sock.settimeout(2)
-                result = sock.connect_ex((domain, port))
-                sock.close()
-                
-                if result == 0:
-                    # Try to get service banner
-                    banner = "N/A"
-                    try:
-                        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                        sock.settimeout(2)
-                        sock.connect((domain, port))
-                        sock.send(b'\r\n')
-                        banner = sock.recv(1024).decode('utf-8', errors='ignore').strip()[:100]
-                        sock.close()
-                    except:
-                        pass
-                    
+                with socket.create_connection((domain, port), timeout=2) as sock:
                     return {
                         "port": port,
-                        "service": name,
-                        "status": "open",
-                        "banner": banner
+                        "service": service,
+                        "state": "open",
+                        "danger_level": (
+                            "high"
+                            if port in dangerous_ports
+                            else "medium" if port in sensitive_ports else "low"
+                        ),
                     }
             except:
-                pass
-            return None
-        
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-            futures = [executor.submit(check_port, port, name) for port, name in common_ports.items()]
+                return None
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=15) as executor:
+            futures = [
+                executor.submit(check_port, p, s) for p, s in common_ports.items()
+            ]
             for future in concurrent.futures.as_completed(futures):
                 result = future.result()
                 if result:
                     open_ports.append(result)
-        
-        # Risk assessment
-        risk_level = "LOW"
-        dangerous_ports = [21, 23, 3389, 5900]  # Unencrypted or risky services
-        
-        if any(p['port'] in dangerous_ports for p in open_ports):
-            risk_level = "HIGH"
-        elif len(open_ports) > 5:
-            risk_level = "MEDIUM"
-        
+
+        # Calculate risk level
+        risk = "LOW"
+        high_risk_count = sum(1 for p in open_ports if p["danger_level"] == "high")
+        medium_risk_count = sum(1 for p in open_ports if p["danger_level"] == "medium")
+
+        if high_risk_count > 0:
+            risk = "CRITICAL"
+        elif medium_risk_count > 2:
+            risk = "HIGH"
+        elif medium_risk_count > 0 or len(open_ports) > 5:
+            risk = "MEDIUM"
+
         return {
-            "open_ports": open_ports,
+            "open_ports": sorted(open_ports, key=lambda x: x["port"]),
             "total_open": len(open_ports),
-            "total_scanned": len(common_ports),
-            "risk_level": risk_level
+            "high_risk_ports": high_risk_count,
+            "medium_risk_ports": medium_risk_count,
+            "risk_level": risk,
+            "success": True,
         }
-    
-    def check_http_methods(self, domain: str) -> Dict:
-        """Enhanced HTTP methods check"""
+
+    def _scan_http_methods(self, domain: str) -> Dict:
+        """Check allowed HTTP methods"""
         try:
-            response = requests.options(f"https://{domain}", timeout=5)
-            allowed_methods = response.headers.get('Allow', 'N/A')
-            
-            if allowed_methods == 'N/A':
-                # Try HTTP if HTTPS fails
-                response = requests.options(f"http://{domain}", timeout=5)
-                allowed_methods = response.headers.get('Allow', 'Could not determine')
-            
-            dangerous_methods = ['PUT', 'DELETE', 'TRACE', 'CONNECT', 'PATCH']
-            safe_methods = ['GET', 'POST', 'HEAD', 'OPTIONS']
-            
-            if allowed_methods not in ['N/A', 'Could not determine']:
-                methods_list = [m.strip() for m in allowed_methods.split(',')]
-                found_dangerous = [m for m in dangerous_methods if m in methods_list]
-                found_safe = [m for m in safe_methods if m in methods_list]
-            else:
-                methods_list = []
-                found_dangerous = []
-                found_safe = []
-            
+            response = requests.options(f"https://{domain}", timeout=5, verify=False)
+            allowed = response.headers.get("Allow", "N/A")
+
+            dangerous = ["PUT", "DELETE", "TRACE", "CONNECT", "PATCH"]
+            methods = (
+                [m.strip() for m in allowed.split(",")] if allowed != "N/A" else []
+            )
+            found_dangerous = [m for m in dangerous if m in methods]
+
             risk = "LOW"
-            if found_dangerous:
-                risk = "HIGH" if len(found_dangerous) > 2 else "MEDIUM"
-            
+            if any(m in ["TRACE", "CONNECT"] for m in found_dangerous):
+                risk = "CRITICAL"
+            elif any(m in ["PUT", "DELETE"] for m in found_dangerous):
+                risk = "HIGH"
+            elif "PATCH" in found_dangerous:
+                risk = "MEDIUM"
+
             return {
-                "allowed_methods": allowed_methods,
-                "methods_list": methods_list,
-                "dangerous_methods": found_dangerous if found_dangerous else "None detected",
-                "safe_methods": found_safe,
-                "risk_level": risk,
-                "status": "Potentially dangerous methods enabled" if found_dangerous else "Safe"
+                "allowed": allowed,
+                "methods": methods,
+                "dangerous": found_dangerous,
+                "risk": risk,
+                "total_methods": len(methods),
+                "success": True,
             }
         except Exception as e:
-            return {"error": str(e)}
-    
-    def check_technologies(self, domain: str) -> Dict:
-        """Detect web technologies"""
+            return {"error": str(e), "success": False}
+
+    def _check_subdomain_takeover(self, domain: str) -> Dict:
+        """Check for potential subdomain takeover vulnerabilities"""
         try:
-            response = requests.get(f"https://{domain}", timeout=self.timeout, allow_redirects=True)
+            vulnerable_patterns = [
+                "NoSuchBucket",
+                "No Such Account",
+                "Repository not found",
+                "Project not found",
+                "This page is reserved",
+                "There isn't a GitHub Pages site here",
+                "Fastly error: unknown domain",
+                "The gods are wise",
+                "Whatever you were looking for doesn't currently exist",
+            ]
+
+            try:
+                response = requests.get(f"https://{domain}", timeout=5, verify=False)
+                content = response.text.lower()
+
+                found_patterns = []
+                for pattern in vulnerable_patterns:
+                    if pattern.lower() in content:
+                        found_patterns.append(pattern)
+
+                is_vulnerable = len(found_patterns) > 0
+
+                return {
+                    "vulnerable": is_vulnerable,
+                    "patterns_found": found_patterns,
+                    "risk": "HIGH" if is_vulnerable else "LOW",
+                    "success": True,
+                }
+            except:
+                return {
+                    "vulnerable": False,
+                    "patterns_found": [],
+                    "risk": "LOW",
+                    "success": True,
+                }
+        except Exception as e:
+            return {"error": str(e), "success": False}
+
+    def _detect_technologies(self, domain: str) -> Dict:
+        """Detect web technologies and frameworks"""
+        try:
+            response = requests.get(f"https://{domain}", timeout=10, verify=False)
             headers = response.headers
-            content = response.text[:10000]  # First 10KB
-            
+            content = response.text[:5000]  # First 5KB
+
             technologies = {
-                "server": headers.get("Server", "Not disclosed"),
-                "powered_by": headers.get("X-Powered-By", "Not disclosed"),
-                "frameworks": [],
+                "web_server": [],
                 "cms": [],
+                "javascript_frameworks": [],
                 "analytics": [],
-                "cdn": []
+                "cdn": [],
+                "other": [],
             }
-            
-            # Detect frameworks and CMS
-            tech_patterns = {
-                "WordPress": ["wp-content", "wp-includes"],
-                "Drupal": ["/sites/default", "Drupal"],
-                "Joomla": ["joomla", "/components/com_"],
-                "React": ["react", "__NEXT_DATA__"],
-                "Vue.js": ["vue", "v-cloak"],
-                "Angular": ["ng-app", "ng-controller"],
-                "jQuery": ["jquery"],
-                "Bootstrap": ["bootstrap"],
-                "Laravel": ["laravel"],
-                "Django": ["csrfmiddlewaretoken"]
-            }
-            
-            for tech, patterns in tech_patterns.items():
-                if any(pattern.lower() in content.lower() for pattern in patterns):
-                    if tech in ["WordPress", "Drupal", "Joomla"]:
-                        technologies["cms"].append(tech)
-                    else:
-                        technologies["frameworks"].append(tech)
-            
-            # Detect analytics
-            if "google-analytics" in content.lower() or "gtag" in content.lower():
+
+            # Web server detection
+            server = headers.get("Server", "")
+            if server:
+                technologies["web_server"].append(server)
+
+            # CMS detection
+            if "wp-content" in content or "wordpress" in content.lower():
+                technologies["cms"].append("WordPress")
+            if "drupal" in content.lower():
+                technologies["cms"].append("Drupal")
+            if "joomla" in content.lower():
+                technologies["cms"].append("Joomla")
+
+            # Framework detection
+            if "react" in content.lower():
+                technologies["javascript_frameworks"].append("React")
+            if "vue" in content.lower():
+                technologies["javascript_frameworks"].append("Vue.js")
+            if "angular" in content.lower():
+                technologies["javascript_frameworks"].append("Angular")
+            if "jquery" in content.lower():
+                technologies["javascript_frameworks"].append("jQuery")
+
+            # Analytics detection
+            if "google-analytics" in content.lower() or "gtag" in content:
                 technologies["analytics"].append("Google Analytics")
-            if "facebook" in content.lower() and "pixel" in content.lower():
-                technologies["analytics"].append("Facebook Pixel")
-            
-            # Detect CDN
-            cdn_headers = ["cloudflare", "akamai", "fastly", "cloudfront"]
-            for cdn in cdn_headers:
-                if any(cdn in str(v).lower() for v in headers.values()):
-                    technologies["cdn"].append(cdn.title())
-            
-            return technologies
-        except:
-            return {"error": "Could not detect technologies"}
-    
-    def scan_domain(self, domain: str) -> Dict:
-        """Main scanning function with all checks"""
-        start_time = time.time()
-        
-        if not self.is_valid_domain(domain):
-            return {"error": "Invalid domain format"}
-        
-        results = {
-            "scan_time": None,
-            "domain": domain
-        }
-        
-        # DNS Records
-        record_types = ['A', 'AAAA', 'NS', 'MX', 'TXT', 'SOA', 'CNAME', 'PTR', 'SRV', 'CAA']
-        
-        with concurrent.futures.ThreadPoolExecutor(max_workers=len(record_types)) as executor:
-            future_to_record = {
-                executor.submit(self.dns_query, domain, record_type): record_type 
-                for record_type in record_types
+            if "hotjar" in content.lower():
+                technologies["analytics"].append("Hotjar")
+
+            # CDN detection
+            if "cloudflare" in str(headers).lower():
+                technologies["cdn"].append("Cloudflare")
+            if "akamai" in str(headers).lower():
+                technologies["cdn"].append("Akamai")
+
+            # Other technologies
+            powered_by = headers.get("X-Powered-By", "")
+            if powered_by:
+                technologies["other"].append(f"Powered by: {powered_by}")
+
+            return {
+                "technologies": technologies,
+                "total_detected": sum(len(v) for v in technologies.values()),
+                "success": True,
             }
-            for future in concurrent.futures.as_completed(future_to_record):
-                record_type = future_to_record[future]
-                results[record_type] = future.result()
-        
-        # Get IP for additional checks
-        ip_address = None
-        if 'A' in results and isinstance(results['A'], list) and results['A']:
-            ip_address = results['A'][0]
-        
-        # Parallel execution of remaining checks
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-            futures = {
-                'domain_info': executor.submit(self.get_domain_info, domain),
-                'ssl_info': executor.submit(self.get_ssl_info, domain),
-                'security_headers': executor.submit(self.get_security_headers, domain),
-                'email_security': executor.submit(self.check_email_security, domain),
-                'subdomain_takeover': executor.submit(self.check_subdomain_takeover, domain),
-                'http_methods': executor.submit(self.check_http_methods, domain),
-                'open_ports': executor.submit(self.check_open_ports, domain),
-                'technologies': executor.submit(self.check_technologies, domain)
-            }
-            
-            if ip_address:
-                futures['geolocation'] = executor.submit(self.get_geolocation, ip_address)
-            
-            for key, future in futures.items():
-                try:
-                    results[key] = future.result()
-                except Exception as e:
-                    results[key] = {"error": str(e)}
-        
-        # Calculate overall security score
+        except Exception as e:
+            return {"error": str(e), "success": False}
+
+    def _calculate_overall_score(self, results: Dict) -> float:
+        """Calculate comprehensive overall security score"""
         scores = []
-        if 'security_headers' in results and 'security_score' in results['security_headers']:
-            scores.append(results['security_headers']['security_score'])
-        if 'email_security' in results and 'email_security_score' in results['email_security']:
-            scores.append(results['email_security']['email_security_score'] * 3.33)  # Scale to 10
-        
-        results['overall_security_score'] = round(sum(scores) / len(scores), 1) if scores else 0
-        
-        results['scan_time'] = round(time.time() - start_time, 2)
-        
-        return results
+        weights = []
+
+        # Security headers (weight: 3)
+        if results.get("security_headers", {}).get("success"):
+            scores.append(results["security_headers"].get("score", 0))
+            weights.append(3)
+
+        # Email security (weight: 2.5)
+        if results.get("email_security", {}).get("success"):
+            scores.append(results["email_security"].get("score", 0))
+            weights.append(2.5)
+
+        # SSL/TLS (weight: 3)
+        if results.get("ssl", {}).get("success"):
+            ssl_score = results["ssl"].get("ssl_score", 0)
+            scores.append(ssl_score)
+            weights.append(3)
+
+        # Port security (weight: 1.5)
+        if results.get("ports", {}).get("success"):
+            port_risk = results["ports"].get("risk_level", "LOW")
+            port_score = {"LOW": 10, "MEDIUM": 7, "HIGH": 4, "CRITICAL": 2}.get(
+                port_risk, 5
+            )
+            scores.append(port_score)
+            weights.append(1.5)
+
+        if not scores:
+            return 0
+
+        # Calculate weighted average
+        weighted_sum = sum(s * w for s, w in zip(scores, weights))
+        total_weight = sum(weights)
+
+        return round(weighted_sum / total_weight, 1)
+
+    def _generate_risk_assessment(self, results: Dict) -> Dict:
+        """Generate comprehensive risk assessment"""
+        critical_issues = []
+        high_issues = []
+        medium_issues = []
+        low_issues = []
+
+        # Check SSL
+        if results.get("ssl", {}).get("success"):
+            ssl = results["ssl"]
+            if not ssl.get("valid"):
+                critical_issues.append("Invalid or expired SSL certificate")
+            elif ssl.get("days_remaining", 999) < 7:
+                high_issues.append("SSL certificate expires in less than 7 days")
+
+            if ssl.get("vulnerabilities"):
+                for vuln in ssl["vulnerabilities"]:
+                    if "SSLv2" in vuln or "SSLv3" in vuln:
+                        critical_issues.append(vuln)
+                    else:
+                        medium_issues.append(vuln)
+
+        # Check email security
+        if results.get("email_security", {}).get("success"):
+            email = results["email_security"]
+            risk = email.get("risk_level", "HIGH")
+            if risk == "CRITICAL":
+                critical_issues.append("Critical email security misconfiguration")
+            elif risk == "HIGH":
+                high_issues.append("Poor email security configuration")
+
+        # Check security headers
+        if results.get("security_headers", {}).get("success"):
+            headers = results["security_headers"]
+            if headers.get("missing_critical"):
+                critical_issues.extend(
+                    [
+                        f"Missing critical header: {h}"
+                        for h in headers["missing_critical"][:2]
+                    ]
+                )
+
+        # Check ports
+        if results.get("ports", {}).get("success"):
+            ports = results["ports"]
+            if ports.get("risk_level") == "CRITICAL":
+                critical_issues.append(
+                    f"Critical: {ports.get('high_risk_ports', 0)} dangerous ports open"
+                )
+            elif ports.get("risk_level") in ["HIGH", "MEDIUM"]:
+                high_issues.append(
+                    f"{ports.get('total_open', 0)} ports open - review and secure"
+                )
+
+        # Check subdomain takeover
+        if results.get("subdomain_takeover", {}).get("vulnerable"):
+            critical_issues.append(
+                "Potential subdomain takeover vulnerability detected"
+            )
+
+        # Overall risk level
+        if critical_issues:
+            overall_risk = "CRITICAL"
+        elif high_issues:
+            overall_risk = "HIGH"
+        elif medium_issues:
+            overall_risk = "MEDIUM"
+        else:
+            overall_risk = "LOW"
+
+        return {
+            "overall_risk": overall_risk,
+            "critical_issues": critical_issues,
+            "high_issues": high_issues,
+            "medium_issues": medium_issues,
+            "low_issues": low_issues,
+            "total_issues": len(critical_issues)
+            + len(high_issues)
+            + len(medium_issues),
+        }
+
 
 # Initialize scanner
-scanner = AdvancedScanner()
+scanner = AdvancedSecurityScanner()
 
-@enscan.route('/api/scan', methods=['POST'])
-def scan():
+
+# Routes
+@enscan.route("/")
+def index():
+    """Render main interface"""
+    return render_template("enscan.html")
+
+@enscan.route("/docs")
+def documentation():
+    """Render documentation page"""
+    return render_template("documentation_si.html")
+
+
+@enscan.route("/api/scan", methods=["POST"])
+def scan_endpoint():
+    """Main scan endpoint"""
     try:
         data = request.json
-        input_value = data.get('input', '').strip()
-        
-        if not input_value:
-            return jsonify({"error": "Empty input provided"}), 400
-        
-        # Extract domain from URL if needed
-        if input_value.startswith('http'):
-            parsed = urlparse(input_value)
-            input_value = parsed.netloc or parsed.path
-        
-        # Remove www. if present
-        input_value = input_value.replace('www.', '')
-        
-        result = scanner.scan_domain(input_value)
+        domain = data.get("domain", "").strip()
+
+        # Clean domain
+        if domain.startswith(("http://", "https://")):
+            domain = urlparse(domain).netloc
+        domain = domain.replace("www.", "")
+
+        if not domain:
+            return jsonify({"error": "Domain required", "success": False}), 400
+
+        # Execute scan
+        result = scanner.scan(domain)
         return jsonify(result)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Scan endpoint failed: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({"error": str(e), "success": False}), 500
 
+
+@enscan.route("/api/health", methods=["GET"])
+def health_check():
+    """Health check endpoint"""
+    return jsonify(
+        {
+            "status": "healthy",
+            "version": "2.0.0",
+            "timestamp": datetime.now().isoformat(),
+        }
+    )
+
+
+# Application factory
 def create_app():
+    """Create and configure Flask application"""
     app = Flask(__name__)
+    app.config["JSON_SORT_KEYS"] = False
+    app.config["JSONIFY_PRETTYPRINT_REGULAR"] = True
+
+    # Register blueprint
     app.register_blueprint(enscan)
+
     return app
 
-if __name__ == '__main__':
-    socket.setdefaulttimeout(10)
+
+if __name__ == "__main__":
+    # Set default socket timeout
+    socket.setdefaulttimeout(15)
+
+    # Create app
     app = create_app()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+
+    # Run server
+    logger.info("Starting INFO SITE Security Scanner v2.0.0")
+    app.run(debug=True, host="0.0.0.0", port=5000, threaded=True)

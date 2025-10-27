@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Index - Complete Documentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-dark: #0a0e27;
+            --secondary-dark: #151930;
+            --accent-purple: #9333ea;
+            --accent-pink: #ec4899;
+            --accent-cyan: #06b6d4;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --card-bg: #0f172a;
+            --border-color: #1e293b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--primary-dark);
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 40px 0;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .logo-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: var(--accent-purple);
+            font-size: 2rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        h3 {
+            color: var(--accent-cyan);
+            font-size: 1.5rem;
+            margin: 30px 0 15px 0;
+        }
+
+        h4 {
+            color: var(--accent-pink);
+            font-size: 1.2rem;
+            margin: 20px 0 10px 0;
+        }
+
+        .info-box {
+            background: var(--secondary-dark);
+            border-left: 4px solid var(--accent-purple);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid #f59e0b;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .success-box {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid #10b981;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .code-example {
+            background: var(--secondary-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Fira Code', monospace;
+            overflow-x: auto;
+        }
+
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .score-item {
+            background: var(--secondary-dark);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-purple);
+        }
+
+        .score-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .score-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        li {
+            margin: 10px 0;
+        }
+
+        strong {
+            color: var(--accent-cyan);
+        }
+
+        .toc {
+            background: var(--secondary-dark);
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 40px;
+        }
+
+        .toc h2 {
+            margin-bottom: 20px;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .toc li {
+            margin: 10px 0;
+        }
+
+        .toc a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .toc a:hover {
+            color: var(--accent-purple);
+        }
+
+        .visual-example {
+            background: var(--secondary-dark);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 0 5px;
+        }
+
+        .badge-success { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .badge-warning { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .badge-danger { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .badge-info { background: rgba(6, 182, 212, 0.2); color: #06b6d4; }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.5rem; }
+            .section { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-section">
+                <div class="logo-icon">🔍</div>
+                <div>
+                    <h1>Site Index Documentation</h1>
+                    <p class="subtitle">Complete Guide to Website Security Scanning</p>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <a href="/" class="btn">🏠 Back to Scanner</a>
+            </div>
+        </div>
+
+        <!-- Table of Contents -->
+        <div class="toc">
+            <h2>📚 Table of Contents</h2>
+            <ul>
+                <li><a href="#introduction">1. Introduction</a></li>
+                <li><a href="#getting-started">2. Getting Started</a></li>
+                <li><a href="#understanding-basics">3. Understanding the Basics</a></li>
+                <li><a href="#scoring-system">4. Scoring System Explained</a></li>
+                <li><a href="#security-features">5. Security Features</a></li>
+                <li><a href="#interpreting-results">6. Interpreting Your Results</a></li>
+                <li><a href="#recommendations">7. Taking Action</a></li>
+                <li><a href="#faq">8. Frequently Asked Questions</a></li>
+            </ul>
+        </div>
+
+        <!-- 1. Introduction -->
+        <div class="section" id="introduction">
+            <h2>🎯 1. Introduction</h2>
+            
+            <h3>What is Site Index?</h3>
+            <p>Site Index is a comprehensive security scanning tool designed to help you understand and improve your website's security. Think of it as a health checkup for your website - it examines various aspects of your site's security and provides a detailed report with recommendations.</p>
+
+            <h3>Who Should Use This Tool?</h3>
+            <ul>
+                <li><strong>Website Owners:</strong> Check if your website is secure</li>
+                <li><strong>Security Professionals:</strong> Perform quick security audits</li>
+                <li><strong>Developers:</strong> Verify security configurations</li>
+                <li><strong>Students:</strong> Learn about web security</li>
+                <li><strong>Anyone Curious:</strong> Understand website security</li>
+            </ul>
+
+            <div class="info-box">
+                <strong>💡 Important Note:</strong> This tool is designed for ethical security assessment only. Only scan websites you own or have explicit permission to test.
+            </div>
+        </div>
+
+        <!-- 2. Getting Started -->
+        <div class="section" id="getting-started">
+            <h2>🚀 2. Getting Started</h2>
+            
+            <h3>How to Use the Scanner</h3>
+            <ol>
+                <li><strong>Enter a Domain:</strong> Type the website address (e.g., example.com) in the input box</li>
+                <li><strong>Click "Initiate Scan":</strong> Start the security assessment</li>
+                <li><strong>Wait for Results:</strong> The scan typically takes 10-30 seconds</li>
+                <li><strong>Review Your Report:</strong> Explore different tabs to see detailed results</li>
+            </ol>
+
+            <div class="code-example">
+                <strong>Examples of Valid Domain Formats:</strong><br><br>
+                ✅ example.com<br>
+                ✅ www.example.com<br>
+                ✅ https://example.com<br>
+                ✅ subdomain.example.com<br><br>
+                ❌ example (incomplete)<br>
+                ❌ example .com (spaces)<br>
+                ❌ example..com (double dots)
+            </div>
+
+            <h3>What Happens During a Scan?</h3>
+            <p>When you start a scan, the tool performs multiple security checks simultaneously:</p>
+            <ul>
+                <li>🔒 Checks SSL/TLS certificate validity</li>
+                <li>🛡️ Analyzes security headers</li>
+                <li>📧 Examines email security configurations</li>
+                <li>🌐 Queries DNS records</li>
+                <li>🔌 Scans for open network ports</li>
+                <li>📝 Retrieves domain registration information</li>
+                <li>⚠️ Assesses overall security risks</li>
+            </ul>
+        </div>
+
+        <!-- 3. Understanding the Basics -->
+        <div class="section" id="understanding-basics">
+            <h2>📖 3. Understanding the Basics</h2>
+            
+            <h3>What is DNS?</h3>
+            <div class="info-box">
+                <strong>Simple Explanation:</strong> DNS (Domain Name System) is like the phonebook of the internet. Just like you use a phonebook to find a phone number using a person's name, DNS helps your computer find a website's location using its domain name.
+                
+                <br><br><strong>Example:</strong> When you type "google.com", DNS translates it to an IP address like "142.250.80.46" so your computer knows where to find Google's servers.
+            </div>
+
+            <h4>Types of DNS Records:</h4>
+            <ul>
+                <li><strong>A Record:</strong> Points your domain to an IPv4 address (like 192.168.1.1)</li>
+                <li><strong>AAAA Record:</strong> Points to an IPv6 address (newer, longer format)</li>
+                <li><strong>MX Record:</strong> Tells where your email should be delivered</li>
+                <li><strong>TXT Record:</strong> Stores text information, often used for security</li>
+                <li><strong>NS Record:</strong> Shows which servers manage your domain</li>
+            </ul>
+
+            <h3>What is SSL/TLS?</h3>
+            <div class="info-box">
+                <strong>Simple Explanation:</strong> SSL/TLS is like a secure envelope for data traveling between your computer and a website. It encrypts (scrambles) the information so hackers can't read it.
+                
+                <br><br><strong>Real-World Example:</strong> When you see a padlock 🔒 in your browser's address bar, that means SSL/TLS is protecting your connection. Without it, anyone could see your passwords, credit card numbers, or personal messages.
+            </div>
+
+            <h3>What are Security Headers?</h3>
+            <div class="info-box">
+                <strong>Simple Explanation:</strong> Security headers are like instructions that a website gives to your browser, telling it how to handle and display the website safely.
+                
+                <br><br><strong>Analogy:</strong> Think of them as warning labels on products. Just as "Keep out of reach of children" protects kids, security headers protect users from online threats.
+            </div>
+
+            <h3>What is Email Security (SPF, DKIM, DMARC)?</h3>
+            <div class="info-box">
+                <strong>Simple Explanation:</strong> These are like security stamps that prove an email is really from who it claims to be, not from a scammer pretending to be someone else.
+                
+                <br><br>
+                <strong>SPF:</strong> Makes a list of approved email servers that can send mail for your domain<br>
+                <strong>DKIM:</strong> Adds a digital signature to prove the email wasn't tampered with<br>
+                <strong>DMARC:</strong> Sets rules for what to do with suspicious emails
+            </div>
+
+            <h3>What are Ports?</h3>
+            <div class="info-box">
+                <strong>Simple Explanation:</strong> Ports are like numbered doors on a building. Each door (port) is used for a specific service. Some doors should be locked (closed ports), while others need to be open for services to work.
+                
+                <br><br><strong>Examples:</strong><br>
+                • Port 80 = HTTP (regular websites)<br>
+                • Port 443 = HTTPS (secure websites)<br>
+                • Port 22 = SSH (remote server access)<br>
+                • Port 25 = SMTP (sending email)
+            </div>
+        </div>
+
+        <!-- 4. Scoring System -->
+        <div class="section" id="scoring-system">
+            <h2>📊 4. Scoring System Explained</h2>
+            
+            <h3>Overall Security Score (0-10)</h3>
+            <p>The overall score is calculated by combining scores from different security areas, each weighted by importance:</p>
+
+            <div class="score-grid">
+                <div class="score-item">
+                    <div class="score-label">Security Headers</div>
+                    <div class="score-value">30%</div>
+                    <small style="color: var(--text-secondary);">Most important</small>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">SSL/TLS Security</div>
+                    <div class="score-value">30%</div>
+                    <small style="color: var(--text-secondary);">Critical protection</small>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">Email Security</div>
+                    <div class="score-value">25%</div>
+                    <small style="color: var(--text-secondary);">Prevents spoofing</small>
+                </div>
+                <div class="score-item">
+                    <div class="score-label">Port Security</div>
+                    <div class="score-value">15%</div>
+                    <small style="color: var(--text-secondary);">Network safety</small>
+                </div>
+            </div>
+
+            <h3>Score Interpretation</h3>
+            
+            <div class="visual-example">
+                <h4>Grade Scale</h4>
+                <div style="margin: 20px 0;">
+                    <span class="badge badge-success">9.0-10.0: Excellent (A)</span>
+                    <span class="badge badge-success">7.5-8.9: Good (B)</span>
+                    <span class="badge badge-warning">5.0-7.4: Fair (C)</span>
+                    <span class="badge badge-danger">3.0-4.9: Poor (D)</span>
+                    <span class="badge badge-danger">0.0-2.9: Critical (F)</span>
+                </div>
+            </div>
+
+            <h4>🎖️ Excellent (9.0-10.0)</h4>
+            <div class="success-box">
+                <strong>What it means:</strong> Outstanding security! Your website has comprehensive protections in place. All critical security measures are properly configured.
+                <br><br><strong>Action:</strong> Maintain current security practices and stay updated with new security standards.
+            </div>
+
+            <h4>✅ Good (7.5-8.9)</h4>
+            <div class="success-box">
+                <strong>What it means:</strong> Solid security configuration with only minor improvements needed. Most protections are in place.
+                <br><br><strong>Action:</strong> Review recommendations and implement missing security headers.
+            </div>
+
+            <h4>⚠️ Fair (5.0-7.4)</h4>
+            <div class="warning-box">
+                <strong>What it means:</strong> Moderate security with several areas requiring attention. Your site has basic protection but lacks important security measures.
+                <br><br><strong>Action:</strong> Priority improvements needed. Address high-priority issues first.
+            </div>
+
+            <h4>❌ Poor (3.0-4.9)</h4>
+            <div class="warning-box">
+                <strong>What it means:</strong> Weak security posture with significant vulnerabilities. Your site is at substantial risk.
+                <br><br><strong>Action:</strong> Immediate improvements required. Implement critical security measures now.
+            </div>
+
+            <h4>🚨 Critical (0.0-2.9)</h4>
+            <div class="warning-box">
+                <strong>What it means:</strong> Critical security failures that need immediate attention. Your site is highly vulnerable to attacks.
+                <br><br><strong>Action:</strong> Emergency remediation required. Consider taking site offline until security is fixed.
+            </div>
+
+            <h3>Individual Component Scores</h3>
+
+            <h4>SSL/TLS Score (0-10)</h4>
+            <p>Measures the strength of your website's encryption:</p>
+            <ul>
+                <li><strong>10 points:</strong> Valid certificate, modern protocol (TLS 1.2+), strong encryption</li>
+                <li><strong>-5 points:</strong> Expired certificate or using SSLv2/SSLv3</li>
+                <li><strong>-3 points:</strong> Weak encryption (less than 128 bits)</li>
+                <li><strong>-2 points:</strong> Outdated protocol (TLS 1.0/1.1)</li>
+                <li><strong>-1 point:</strong> Certificate expires soon (under 30 days)</li>
+            </ul>
+
+            <h4>Security Headers Score (0-10)</h4>
+            <p>Based on presence and configuration of security headers:</p>
+            <ul>
+                <li><strong>Critical Headers (2.5 points each):</strong>
+                    <ul>
+                        <li>Content-Security-Policy</li>
+                        <li>Strict-Transport-Security</li>
+                    </ul>
+                </li>
+                <li><strong>Important Headers (1.0-1.5 points each):</strong>
+                    <ul>
+                        <li>X-Frame-Options</li>
+                        <li>X-Content-Type-Options</li>
+                        <li>Permissions-Policy</li>
+                    </ul>
+                </li>
+                <li><strong>Recommended Headers (0.5-0.8 points each):</strong>
+                    <ul>
+                        <li>Referrer-Policy</li>
+                        <li>X-XSS-Protection</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h4>Email Security Score (0-10)</h4>
+            <p>Evaluates email authentication mechanisms:</p>
+            <ul>
+                <li><strong>SPF Configured:</strong> 2.5 points (+ 0.8 bonus for strict mode)</li>
+                <li><strong>DMARC Configured:</strong> 2.0 points (+ 1.3 for 'reject' policy)</li>
+                <li><strong>DKIM Configured:</strong> 3.0 points</li>
+                <li><strong>MX Records Present:</strong> 0.4 points</li>
+            </ul>
+
+            <h4>Risk Levels</h4>
+            <div class="visual-example">
+                <div style="margin: 20px 0;">
+                    <span class="badge badge-success">LOW RISK</span> - Well protected, minimal vulnerabilities
+                    <br><br>
+                    <span class="badge badge-info">MEDIUM RISK</span> - Some vulnerabilities present
+                    <br><br>
+                    <span class="badge badge-warning">HIGH RISK</span> - Significant security gaps
+                    <br><br>
+                    <span class="badge badge-danger">CRITICAL RISK</span> - Severe vulnerabilities requiring immediate action
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Security Features -->
+        <div class="section" id="security-features">
+            <h2>🛡️ 5. Security Features Explained</h2>
+            
+            <h3>SSL/TLS Certificate Analysis</h3>
+            <p>What we check:</p>
+            <ul>
+                <li><strong>Certificate Validity:</strong> Is the certificate expired or valid?</li>
+                <li><strong>Expiration Date:</strong> When will the certificate expire?</li>
+                <li><strong>Issuer:</strong> Who issued the certificate? (e.g., Let's Encrypt, DigiCert)</li>
+                <li><strong>Encryption Strength:</strong> How strong is the encryption? (128-bit, 256-bit)</li>
+                <li><strong>Protocol Version:</strong> Which security protocol is used? (TLS 1.2, TLS 1.3)</li>
+                <li><strong>Subject Alternative Names (SAN):</strong> Which domains are covered?</li>
+            </ul>
+
+            <div class="warning-box">
+                <strong>⚠️ Common Issues:</strong>
+                <ul>
+                    <li>Expired certificates make browsers show "Not Secure" warnings</li>
+                    <li>Self-signed certificates aren't trusted by browsers</li>
+                    <li>Weak encryption can be broken by attackers</li>
+                    <li>Old protocols (SSLv3, TLS 1.0) have known vulnerabilities</li>
+                </ul>
+            </div>
+
+            <h3>Security Headers</h3>
+            
+            <h4>Critical Headers:</h4>
+            
+            <div class="info-box">
+                <strong>Strict-Transport-Security (HSTS)</strong>
+                <br><br>
+                <strong>What it does:</strong> Forces browsers to only use HTTPS connections
+                <br><strong>Why it matters:</strong> Prevents attackers from downgrading your connection to insecure HTTP
+                <br><strong>Example value:</strong> max-age=31536000; includeSubDomains; preload
+            </div>
+
+            <div class="info-box">
+                <strong>Content-Security-Policy (CSP)</strong>
+                <br><br>
+                <strong>What it does:</strong> Controls what content can be loaded on your webpage
+                <br><strong>Why it matters:</strong> Prevents XSS attacks, clickjacking, and code injection
+                <br><strong>Real-world impact:</strong> Stops hackers from injecting malicious scripts into your pages
+            </div>
+
+            <h4>Important Headers:</h4>
+            
+            <div class="info-box">
+                <strong>X-Frame-Options</strong>
+                <br><br>
+                <strong>What it does:</strong> Prevents your site from being embedded in frames/iframes
+                <br><strong>Why it matters:</strong> Protects against clickjacking attacks where attackers trick users into clicking hidden elements
+                <br><strong>Recommended value:</strong> DENY or SAMEORIGIN
+            </div>
+
+            <div class="info-box">
+                <strong>X-Content-Type-Options</strong>
+                <br><br>
+                <strong>What it does:</strong> Prevents browsers from guessing file types
+                <br><strong>Why it matters:</strong> Stops MIME-sniffing attacks where malicious files are disguised as safe files
+                <br><strong>Required value:</strong> nosniff
+            </div>
+
+            <h3>Email Security Configuration</h3>
+            
+            <h4>SPF (Sender Policy Framework)</h4>
+            <div class="info-box">
+                <strong>Purpose:</strong> Lists which mail servers are allowed to send email for your domain
+                <br><br>
+                <strong>Example Record:</strong> v=spf1 include:_spf.google.com ~all
+                <br><br>
+                <strong>How it protects you:</strong>
+                <ul>
+                    <li>Prevents spammers from sending fake emails pretending to be from your domain</li>
+                    <li>Reduces the chance your emails are marked as spam</li>
+                    <li>Protects your brand reputation</li>
+                </ul>
+            </div>
+
+            <h4>DMARC (Domain-based Message Authentication)</h4>
+            <div class="info-box">
+                <strong>Purpose:</strong> Tells email providers what to do with emails that fail authentication
+                <br><br>
+                <strong>Policy Options:</strong>
+                <ul>
+                    <li><strong>none:</strong> Just monitor, don't block anything</li>
+                    <li><strong>quarantine:</strong> Send suspicious emails to spam folder</li>
+                    <li><strong>reject:</strong> Block suspicious emails completely</li>
+                </ul>
+                <br>
+                <strong>Best Practice:</strong> Use "reject" policy for maximum protection
+            </div>
+
+            <h4>DKIM (DomainKeys Identified Mail)</h4>
+            <div class="info-box">
+                <strong>Purpose:</strong> Adds a digital signature to your emails to prove they're authentic
+                <br><br>
+                <strong>How it works:</strong> Like a wax seal on a letter - if the seal is broken, you know someone tampered with it
+                <br><br>
+                <strong>Protection:</strong> Prevents email tampering and proves your emails are genuine
+            </div>
+
+            <h3>Port Scanning</h3>
+            <p>We check common network ports to see which services are accessible from the internet:</p>
+
+            <h4>Common Ports and Their Risk Levels:</h4>
+            
+            <div class="warning-box">
+                <strong>🔴 High Risk Ports (Should Usually Be Closed):</strong>
+                <ul>
+                    <li><strong>Port 21 (FTP):</strong> File transfer - often unencrypted</li>
+                    <li><strong>Port 23 (Telnet):</strong> Remote access - sends passwords in plain text</li>
+                    <li><strong>Port 3389 (RDP):</strong> Remote desktop - common attack target</li>
+                    <li><strong>Port 445 (SMB):</strong> File sharing - vulnerable to ransomware</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <strong>🟡 Medium Risk Ports (Need Proper Security):</strong>
+                <ul>
+                    <li><strong>Port 22 (SSH):</strong> Secure remote access - use key-based authentication</li>
+                    <li><strong>Port 3306 (MySQL):</strong> Database - should not be exposed to internet</li>
+                    <li><strong>Port 5432 (PostgreSQL):</strong> Database - restrict access</li>
+                </ul>
+            </div>
+
+            <div class="success-box">
+                <strong>✅ Normal Ports (Usually Safe):</strong>
+                <ul>
+                    <li><strong>Port 80 (HTTP):</strong> Regular website traffic</li>
+                    <li><strong>Port 443 (HTTPS):</strong> Secure website traffic</li>
+                    <li><strong>Port 25 (SMTP):</strong> Email sending</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 6. Interpreting Results -->
+        <div class="section" id="interpreting-results">
+            <h2>🔍 6. Interpreting Your Results</h2>
+            
+            <h3>Understanding the Dashboard</h3>
+            
+            <h4>Stats Cards</h4>
+            <p>At the top of your results, you'll see 5 key metrics:</p>
+            
+            <div class="info-box">
+                <strong>1. Overall Score:</strong> Your website's combined security rating (0-10)
+                <br><strong>What to look for:</strong> Aim for 8.0 or higher
+                <br><br>
+                <strong>2. SSL/TLS Score:</strong> Certificate and encryption strength
+                <br><strong>What to look for:</strong> Should be 9.0+ with valid certificate
+                <br><br>
+                <strong>3. Security Headers Grade:</strong> Letter grade (A+ to F)
+                <br><strong>What to look for:</strong> Aim for A- or better
+                <br><br>
+                <strong>4. Email Security Score:</strong> Email authentication strength
+                <br><strong>What to look for:</strong> 7.0+ with LOW or MEDIUM risk
+                <br><br>
+                <strong>5. Risk Level:</strong> Overall security assessment
+                <br><strong>What to look for:</strong> LOW or MEDIUM risk
+            </div>
+
+            <h3>Navigation Tabs Explained</h3>
+            
+            <h4>📊 Overview Tab</h4>
+            <ul>
+                <li><strong>Scan Summary:</strong> Quick snapshot of all security metrics</li>
+                <li><strong>Quick Summary:</strong> Key findings at a glance</li>
+                <li><strong>Recommendations:</strong> Prioritized action items</li>
+            </ul>
+
+            <h4>🔒 SSL/TLS Tab</h4>
+            <ul>
+                <li><strong>Certificate Details:</strong> Who issued it, when it expires</li>
+                <li><strong>Encryption Information:</strong> Protocol version and cipher strength</li>
+                <li><strong>Vulnerabilities:</strong> Any SSL/TLS security issues found</li>
+                <li><strong>Fingerprints:</strong> Unique identifiers for the certificate</li>
+            </ul>
+
+            <h4>🛡️ Security Headers Tab</h4>
+            <ul>
+                <li><strong>Grade Assessment:</strong> Letter grade with reasoning</li>
+                <li><strong>Header Details:</strong> Which headers are present/missing</li>
+                <li><strong>Cookie Security:</strong> How securely cookies are configured</li>
+                <li><strong>Information Disclosure:</strong> Any sensitive info being leaked</li>
+            </ul>
+
+            <h4>📧 Email Security Tab</h4>
+            <ul>
+                <li><strong>SPF Analysis:</strong> Sender authentication status</li>
+                <li><strong>DMARC Policy:</strong> Email filtering rules</li>
+                <li><strong>DKIM Configuration:</strong> Email signature verification</li>
+                <li><strong>MX Records:</strong> Mail server configuration</li>
+            </ul>
+
+            <h4>🌐 DNS Records Tab</h4>
+            <ul>
+                <li><strong>All DNS Records:</strong> Complete listing by type</li>
+                <li><strong>Record Counts:</strong> How many of each type exist</li>
+                <li><strong>Record Values:</strong> Actual configuration data</li>
+            </ul>
+
+            <h4>🔌 Port Scan Tab</h4>
+            <ul>
+                <li><strong>Open Ports:</strong> Which network ports are accessible</li>
+                <li><strong>Service Identification:</strong> What's running on each port</li>
+                <li><strong>Risk Assessment:</strong> Danger level of each open port</li>
+                <li><strong>HTTP Methods:</strong> Which HTTP operations are allowed</li>
+            </ul>
+
+            <h4>📝 WHOIS Tab</h4>
+            <ul>
+                <li><strong>Registration Info:</strong> When domain was registered/expires</li>
+                <li><strong>Registrar Details:</strong> Who manages the domain</li>
+                <li><strong>Name Servers:</strong> DNS servers handling the domain</li>
+                <li><strong>Geolocation:</strong> Physical location of servers</li>
+            </ul>
+
+            <h4>⚠️ Risk Assessment Tab</h4>
+            <ul>
+                <li><strong>Critical Issues:</strong> Urgent problems requiring immediate action</li>
+                <li><strong>High Priority:</strong> Important issues to address soon</li>
+                <li><strong>Medium Priority:</strong> Issues to address when possible</li>
+                <li><strong>Overall Risk Level:</strong> Combined security assessment</li>
+            </ul>
+
+            <h3>Color Coding System</h3>
+            <div class="visual-example">
+                <span class="badge badge-success">GREEN</span> = Good/Secure/Configured
+                <br><br>
+                <span class="badge badge-warning">YELLOW/ORANGE</span> = Warning/Needs Attention
+                <br><br>
+                <span class="badge badge-danger">RED</span> = Critical/Missing/Insecure
+                <br><br>
+                <span class="badge badge-info">BLUE</span> = Informational/Neutral
+            </div>
+        </div>
+
+        <!-- 7. Recommendations -->
+        <div class="section" id="recommendations">
+            <h2>💡 7. Taking Action on Your Results</h2>
+            
+            <h3>Priority Levels for Fixes</h3>
+            
+            <h4>🚨 Critical Priority (Fix Immediately)</h4>
+            <div class="warning-box">
+                <strong>Issues that require immediate attention:</strong>
+                <ul>
+                    <li>Expired or invalid SSL certificate</li>
+                    <li>No SSL/TLS encryption at all</li>
+                    <li>Critical security headers missing (CSP, HSTS)</li>
+                    <li>No email security (SPF, DMARC, DKIM all missing)</li>
+                    <li>Dangerous ports exposed (Telnet, FTP, RDP)</li>
+                    <li>Overall score below 3.0</li>
+                </ul>
+                <br>
+                <strong>Timeline:</strong> Fix within 24-48 hours
+                <br><strong>Risk:</strong> Your site is highly vulnerable to attacks
+            </div>
+
+            <h4>⚠️ High Priority (Fix This Week)</h4>
+            <div class="warning-box">
+                <strong>Important issues to address soon:</strong>
+                <ul>
+                    <li>SSL certificate expiring within 30 days</li>
+                    <li>Missing important security headers</li>
+                    <li>Weak email security (only 1-2 of SPF/DMARC/DKIM)</li>
+                    <li>Multiple high-risk ports open</li>
+                    <li>Overall score 3.0-5.0</li>
+                </ul>
+                <br>
+                <strong>Timeline:</strong> Fix within 1 week
+                <br><strong>Risk:</strong> Significant vulnerabilities present
+            </div>
+
+            <h4>📌 Medium Priority (Fix This Month)</h4>
+            <div class="info-box">
+                <strong>Issues to improve when possible:</strong>
+                <ul>
+                    <li>Missing recommended security headers</li>
+                    <li>Suboptimal email security policies</li>
+                    <li>Information disclosure in headers</li>
+                    <li>Medium-risk ports that could be restricted</li>
+                    <li>Overall score 5.0-7.0</li>
+                </ul>
+                <br>
+                <strong>Timeline:</strong> Fix within 30 days
+                <br><strong>Risk:</strong> Moderate security gaps
+            </div>
+
+            <h3>Step-by-Step Fix Guides</h3>
+            
+            <h4>How to Fix SSL/TLS Issues</h4>
+            <div class="code-example">
+                <strong>Step 1: Get a Free SSL Certificate</strong>
+                • Use Let's Encrypt (free, automated, trusted)
+                • Visit: https://letsencrypt.org/
+                • Most web hosts offer one-click SSL installation
+                
+                <br><br><strong>Step 2: Install the Certificate</strong>
+                • Contact your hosting provider, or
+                • Use cPanel/Plesk SSL/TLS section, or
+                • Use Certbot (automated tool)
+                
+                <br><br><strong>Step 3: Force HTTPS</strong>
+                • Redirect all HTTP traffic to HTTPS
+                • Add this to your .htaccess file:
+                
+                RewriteEngine On
+                RewriteCond %{HTTPS} off
+                RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+                
+                <br><br><strong>Step 4: Set Auto-Renewal</strong>
+                • Let's Encrypt certificates expire every 90 days
+                • Set up automatic renewal to avoid downtime
+            </div>
+
+            <h4>How to Add Security Headers</h4>
+            <div class="code-example">
+                <strong>For Apache (.htaccess file):</strong>
+                
+                # Add security headers
+                Header set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+                Header set X-Frame-Options "DENY"
+                Header set X-Content-Type-Options "nosniff"
+                Header set X-XSS-Protection "1; mode=block"
+                Header set Referrer-Policy "strict-origin-when-cross-origin"
+                Header set Content-Security-Policy "default-src 'self'"
+                
+                <br><br><strong>For Nginx (nginx.conf):</strong>
+                
+                add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+                add_header X-Frame-Options "DENY" always;
+                add_header X-Content-Type-Options "nosniff" always;
+                add_header X-XSS-Protection "1; mode=block" always;
+                add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+                add_header Content-Security-Policy "default-src 'self'" always;
+                
+                <br><br><strong>Note:</strong> Test thoroughly after adding headers, as CSP can break site functionality if too strict
+            </div>
+
+            <h4>How to Configure Email Security</h4>
+            <div class="code-example">
+                <strong>Step 1: Add SPF Record</strong>
+                • Log into your DNS provider (GoDaddy, Cloudflare, etc.)
+                • Add a TXT record for your domain
+                • Record name: @ (or your domain)
+                • Record value: v=spf1 include:_spf.google.com ~all
+                  (Replace with your email provider's SPF record)
+                
+                <br><br><strong>Step 2: Add DMARC Record</strong>
+                • Add another TXT record
+                • Record name: _dmarc
+                • Record value: v=DMARC1; p=quarantine; rua=mailto:your@email.com
+                
+                <br><br><strong>Step 3: Set up DKIM</strong>
+                • Contact your email provider for DKIM keys
+                • Add the provided TXT record to your DNS
+                • Usually looks like: selector._domainkey
+                
+                <br><br><strong>Step 4: Test and Monitor</strong>
+                • Wait 24-48 hours for DNS propagation
+                • Re-scan with Site Index to verify
+                • Gradually change DMARC policy from 'none' → 'quarantine' → 'reject'
+            </div>
+
+            <h4>How to Secure Open Ports</h4>
+            <div class="info-box">
+                <strong>Method 1: Close Unnecessary Ports</strong>
+                <ul>
+                    <li>Use your firewall to block unused ports</li>
+                    <li>Contact your hosting provider to close dangerous ports</li>
+                    <li>Only keep ports open that your services need</li>
+                </ul>
+                
+                <br><strong>Method 2: Restrict Access by IP</strong>
+                <ul>
+                    <li>If you must keep sensitive ports open (SSH, MySQL)</li>
+                    <li>Whitelist only your IP addresses</li>
+                    <li>Use VPN for remote access</li>
+                </ul>
+                
+                <br><strong>Method 3: Use Strong Authentication</strong>
+                <ul>
+                    <li>Disable password authentication for SSH</li>
+                    <li>Use SSH keys instead</li>
+                    <li>Enable two-factor authentication where available</li>
+                </ul>
+            </div>
+
+            <h3>Getting Professional Help</h3>
+            <div class="warning-box">
+                <strong>When to Hire a Security Professional:</strong>
+                <ul>
+                    <li>Your score is below 4.0 and you don't know how to fix it</li>
+                    <li>You handle sensitive data (payments, personal information)</li>
+                    <li>You've been hacked or suspect a breach</li>
+                    <li>Your site generates significant revenue</li>
+                    <li>You need compliance (PCI-DSS, HIPAA, GDPR)</li>
+                </ul>
+                <br>
+                <strong>What they can do:</strong> Comprehensive security audit, penetration testing, custom security configuration, compliance assistance, incident response
+            </div>
+        </div>
+
+        <!-- 8. FAQ -->
+        <div class="section" id="faq">
+            <h2>❓ 8. Frequently Asked Questions</h2>
+            
+            <h3>General Questions</h3>
+            
+            <h4>Q: Is this tool safe to use?</h4>
+            <div class="info-box">
+                <strong>A:</strong> Yes, absolutely. Site Index only performs passive scanning - it reads publicly available information about your website. It doesn't attempt to exploit vulnerabilities or harm your site in any way. Think of it like checking if your front door is locked without actually trying to break in.
+            </div>
+
+            <h4>Q: How often should I scan my website?</h4>
+            <div class="info-box">
+                <strong>A:</strong> We recommend:
+                <ul>
+                    <li><strong>After major changes:</strong> Every time you update your server or security settings</li>
+                    <li><strong>Regular checkups:</strong> Once per month for most sites</li>
+                    <li><strong>High-security sites:</strong> Weekly or after any configuration change</li>
+                    <li><strong>After security news:</strong> When new vulnerabilities are announced</li>
+                </ul>
+            </div>
+
+            <h4>Q: Can I scan any website?</h4>
+            <div class="warning-box">
+                <strong>A:</strong> Legally, you should only scan:
+                <ul>
+                    <li>Websites you own</li>
+                    <li>Websites you manage (with client permission)</li>
+                    <li>Websites where you have explicit written permission</li>
+                </ul>
+                Scanning websites without permission may violate terms of service or laws in your jurisdiction.
+            </div>
+
+            <h4>Q: Why is my scan taking so long?</h4>
+            <div class="info-box">
+                <strong>A:</strong> Scans typically take 10-30 seconds. Longer scans may occur due to:
+                <ul>
+                    <li>Slow DNS responses</li>
+                    <li>Server rate limiting</li>
+                    <li>Network congestion</li>
+                    <li>Firewalls blocking certain checks</li>
+                </ul>
+                If a scan exceeds 60 seconds, try again later or check if the domain is accessible.
+            </div>
+
+            <h3>Score and Results Questions</h3>
+
+            <h4>Q: What's a good security score?</h4>
+            <div class="info-box">
+                <strong>A:</strong> 
+                <ul>
+                    <li><strong>8.0+:</strong> Excellent - Well protected</li>
+                    <li><strong>6.0-7.9:</strong> Good - Some improvements needed</li>
+                    <li><strong>4.0-5.9:</strong> Fair - Significant work needed</li>
+                    <li><strong>Below 4.0:</strong> Poor/Critical - Immediate action required</li>
+                </ul>
+                For most websites, aim for 7.5 or higher.
+            </div>
+
+            <h4>Q: My score is low. Does this mean I'll definitely get hacked?</h4>
+            <div class="info-box">
+                <strong>A:</strong> Not necessarily, but you're at higher risk. A low score means you're missing important security protections. Think of it like leaving your house unlocked - you might not get robbed, but you're making it much easier for thieves. Fix the issues to reduce your risk significantly.
+            </div>
+
+            <h4>Q: I got a perfect 10/10 score. Am I completely secure?</h4>
+            <div class="warning-box">
+                <strong>A:</strong> While a 10/10 is excellent, no website is 100% secure. This scan checks many important security measures, but it can't test everything (like your code quality, database security, or user password strength). A perfect score means you have strong foundational security, but you should still:
+                <ul>
+                    <li>Keep software updated</li>
+                    <li>Use strong passwords</li>
+                    <li>Monitor for suspicious activity</li>
+                    <li>Regular backups</li>
+                    <li>Stay informed about new threats</li>
+                </ul>
+            </div>
+
+            <h4>Q: Why do different security tools give different scores?</h4>
+            <div class="info-box">
+                <strong>A:</strong> Different tools weigh factors differently and test different aspects of security. Some focus heavily on SSL, others on headers, etc. Use multiple tools for a comprehensive view. Our scoring balances all major security aspects equally.
+            </div>
+
+            <h3>Technical Questions</h3>
+
+            <h4>Q: What does "SSL certificate expires in X days" mean?</h4>
+            <div class="info-box">
+                <strong>A:</strong> SSL certificates have an expiration date (usually 90 days for free certificates, 1 year for paid). When a certificate expires, browsers will show scary warning messages to your visitors. You need to renew your certificate before it expires. Most modern systems can do this automatically.
+            </div>
+
+            <h4>Q: What is "Content-Security-Policy" and why is it important?</h4>
+            <div class="info-box">
+                <strong>A:</strong> CSP is like a security guard for your website. It tells browsers which resources (scripts, images, etc.) are allowed to load on your pages. This prevents attackers from injecting malicious code. Without CSP, if someone finds a way to add code to your site, browsers will run it without question.
+            </div>
+
+            <h4>Q: I have SPF but no DMARC. Is that okay?</h4>
+            <div class="warning-box">
+                <strong>A:</strong> It's better than nothing, but not ideal. Think of it this way:
+                <ul>
+                    <li><strong>SPF alone:</strong> Like having a list of approved visitors but no security guard</li>
+                    <li><strong>SPF + DMARC:</strong> Having the list AND a security guard who checks it and takes action</li>
+                    <li><strong>All three (SPF + DMARC + DKIM):</strong> Multiple layers of verification</li>
+                </ul>
+                You should implement all three for proper email security.
+            </div>
+
+            <h4>Q: Why does my site show open ports?</h4>
+            <div class="info-box">
+                <strong>A:</strong> Ports are necessary for services to work:
+                <ul>
+                    <li><strong>Ports 80/443 (HTTP/HTTPS):</strong> Normal and necessary for websites</li>
+                    <li><strong>Port 22 (SSH):</strong> May be needed for server management (secure it properly)</li>
+                    <li><strong>Ports 21, 23, 3389:</strong> Should usually be closed (use secure alternatives)</li>
+                </ul>
+                The issue isn't having open ports - it's having unnecessary or improperly secured ones.
+            </div>
+
+            <h3>Troubleshooting</h3>
+
+            <h4>Q: The scan failed with an error. What should I do?</h4>
+            <div class="info-box">
+                <strong>A:</strong> Common solutions:
+                <ul>
+                    <li>Check that you entered the domain correctly (no http://, no trailing slashes)</li>
+                    <li>Verify the domain is accessible from your browser</li>
+                    <li>Check if the domain has DNS records configured</li>
+                    <li>Some very restrictive firewalls may block scanning tools</li>
+                    <li>Try again in a few minutes - temporary network issues</li>
+                </ul>
+            </div>
+
+            <h4>Q: Why can't the scanner access my site?</h4>
+            <div class="info-box">
+                <strong>A:</strong> Possible reasons:
+                <ul>
+                    <li><strong>Domain not propagated:</strong> New domains take 24-48 hours to work globally</li>
+                    <li><strong>Firewall blocking:</strong> Your server firewall may block security scanners</li>
+                    <li><strong>Cloudflare protection:</strong> May require temporarily disabling "I'm Under Attack" mode</li>
+                    <li><strong>Development site:</strong> Sites behind authentication or not publicly accessible</li>
+                </ul>
+            </div>
+
+            <h4>Q: My hosting provider says their security is good, but I got a low score. Why?</h4>
+            <div class="info-box">
+                <strong>A:</strong> Hosting providers secure their infrastructure, but YOU must secure your website configuration. It's like living in a gated community - the neighborhood is secure, but you still need to lock your own doors. Security headers, SSL configuration, and email security are typically your responsibility to configure.
+            </div>
+
+            <h3>Privacy and Data</h3>
+
+            <h4>Q: Do you store my scan results?</h4>
+            <div class="info-box">
+                <strong>A:</strong> Scan results are generated in real-time and not permanently stored on our servers. The data exists only during your browser session. Once you close the page, the results are gone.
+            </div>
+
+            <h4>Q: Can other people see my scan results?</h4>
+            <div class="info-box">
+                <strong>A:</strong> No. Each scan is private and only visible to you during your session. We don't create public databases or share results.
+            </div>
+
+            <h4>Q: Is the information you show publicly available?</h4>
+            <div class="info-box">
+                <strong>A:</strong> Yes. Everything this tool checks is publicly accessible information:
+                <ul>
+                    <li>SSL certificates are public by design</li>
+                    <li>HTTP headers are sent with every page request</li>
+                    <li>DNS records are publicly queryable</li>
+                    <li>WHOIS data is public domain registration info</li>
+                    <li>Open ports can be detected by anyone</li>
+                </ul>
+                We're not accessing private data - we're just organizing public information in a helpful way.
+            </div>
+        </div>
+
+        <!-- Additional Resources -->
+        <div class="section">
+            <h2>📚 Additional Resources</h2>
+            
+            <h3>Learn More About Web Security</h3>
+            <ul>
+                <li><strong>OWASP Top 10:</strong> Most critical web application security risks</li>
+                <li><strong>Mozilla Observatory:</strong> Another security scanner to cross-check results</li>
+                <li><strong>SSL Labs:</strong> In-depth SSL/TLS analysis</li>
+                <li><strong>SecurityHeaders.com:</strong> Detailed header analysis and guidance</li>
+            </ul>
+
+            <h3>Free Security Tools</h3>
+            <ul>
+                <li><strong>Let's Encrypt:</strong> Free SSL certificates</li>
+                <li><strong>Cloudflare:</strong> Free CDN with security features</li>
+                <li><strong>Sucuri SiteCheck:</strong> Malware scanning</li>
+                <li><strong>VirusTotal:</strong> Multi-engine malware scanner</li>
+            </ul>
+
+            <h3>Stay Updated</h3>
+            <div class="info-box">
+                Web security is constantly evolving. New threats emerge regularly, and security standards change. To stay protected:
+                <ul>
+                    <li>Follow security news and blogs</li>
+                    <li>Keep all software updated</li>
+                    <li>Regular security scans (monthly minimum)</li>
+                    <li>Subscribe to security mailing lists</li>
+                    <li>Review and update security policies yearly</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="section" style="text-align: center; border-top: 2px solid var(--border-color); padding-top: 40px;">
+            <h2>Need Help?</h2>
+            <p style="font-size: 1.1rem; color: var(--text-secondary); margin: 20px 0;">
+                If you have questions not covered in this documentation or need assistance interpreting your results,
+                please consult with a security professional.
+            </p>
+            <div class="nav-buttons">
+                <a href="/" class="btn">🔍 Run Another Scan</a>
+            </div>
+            <p style="margin-top: 40px; color: var(--text-muted);">
+                Site Index Security Scanner v2.0.0 | © 2025<br>
+                For educational and ethical security assessment purposes only
+            </p>
+        </div>
+    </div>
+</body>
+</html>
