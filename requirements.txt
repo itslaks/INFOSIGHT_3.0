@@ -24,3 +24,5 @@ exifread
 piexif
 deepface
 markdown2
+pytz
+python-dateutil
