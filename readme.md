@@ -420,8 +420,7 @@ This software is proprietary and confidential. Unauthorized copying, distributio
 
 For issues or questions:
 - 📧 Email: sjlakshan2004@gmail.com
-- 📖 Documentation: [Internal Wiki]
-- 🐛 Bug Reports: [Issue Tracker]
+- 🔗 Linkedin : https://www.linkedin.com/in/lakshan013/
 
 ---
 
