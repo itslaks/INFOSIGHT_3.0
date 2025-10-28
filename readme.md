@@ -419,7 +419,7 @@ This software is proprietary and confidential. Unauthorized copying, distributio
 ## 📞 Support
 
 For issues or questions:
-- 📧 Email: sjlaksham2004@gmail.com
+- 📧 Email: sjlakshan2004@gmail.com
 - 📖 Documentation: [Internal Wiki]
 - 🐛 Bug Reports: [Issue Tracker]
 
@@ -429,7 +429,7 @@ For issues or questions:
 
 **⚡ Built with Python & Flask | Powered by AI | Secured by Design ⚡**
 
-**🍂 Built By Lakshan For Tech Community  **
+**🍂 Built By Lakshan For Tech Community**
 
 *Last Updated: October 2025*
 
