@@ -166,6 +166,7 @@ http://127.0.0.1:5000
 
 ### 1. **WEBSEEKER** - Web Security Scanner
 > Comprehensive threat intelligence combining VirusTotal and Nmap scanning
+ - **⚠️ Requires Nmap and Npcap installation**
 - Domain/URL malware detection
 - Port vulnerability analysis
 - Real-time threat assessment
@@ -197,7 +198,7 @@ http://127.0.0.1:5000
 > Military-grade data protection
 - AES, RSA, Fernet encryption
 - Secure key management
-- File encryption/decryption
+  
 
 ### 6. **TRACKLYST** - OSINT Tool
 > Username reconnaissance platform
@@ -242,6 +243,7 @@ http://127.0.0.1:5000
 - Technical documentation
 - Creative writing
 
+### 13. **AEGIS AI** - Coming Soon In production
 ---
 
 ## 📖 Usage
