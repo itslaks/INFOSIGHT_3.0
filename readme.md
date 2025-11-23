@@ -206,44 +206,51 @@ http://127.0.0.1:5000
 - Digital footprint analysis
 - Cross-platform tracking
 
-### 7. **SNAPSPEAK AI** - Image Forensics
+###  7. **DONNA AI** - Dark Web OSINT Intelligence Platform
+> Threat intelligence and automated artifact extraction
+- **⚠️ Requires Ollama local model and TOR installation**
+- Multi-engine dark web & clearnet search aggregation
+- Automated extraction of 15+ artifact types
+- AI-powered threat assessment with real-time risk scoring
+
+### 8. **SNAPSPEAK AI** - Image Forensics
 > AI-powered image analysis
 - Automatic captioning
 - Steganography detection
 - Metadata extraction
 - Image hashing
 
-### 8. **TRUESHOT AI** - Authenticity Verification
+### 9. **TRUESHOT AI** - Authenticity Verification
 > Advanced media validation
 - Deepfake detection
 - Edit identification
 - Digital manipulation analysis
 
-### 9. **INFOSIGHT AI** - Data Intelligence
+### 10. **INFOSIGHT AI** - Data Intelligence
 > Machine learning analytics platform
 - Pattern recognition
 - Anomaly detection
 - Trend analysis
 
-### 10. **LANA AI** - AI Assistant
+### 11. **LANA AI** - AI Assistant
 > Generative AI assistant
 - Voice and text interaction
 - Natural language processing
 - Task automation
 
-### 11. **CYBERSENTRY AI** - Security Monitoring
+### 12. **CYBERSENTRY AI** - Security Monitoring
 > Autonomous cybersecurity AI
 - Real-time threat detection
 - Network monitoring
 - Intelligent alerting
 
-### 12. **INKWELL AI** - Content Generator
+### 13. **INKWELL AI** - Content Generator
 > Professional AI writing engine
 - Article generation
 - Technical documentation
 - Creative writing
 
-### 13. **AEGIS AI** - Coming Soon In production
+  
 ---
 
 ## 📖 Usage
@@ -430,6 +437,6 @@ For issues or questions:
 
 **🍂 Built By Lakshan For Tech Community**
 
-*Last Updated: October 2025*
+*Last Updated: November 2025*
 
 </div>
