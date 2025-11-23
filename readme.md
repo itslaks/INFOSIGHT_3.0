@@ -10,7 +10,7 @@
 [![Flask](https://img.shields.io/badge/Flask-Latest-green.svg)](https://flask.palletsprojects.com/)
 [![License](https://img.shields.io/badge/License-Private-red.svg)](LICENSE)
 
-*A comprehensive security platform featuring 12 specialized tools for threat detection, data protection, and AI-powered intelligence.*
+*A comprehensive security platform featuring 13 specialized tools for threat detection, data protection, and AI-powered intelligence.*
 
 [Features](#features) • [Installation](#installation) • [Tools](#tools) • [Usage](#usage) • [Requirements](#requirements)
 
