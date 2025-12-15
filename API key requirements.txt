@@ -23,3 +23,8 @@ lana AI:
 CyberSentry AI:
 1) gemini API key: https://www.gemini.com/developers
 
+DONNA AI:
+1) gemini API key: https://www.gemini.com/developers
+2) Need Ollama to be installed locally 
+3) TOR required
+
