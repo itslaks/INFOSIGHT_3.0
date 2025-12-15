@@ -10,7 +10,7 @@
 [![Flask](https://img.shields.io/badge/Flask-Latest-green.svg)](https://flask.palletsprojects.com/)
 [![License](https://img.shields.io/badge/License-Private-red.svg)](LICENSE)
 
-*A comprehensive security platform featuring 12 specialized tools for threat detection, data protection, and AI-powered intelligence.*
+*A comprehensive security platform featuring 13 specialized tools for threat detection, data protection, and AI-powered intelligence.*
 
 [Features](#features) • [Installation](#installation) • [Tools](#tools) • [Usage](#usage) • [Requirements](#requirements)
 
@@ -166,6 +166,7 @@ http://127.0.0.1:5000
 
 ### 1. **WEBSEEKER** - Web Security Scanner
 > Comprehensive threat intelligence combining VirusTotal and Nmap scanning
+ - **⚠️ Requires Nmap and Npcap installation**
 - Domain/URL malware detection
 - Port vulnerability analysis
 - Real-time threat assessment
@@ -197,7 +198,7 @@ http://127.0.0.1:5000
 > Military-grade data protection
 - AES, RSA, Fernet encryption
 - Secure key management
-- File encryption/decryption
+  
 
 ### 6. **TRACKLYST** - OSINT Tool
 > Username reconnaissance platform
@@ -205,43 +206,51 @@ http://127.0.0.1:5000
 - Digital footprint analysis
 - Cross-platform tracking
 
-### 7. **SNAPSPEAK AI** - Image Forensics
+###  7. **DONNA AI** - Dark Web OSINT Intelligence Platform
+> Threat intelligence and automated artifact extraction
+- **⚠️ Requires Ollama local model and TOR installation**
+- Multi-engine dark web & clearnet search aggregation
+- Automated extraction of 15+ artifact types
+- AI-powered threat assessment with real-time risk scoring
+
+### 8. **SNAPSPEAK AI** - Image Forensics
 > AI-powered image analysis
 - Automatic captioning
 - Steganography detection
 - Metadata extraction
 - Image hashing
 
-### 8. **TRUESHOT AI** - Authenticity Verification
+### 9. **TRUESHOT AI** - Authenticity Verification
 > Advanced media validation
 - Deepfake detection
 - Edit identification
 - Digital manipulation analysis
 
-### 9. **INFOSIGHT AI** - Data Intelligence
+### 10. **INFOSIGHT AI** - Data Intelligence
 > Machine learning analytics platform
 - Pattern recognition
 - Anomaly detection
 - Trend analysis
 
-### 10. **LANA AI** - AI Assistant
+### 11. **LANA AI** - AI Assistant
 > Generative AI assistant
 - Voice and text interaction
 - Natural language processing
 - Task automation
 
-### 11. **CYBERSENTRY AI** - Security Monitoring
+### 12. **CYBERSENTRY AI** - Security Monitoring
 > Autonomous cybersecurity AI
 - Real-time threat detection
 - Network monitoring
 - Intelligent alerting
 
-### 12. **INKWELL AI** - Content Generator
+### 13. **INKWELL AI** - Content Generator
 > Professional AI writing engine
 - Article generation
 - Technical documentation
 - Creative writing
 
+  
 ---
 
 ## 📖 Usage
@@ -417,9 +426,8 @@ This software is proprietary and confidential. Unauthorized copying, distributio
 ## 📞 Support
 
 For issues or questions:
-- 📧 Email: support@infosight.local
-- 📖 Documentation: [Internal Wiki]
-- 🐛 Bug Reports: [Issue Tracker]
+- 📧 Email: sjlakshan2004@gmail.com
+- 🔗 Linkedin : https://www.linkedin.com/in/lakshan013/
 
 ---
 
@@ -427,8 +435,8 @@ For issues or questions:
 
 **⚡ Built with Python & Flask | Powered by AI | Secured by Design ⚡**
 
-**🍂 Built By Lakshan  **
+**🍂 Built By Lakshan For Tech Community**
 
-*Last Updated: October 2025*
+*Last Updated: November 2025*
 
 </div>
