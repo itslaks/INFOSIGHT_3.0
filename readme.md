@@ -108,8 +108,8 @@
 
 #### **1. Clone the Repository**
 ```bash
-git clone https://github.com/yourusername/infosight_3.0.git
-cd infosight_3.0
+git clone https://github.com/itslaks/INFOSIGHT_3.0.git
+cd INFOSIGHT_3.0
 ```
 
 #### **2. Create Virtual Environment** (Recommended)
