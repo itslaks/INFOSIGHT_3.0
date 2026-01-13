@@ -3,1223 +3,584 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tracklyst Pro - Professional OSINT Platform</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>OSINT Scanner - Professional Security Suite</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Icons: Using RemixIcon for modern/sharp icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet"/>
+    <!-- Fallback FontAwesome if needed (Optional, keeping reference but prioritizing Remix) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Core Styles (Inlined from global.css) -->
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        /* Global Design System - InfoSight 3.0 Reimagined */
+        :root {
+            /* --- Universe Dark Theme --- */
+            /* Backgrounds */
+            --bg-deep: #030712; /* Almost black */
+            --bg-app: #0f172a; /* Deep slate */
+            --bg-surface: rgba(30, 41, 59, 0.4); /* Glass surface */
+            --bg-header: rgba(15, 23, 42, 0.8);
+            --bg-panel: rgba(30, 41, 59, 0.4);
+
+            /* Brand Gradients */
+            --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            --gradient-glow: linear-gradient(135deg, rgba(59, 130, 246, 0.5) 0%, rgba(139, 92, 246, 0.5) 100%);
+            --gradient-dark: linear-gradient(to bottom, #0f172a, #020617);
+
+            /* Accents */
+            --primary: #3b82f6; /* Electric Blue */
+            --primary-dim: rgba(59, 130, 246, 0.15);
+            --primary-glow: rgba(59, 130, 246, 0.5);
+
+            --secondary: #a855f7; /* Vivid Purple */
+            --accent: #22d3ee; /* Cyan */
+
+            --success: #10b981; /* Emerald */
+            --warning: #f59e0b; /* Amber */
+            --danger: #ef4444; /* Red */
+            --info: #0ea5e9; /* Sky */
+
+            /* Text */
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-faint: #475569;
+
+            /* Borders & Glass */
+            --border-glass: 1px solid rgba(255, 255, 255, 0.08);
+            --border-light: rgba(255, 255, 255, 0.05);
+            --glass-blur: blur(16px);
+            --inner-glow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+            --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.15);
+
+            /* Dimensions */
+            --sidebar-width: 280px;
+            --header-height: 70px;
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --radius-full: 9999px;
         }
 
-        :root {
-            --primary: #00d4ff;
-            --primary-dark: #0099cc;
-            --primary-glow: rgba(0, 212, 255, 0.3);
-            --bg-dark: #0a0e1a;
-            --bg-card: rgba(15, 20, 35, 0.95);
-            --bg-secondary: rgba(20, 25, 40, 0.9);
-            --text-primary: #ffffff;
-            --text-secondary: #94a3b8;
-            --border-color: rgba(0, 212, 255, 0.15);
-            --success: #10b981;
-            --warning: #f59e0b;
-            --error: #ef4444;
-            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+        /* Reset & Base */
+        *, *::before, *::after {
+            margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, var(--bg-dark) 0%, #151a2e 100%);
-            color: var(--text-primary);
-            min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #020617;
+            background: radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08), transparent 25%),
+                        radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08), transparent 25%),
+                        var(--bg-app);
+            color: var(--text-main);
+            line-height: 1.5;
+            overflow: hidden;
+            height: 100vh;
+            font-size: 14px;
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
         }
 
-        .bg-grid {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
-            pointer-events: none;
-            z-index: 0;
-        }
+        a { text-decoration: none; color: inherit; transition: all 0.2s; }
+        ul { list-style: none; }
+        button, input, textarea, select { font: inherit; }
 
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 24px;
-            position: relative;
-            z-index: 1;
-        }
+        /* --- Typography --- */
+        h1, h2, h3, h4, h5, h6 { font-weight: 600; letter-spacing: -0.02em; color: var(--text-main); }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
 
-        header {
-            background: var(--bg-card);
-            backdrop-filter: blur(30px);
-            border-radius: 24px;
-            padding: 32px 40px;
-            margin-bottom: 32px;
-            border: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 24px;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .logo-icon {
-            width: 64px;
-            height: 64px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            font-weight: 900;
-            box-shadow: 0 8px 30px var(--primary-glow);
-            position: relative;
-        }
-
-        .logo-icon::after {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            border-radius: 18px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            z-index: -1;
-            opacity: 0.5;
-            filter: blur(10px);
-        }
-
-        .logo-text h1 {
-            font-size: 2.4em;
-            background: linear-gradient(135deg, var(--primary), #ffffff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 900;
-            letter-spacing: -1.5px;
-        }
-
-        .subtitle {
-            color: var(--text-secondary);
-            font-size: 0.95em;
-            font-weight: 500;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 12px;
-        }
-
-        .header-btn {
-            padding: 12px 24px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-weight: 600;
-            font-size: 0.95em;
-        }
-
-        .header-btn:hover {
-            background: var(--primary);
-            color: var(--bg-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px var(--primary-glow);
-            border-color: transparent;
-        }
-
-        .search-section {
-            background: var(--bg-card);
-            backdrop-filter: blur(30px);
-            border-radius: 24px;
-            padding: 40px;
-            margin-bottom: 32px;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .search-container {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 28px;
-        }
-
-        .search-input-wrapper {
-            flex: 1;
-            position: relative;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 20px 60px 20px 56px;
-            font-size: 1.1em;
-            background: var(--bg-secondary);
-            border: 2px solid var(--border-color);
-            border-radius: 16px;
-            color: var(--text-primary);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-weight: 500;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 40px var(--primary-glow);
-            background: rgba(20, 25, 40, 1);
-        }
-
-        .search-input::placeholder {
-            color: var(--text-secondary);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 1.4em;
-        }
-
-        .clear-btn {
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid var(--error);
-            color: var(--error);
-            padding: 8px 14px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 0.85em;
-            font-weight: 600;
-            display: none;
-            transition: all 0.2s ease;
-        }
-
-        .clear-btn:hover {
-            background: var(--error);
-            color: white;
-        }
-
-        .search-input:not(:placeholder-shown) ~ .clear-btn {
-            display: block;
-        }
-
-        .search-btn {
-            padding: 20px 56px;
-            font-size: 1.1em;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border: none;
-            border-radius: 16px;
-            color: var(--bg-dark);
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            white-space: nowrap;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 8px 25px var(--primary-glow);
-        }
-
-        .search-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 40px var(--primary-glow);
-        }
-
-        .search-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .advanced-options {
+        /* --- Layout Shell --- */
+        .app-shell {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 16px;
+            grid-template-columns: var(--sidebar-width) 1fr;
+            grid-template-rows: var(--header-height) 1fr;
+            height: 100vh;
+            width: 100vw;
         }
 
-        .option-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 18px 20px;
+        /* Sidebar */
+        .app-sidebar {
+            grid-row: 1 / -1;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: var(--glass-blur);
+            border-right: var(--border-glass);
+            display: flex;
+            flex-direction: column;
+            z-index: 50;
+            position: relative;
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-header {
+            height: var(--header-height);
             display: flex;
             align-items: center;
-            gap: 14px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 0 28px;
+            border-bottom: var(--border-glass);
         }
 
-        .option-card:hover {
-            background: rgba(0, 212, 255, 0.08);
-            border-color: var(--primary);
-            transform: translateY(-2px);
+        .brand-logo {
+            display: flex; align-items: center; gap: 14px; font-size: 20px; font-weight: 700; color: var(--text-main); letter-spacing: -0.03em;
         }
 
-        .option-card input[type="checkbox"] {
-            width: 24px;
+        .brand-icon {
+            width: 36px; height: 36px; background: var(--gradient-primary); border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; font-size: 18px;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4); position: relative;
+        }
+        .brand-icon::after { content: ''; position: absolute; inset: 0; border-radius: inherit; border: 1px solid rgba(255, 255, 255, 0.3); }
+
+        .sidebar-nav { flex: 1; padding: 32px 16px; overflow-y: auto; }
+        .nav-category {
+            font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-faint); margin: 24px 0 12px 16px; font-weight: 700;
+        }
+        .nav-category:first-of-type { margin-top: 0; }
+
+        .nav-item {
+            display: flex; align-items: center; gap: 14px; padding: 10px 16px; color: var(--text-muted);
+            border-radius: var(--radius-md); transition: all 0.2s ease; margin-bottom: 4px; font-weight: 500; font-size: 14px; position: relative; overflow: hidden;
+        }
+        .nav-item i { font-size: 18px; width: 24px; text-align: center; transition: color 0.2s; }
+        .nav-item:hover { color: var(--text-main); background: rgba(255, 255, 255, 0.03); }
+        .nav-item.active { background: linear-gradient(90deg, rgba(59, 130, 246, 0.1), transparent); color: var(--primary); }
+        .nav-item.active i { color: var(--primary); text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+        .nav-item.active::before {
+            content: ''; position: absolute; left: 0; top: 10%; bottom: 10%; width: 3px; background: var(--primary);
+            border-radius: 0 4px 4px 0; box-shadow: 0 0 8px var(--primary);
+        }
+
+        .sidebar-footer { padding: 24px; border-top: var(--border-glass); background: rgba(0, 0, 0, 0.1); }
+
+        /* Main Column */
+        .main-column { display: flex; flex-direction: column; overflow: hidden; position: relative; }
+
+        /* Header */
+        .app-header {
+            background: var(--bg-header); backdrop-filter: blur(12px); border-bottom: var(--border-glass);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 40;
+        }
+
+        .header-title h1 { font-size: 22px; display: flex; align-items: center; gap: 12px; }
+
+        .header-badge {
+            font-size: 10px; padding: 3px 10px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-full); color: var(--secondary); font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.05em; box-shadow: 0 0 10px rgba(139, 92, 246, 0.1);
+        }
+
+        .header-actions { display: flex; align-items: center; gap: 20px; }
+
+        /* Content */
+        .app-content {
+            background: transparent; overflow-y: auto; overflow-x: hidden; position: relative; padding: 40px 48px; perspective: 1000px;
+        }
+
+        /* --- Components --- */
+        /* Glass Cards */
+        .card {
+            background: var(--bg-surface); backdrop-filter: blur(12px); border: var(--border-glass);
+            border-radius: var(--radius-lg); padding: 28px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+        }
+        .card:hover {
+            transform: translateY(-4px); border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(59, 130, 246, 0.1);
+        }
+        .card::after {
+            content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.03), transparent);
+            transform: skewX(-25deg); transition: 0.5s; pointer-events: none;
+        }
+        .card:hover::after { left: 200%; }
+
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+        .card-title { font-size: 18px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 20px;
+            border-radius: var(--radius-md); font-weight: 600; font-size: 14px; cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid transparent; letter-spacing: 0.01em;
+        }
+        .btn-primary {
+            background: var(--gradient-primary); color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5); transform: translateY(-1px); filter: brightness(1.1);
+        }
+        .btn-ghost { background: transparent; color: var(--text-muted); }
+        .btn-ghost:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-main); }
+        .btn-outline { background: transparent; border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-muted); }
+        .btn-outline:hover { border-color: var(--text-main); color: var(--text-main); background: rgba(255, 255, 255, 0.02); }
+        .btn-icon {
+            width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center;
+            border-radius: 10px; cursor: pointer; transition: all 0.2s; color: var(--text-muted); background: transparent; border: 1px solid transparent;
+        }
+        .btn-icon:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-main); border-color: rgba(255, 255, 255, 0.05); }
+
+        /* Inputs */
+        .input-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .input-label { font-size: 13px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.02em; }
+        .input-field {
+            background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius-md);
+            padding: 12px 16px; color: var(--text-main); width: 100%; transition: all 0.2s ease; font-size: 14px;
+        }
+        .input-field:focus {
+            outline: none; border-color: var(--primary); background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 0 1px var(--primary), 0 0 20px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Badges */
+        .badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: var(--radius-full); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .badge-dot { width: 6px; height: 6px; border-radius: 50%; box-shadow: 0 0 8px currentColor; }
+        .badge-success { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.1); }
+        .badge-warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.1); }
+        .badge-danger { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.1); }
+        .badge-neutral { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.1); }
+
+        /* Utilities */
+        .text-gradient { background: var(--gradient-primary); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
+        .text-accent { color: var(--primary); }
+        .text-success { color: var(--success); }
+        .text-muted { color: var(--text-muted); }
+        .flex-center { display: flex; align-items: center; justify-content: center; }
+        .flex-between { display: flex; align-items: center; justify-content: space-between; }
+        .gap-2 { gap: 8px; }
+        .gap-4 { gap: 16px; }
+        .w-full { width: 100%; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        
+        .toolbar-divider {
+            width: 1px;
             height: 24px;
-            cursor: pointer;
-            accent-color: var(--primary);
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0 8px;
         }
 
-        .option-card label {
-            cursor: pointer;
-            user-select: none;
-            flex: 1;
-            font-weight: 600;
-            font-size: 0.95em;
+        /* --- OSINT Specific Styles --- */
+        /* Professional Data Table */
+        .data-table {
+            width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px;
+        }
+        .data-table th {
+            text-align: left; padding: 12px 16px; background: rgba(255,255,255,0.03); color: var(--text-muted);
+            font-weight: 600; text-transform: uppercase; border-bottom: 1px solid var(--border-light);
+        }
+        .data-table td { padding: 10px 16px; border-bottom: 1px solid var(--border-light); color: var(--text-main); }
+        .data-table tr:hover td { background: rgba(255,255,255,0.02); cursor: pointer; }
+
+        /* Connections Graph - Compact */
+        .viz-container {
+            height: 220px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-light); border-radius: var(--radius-sm);
+            position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
+        }
+        
+        /* Search Bar - Integrated */
+        .search-bar-container {
+            display: flex; gap: 12px; background: var(--bg-surface); padding: 4px; border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm); margin-bottom: 24px;
         }
 
-        .stats-dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 24px;
-            margin-bottom: 32px;
+        /* Slide-over Drawer for Details */
+        .details-drawer {
+            position: fixed; top: var(--header-height); right: -400px; width: 400px; height: calc(100vh - var(--header-height));
+            background: var(--bg-panel); border-left: 1px solid var(--border-light); transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 50; display: flex; flex-direction: column; box-shadow: -10px 0 30px rgba(0,0,0,0.5);
         }
+        .details-drawer.open { right: 0; }
 
-        .stat-card {
-            background: var(--bg-card);
-            backdrop-filter: blur(30px);
-            border-radius: 20px;
-            padding: 28px;
-            border: 1px solid var(--border-color);
-            text-align: center;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            box-shadow: var(--shadow-lg);
+        .drawer-header {
+            padding: 16px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between;
+            align-items: center; background: var(--bg-header);
         }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
-            opacity: 0;
-            transition: opacity 0.3s ease;
+        
+        .data-row {
+            display: flex; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border-light); font-size: 12px;
         }
-
-        .stat-card:hover {
-            transform: translateY(-8px);
-            border-color: var(--primary);
-            box-shadow: 0 20px 60px var(--primary-glow);
-        }
-
-        .stat-card:hover::before {
-            opacity: 1;
-        }
-
-        .stat-icon {
-            font-size: 3em;
-            margin-bottom: 12px;
-            filter: drop-shadow(0 4px 10px var(--primary-glow));
-        }
-
-        .stat-value {
-            font-size: 3em;
-            font-weight: 900;
-            color: var(--primary);
-            display: block;
-            line-height: 1;
-            letter-spacing: -2px;
-        }
-
-        .stat-label {
-            color: var(--text-secondary);
-            font-size: 0.95em;
-            margin-top: 10px;
-            font-weight: 600;
-        }
-
-        .control-panel {
-            background: var(--bg-card);
-            backdrop-filter: blur(30px);
-            border-radius: 24px;
-            padding: 32px 40px;
-            margin-bottom: 32px;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .tabs-container {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 28px;
-            padding-bottom: 24px;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        .tab {
-            padding: 14px 28px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-weight: 700;
-            font-size: 0.95em;
-        }
-
-        .tab:hover {
-            background: rgba(0, 212, 255, 0.1);
-            color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        .tab.active {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: var(--bg-dark);
-            border-color: transparent;
-            box-shadow: 0 8px 25px var(--primary-glow);
-        }
-
-        .results-section {
-            background: var(--bg-card);
-            backdrop-filter: blur(30px);
-            border-radius: 24px;
-            padding: 40px;
-            border: 1px solid var(--border-color);
-            min-height: 500px;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .results-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .results-title {
-            font-size: 2em;
-            font-weight: 800;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .results-count {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            padding: 8px 20px;
-            border-radius: 24px;
-            font-size: 0.6em;
-            font-weight: 800;
-            color: var(--bg-dark);
-            box-shadow: 0 4px 15px var(--primary-glow);
-        }
-
-        .view-controls {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .view-btn {
-            padding: 12px 24px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-weight: 700;
-            font-size: 0.9em;
-        }
-
-        .view-btn.active, .view-btn:hover {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: var(--bg-dark);
-            border-color: transparent;
-            box-shadow: 0 6px 20px var(--primary-glow);
-        }
-
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-            gap: 24px;
-        }
-
-        .platform-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 18px;
-            padding: 28px;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-            animation: fadeInUp 0.5s ease forwards;
-        }
-
-        .platform-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 6px;
-            height: 100%;
-            background: linear-gradient(180deg, var(--primary), var(--primary-dark));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .platform-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            border-color: var(--primary);
-            box-shadow: 0 20px 60px var(--primary-glow);
-        }
-
-        .platform-card:hover::before {
-            opacity: 1;
-        }
-
-        .platform-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 18px;
-        }
-
-        .platform-name {
-            font-weight: 800;
-            font-size: 1.3em;
-            color: var(--text-primary);
-            letter-spacing: -0.5px;
-        }
-
-        .platform-badges {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .badge {
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.7em;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .badge-category {
-            background: rgba(0, 212, 255, 0.15);
-            border: 1px solid var(--primary);
-            color: var(--primary);
-        }
-
-        .badge-verified {
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid var(--success);
-            color: var(--success);
-        }
-
-        .badge-not-found {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid var(--error);
-            color: var(--error);
-        }
-
-        .badge-checking {
-            background: rgba(245, 158, 11, 0.15);
-            border: 1px solid var(--warning);
-            color: var(--warning);
-            animation: pulse-badge 2s infinite;
-        }
-
-        @keyframes pulse-badge {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
-
-        .platform-url {
-            color: var(--primary);
-            text-decoration: none;
-            word-break: break-all;
-            font-size: 0.9em;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px;
-            background: rgba(0, 212, 255, 0.05);
-            border-radius: 12px;
-            margin-bottom: 18px;
-            border: 1px solid transparent;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-
-        .platform-url:hover {
-            background: rgba(0, 212, 255, 0.15);
-            border-color: var(--primary);
-            transform: translateX(4px);
-        }
-
-        .platform-actions {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-
-        .action-btn {
-            padding: 12px;
-            background: rgba(0, 212, 255, 0.08);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            color: var(--primary);
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 0.85em;
-            font-weight: 700;
-        }
-
-        .action-btn:hover {
-            background: rgba(0, 212, 255, 0.25);
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px var(--primary-glow);
-            border-color: var(--primary);
-        }
-
-        .action-btn:active {
-            transform: translateY(-1px);
-        }
-
-        .loading {
-            text-align: center;
-            padding: 100px 20px;
-            color: var(--primary);
-        }
-
-        .loading-spinner {
-            width: 70px;
-            height: 70px;
-            border: 6px solid rgba(0, 212, 255, 0.1);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 30px;
-            box-shadow: 0 0 40px var(--primary-glow);
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(40px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 100px 20px;
-            color: var(--text-secondary);
-        }
-
-        .empty-state-icon {
-            font-size: 6em;
-            margin-bottom: 30px;
-            opacity: 0.3;
-            filter: drop-shadow(0 0 20px var(--primary-glow));
-        }
-
-        .empty-state h3 {
-            font-size: 1.8em;
-            color: var(--text-primary);
-            margin-bottom: 12px;
-            font-weight: 700;
-        }
-
-        .empty-state p {
-            font-size: 1.1em;
-            font-weight: 500;
-        }
-
-        .notification {
-            position: fixed;
-            top: 24px;
-            right: 24px;
-            background: var(--bg-card);
-            border: 1px solid var(--primary);
-            border-radius: 16px;
-            padding: 20px 28px;
-            color: var(--text-primary);
-            z-index: 10000;
-            min-width: 320px;
-            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 20px 60px var(--primary-glow);
-            backdrop-filter: blur(30px);
-            font-weight: 600;
-        }
-
-        .notification.error {
-            border-color: var(--error);
-            box-shadow: 0 20px 60px rgba(239, 68, 68, 0.3);
-        }
-
-        .notification.success {
-            border-color: var(--success);
-            box-shadow: 0 20px 60px rgba(16, 185, 129, 0.3);
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(400px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        @media (max-width: 768px) {
-            .logo-text h1 {
-                font-size: 1.8em;
-            }
-
-            .search-container {
-                flex-direction: column;
-            }
-
-            .search-btn {
-                width: 100%;
-                padding: 18px;
-            }
-
-            .results-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .stats-dashboard {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .platform-actions {
-                grid-template-columns: 1fr;
-            }
-
-            .tabs-container {
-                overflow-x: auto;
-                flex-wrap: nowrap;
-            }
-
-            .advanced-options {
-                grid-template-columns: 1fr;
-            }
-        }
+        .data-label { color: var(--text-muted); }
+        .data-val { font-family: 'JetBrains Mono', monospace; }
     </style>
 </head>
 <body>
-    <div class="bg-grid"></div>
-    
-    <div class="container">
-        <header>
-            <div class="logo-section">
-                <div class="logo-icon">T</div>
-                <div class="logo-text">
-                    <h1>Tracklyst Pro</h1>
-                    <p class="subtitle">Advanced OSINT Intelligence Platform</p>
-                </div>
+    <div class="app-shell">
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar">
+            <div class="sidebar-header">
+                <a href="/" class="brand-logo">
+                    <div class="brand-icon"><i class="ri-stack-fill"></i></div>
+                    INFOSIGHT<span class="text-accent">3.0</span>
+                </a>
             </div>
-            <div class="header-actions">
-                <button class="header-btn" onclick="showHistory()">📊 History</button>
-                <button class="header-btn" onclick="showStats()">📈 Stats</button>
-            </div>
-        </header>
+            
+            <nav class="sidebar-nav">
+                <!-- INTELLIGENCE & RECON -->
+                <div class="nav-category">Intelligence & Recon</div>
+                <a href="/osint" class="nav-item {% if request.path.startswith('/osint') %}active{% endif %}">
+                    <i class="ri-globe-line"></i> <span>OSINT Scanner</span>
+                </a>
+                <a href="/webseeker" class="nav-item {% if request.path.startswith('/webseeker') %}active{% endif %}">
+                    <i class="ri-search-eye-line"></i> <span>Web Seeker</span>
+                </a>
+                <a href="/enscan" class="nav-item {% if request.path.startswith('/enscan') %}active{% endif %}">
+                    <i class="ri-radar-line"></i> <span>EnScan</span>
+                </a>
+                <a href="/portscanner" class="nav-item {% if request.path.startswith('/portscanner') %}active{% endif %}">
+                    <i class="ri-router-line"></i> <span>Port Scanner</span>
+                </a>
+                <a href="/filescanner" class="nav-item {% if request.path.startswith('/filescanner') %}active{% endif %}">
+                    <i class="ri-file-search-line"></i> <span>File Scanner</span>
+                </a>
 
-        <div class="search-section">
-            <form id="searchForm" onsubmit="handleSearch(event)">
-                <div class="search-container">
-                    <div class="search-input-wrapper">
-                        <span class="search-icon">🔍</span>
-                        <input type="text" id="username" class="search-input" 
-                               placeholder="Enter username to investigate..." required autocomplete="off">
-                        <button type="button" class="clear-btn" onclick="clearSearch()">Clear</button>
-                    </div>
-                    <button type="submit" class="search-btn" id="searchBtn">
-                        <span>Search</span>
-                    </button>
-                </div>
-                <div class="advanced-options">
-                    <div class="option-card">
-                        <input type="checkbox" id="caseInsensitive" checked>
-                        <label for="caseInsensitive">🔤 Case Insensitive</label>
-                    </div>
-                    <div class="option-card">
-                        <input type="checkbox" id="validateUrls">
-                        <label for="validateUrls">✓ Validate URLs (Slower)</label>
-                    </div>
-                    <div class="option-card">
-                        <input type="checkbox" id="popularFirst" checked>
-                        <label for="popularFirst">⭐ Popular First</label>
-                    </div>
-                </div>
-            </form>
-        </div>
+                <!-- AI & CONTENT -->
+                <div class="nav-category">AI Agents</div>
+                <a href="/infosight_ai" class="nav-item {% if request.path.startswith('/infosight_ai') %}active{% endif %}">
+                    <i class="ri-quill-pen-line"></i> <span>InfoSight Writer</span>
+                </a>
+                <a href="/inkwell_ai" class="nav-item {% if request.path.startswith('/inkwell_ai') %}active{% endif %}">
+                    <i class="ri-magic-line"></i> <span>InkWell Enhancer</span>
+                </a>
+                <a href="/donna" class="nav-item {% if request.path.startswith('/donna') %}active{% endif %}">
+                    <i class="ri-brain-line"></i> <span>Donna AI</span>
+                </a>
+                <a href="/lana_ai" class="nav-item {% if request.path.startswith('/lana_ai') %}active{% endif %}">
+                    <i class="ri-robot-2-line"></i> <span>Lana AI</span>
+                </a>
+                <a href="/snapspeak_ai" class="nav-item {% if request.path.startswith('/snapspeak_ai') %}active{% endif %}">
+                    <i class="ri-voiceprint-line"></i> <span>SnapSpeak</span>
+                </a>
+                <a href="/trueshot_ai" class="nav-item {% if request.path.startswith('/trueshot_ai') %}active{% endif %}">
+                    <i class="ri-camera-lens-line"></i> <span>TrueShot</span>
+                </a>
 
-        <div class="stats-dashboard" id="statsBar" style="display: none;">
-            <div class="stat-card">
-                <div class="stat-icon">🌐</div>
-                <span class="stat-value" id="totalPlatforms">0</span>
-                <span class="stat-label">Total Platforms</span>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">✅</div>
-                <span class="stat-value" id="visiblePlatforms">0</span>
-                <span class="stat-label">Results Found</span>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">⚡</div>
-                <span class="stat-value" id="searchTime">0s</span>
-                <span class="stat-label">Search Time</span>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">👤</div>
-                <span class="stat-value" id="lastSearched">-</span>
-                <span class="stat-label">Username</span>
-            </div>
-        </div>
-
-        <div class="control-panel" id="filterSection" style="display: none;">
-            <div class="tabs-container">
-                <button class="tab active" onclick="filterByCategory('all')">All Platforms</button>
-                <button class="tab" onclick="filterByCategory('social')">📱 Social Media</button>
-                <button class="tab" onclick="filterByCategory('professional')">💼 Professional</button>
-                <button class="tab" onclick="filterByCategory('developer')">💻 Developer</button>
-                <button class="tab" onclick="filterByCategory('gaming')">🎮 Gaming</button>
-                <button class="tab" onclick="filterByCategory('media')">🎵 Media</button>
-                <button class="tab" onclick="filterByCategory('other')">📦 Other</button>
-            </div>
-        </div>
-
-        <div class="results-section">
-            <div class="results-header" id="resultsHeader" style="display: none;">
-                <h2 class="results-title">
-                    <span>Search Results</span>
-                    <span class="results-count" id="resultsCount">0</span>
-                </h2>
-                <div class="view-controls">
-                    <button class="view-btn active" onclick="changeView('grid')">🔲 Grid</button>
-                    <button class="view-btn" onclick="changeView('list')">📋 List</button>
-                    <button class="view-btn" onclick="exportResults()">💾 Export</button>
+                <!-- SECURITY OPS -->
+                <div class="nav-category">Security Ops</div>
+                <a href="/cybersentry_ai" class="nav-item {% if request.path.startswith('/cybersentry_ai') %}active{% endif %}">
+                    <i class="ri-shield-check-line"></i> <span>CyberSentry</span>
+                </a>
+                <a href="/infocrypt" class="nav-item {% if request.path.startswith('/infocrypt') %}active{% endif %}">
+                    <i class="ri-lock-password-line"></i> <span>InfoCrypt</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="card" style="padding: 12px; background: rgba(0,0,0,0.2);">
+                    <div class="flex-between">
+                        <div style="font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                            <i class="ri-server-line"></i> System Status
+                        </div>
+                        <div class="badge badge-success" style="font-size: 9px; padding: 2px 8px;">ONLINE</div>
+                    </div>
                 </div>
             </div>
-            <div id="resultsContainer">
-                <div class="empty-state">
-                    <div class="empty-state-icon">🔍</div>
-                    <h3>Start Your Investigation</h3>
-                    <p>Enter a username above to search across multiple platforms</p>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-column">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-title">
+                    <h1>
+                        <i class="ri-globe-line text-accent"></i>
+                        <span>OSINT Scanner</span>
+                        <span class="header-badge">PRO v3.0</span>
+                    </h1>
+                </div>
+                
+                <div class="header-actions">
+                    <div style="flex: 1;"></div> <!-- Spacer -->
+                    <button class="btn-icon" title="Notifications"><i class="ri-notification-3-line"></i></button>
+                    <button class="btn-icon" title="Settings"><i class="ri-settings-4-line"></i></button>
+                    <div class="profile-avatar flex-center" style="width: 36px; height: 36px; background: var(--gradient-primary); border-radius: 50%; color: white; font-weight: 700; font-size: 14px; box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);">IS</div>
+                </div>
+            </header>
+
+            <!-- Dynamic Page Content -->
+            <div class="app-content">
+                <div style="display: grid; grid-template-columns: 1fr 280px; gap: 24px; height: 100%;">
+                    
+                    <!-- Left: Main Data View -->
+                    <div style="display: flex; flex-direction: column;">
+                        <!-- Dense Search Bar -->
+                        <div class="search-bar-container">
+                            <div style="position: relative; flex: 1; display: flex; align-items: center;">
+                                <i class="ri-search-line text-muted" style="position: absolute; left: 12px;"></i>
+                                <input type="text" id="targetInput" class="input-field" placeholder="Target username, email, or domain..." style="border: none; background: transparent; padding-left: 36px; padding-top: 8px; padding-bottom: 8px;">
+                            </div>
+                            <div style="border-left: 1px solid var(--border-light); padding-left: 8px; display: flex; align-items: center; padding-right: 4px;">
+                                <select class="input-flat text-xs" style="border: none; width: 100px; color: var(--text-muted);">
+                                    <option>All Modules</option>
+                                    <option>Social</option>
+                                    <option>Domain</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="startScan()" style="border-radius: 2px;">
+                                <i class="ri-radar-line"></i> Scan
+                            </button>
+                        </div>
+
+                        <!-- Data Grid -->
+                        <div class="card p-0" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+                            <div class="flex-between p-3 border-bottom border-light bg-surface" style="border-bottom: 1px solid var(--border-light);">
+                                <div class="text-xs uppercase font-bold text-muted">Scan Results</div>
+                                <div class="flex-center gap-2">
+                                    <button class="btn-icon text-xs"><i class="ri-download-line"></i> CSV</button>
+                                    <button class="btn-icon text-xs"><i class="ri-filter-line"></i> Filter</button>
+                                </div>
+                            </div>
+                            
+                            <div style="flex: 1; overflow-y: auto;">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th width="40"><i class="ri-checkbox-blank-circle-line"></i></th>
+                                            <th>Platform</th>
+                                            <th>Username / ID</th>
+                                            <th>Category</th>
+                                            <th>Confidence</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="resultsBody">
+                                        <!-- Placeholder -->
+                                        <tr>
+                                            <td colspan="6" style="text-align: center; padding: 60px; color: var(--text-muted);">
+                                                <i class="ri-search-eye-line" style="font-size: 32px; opacity: 0.3; margin-bottom: 12px; display: block;"></i>
+                                                Awaiting Target Input
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Context & Visuals -->
+                    <div style="display: flex; flex-direction: column; gap: 16px;">
+                        <div class="card p-3">
+                            <div class="text-xs font-bold text-muted uppercase mb-2">Network Graph</div>
+                            <div class="viz-container">
+                                <i class="ri-node-tree" style="font-size: 48px; opacity: 0.2;"></i>
+                                <!-- Real graph would render here -->
+                            </div>
+                            <div class="mt-2 flex-between text-xs text-muted">
+                                <span>Nodes: 0</span>
+                                <span>Edges: 0</span>
+                            </div>
+                        </div>
+
+                        <div class="card p-3" style="flex: 1;">
+                            <div class="text-xs font-bold text-muted uppercase mb-3">Target Profile</div>
+                            <div class="flex-center" style="height: 60px; width: 60px; background: var(--bg-surface); border-radius: 50%; margin: 0 auto 12px; border: 1px solid var(--border-light);">
+                                <i class="ri-user-line text-lg text-muted"></i>
+                            </div>
+                            <div class="text-center mb-4">
+                                <div class="font-bold">--</div>
+                                <div class="text-xs text-muted">No Target Selected</div>
+                            </div>
+                            
+                            <div class="data-row">
+                                <span class="data-label">Risk Score</span>
+                                <span class="data-val text-success">0/100</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="data-label">Assets</span>
+                                <span class="data-val">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Details Drawer -->
+                <div id="detailsDrawer" class="details-drawer">
+                    <div class="drawer-header">
+                        <div class="font-bold flex-center gap-2">
+                            <i class="ri-twitter-x-line"></i> Raw Data
+                        </div>
+                        <button class="btn-icon" onclick="toggleDrawer(false)"><i class="ri-close-line"></i></button>
+                    </div>
+                    <div style="padding: 16px; overflow-y: auto;">
+                        <code class="text-xs" style="white-space: pre-wrap; color: var(--text-muted);">
+{
+  "platform": "Twitter",
+  "exists": true,
+  "metadata": {
+    "id": 102938485,
+    "created_at": "2019-02-12"
+  }
+}
+                        </code>
+                    </div>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
 
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script>
-        let allResults = {};
-        let filteredResults = {};
-        let currentView = 'grid';
-        let currentFilter = 'all';
-        let currentUsername = '';
-        const API_BASE = '/osint/api';
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            loadPlatformStats();
-            console.log('✅ Tracklyst Pro initialized');
-        });
-
-        async function handleSearch(e) {
-            e.preventDefault();
-            const username = document.getElementById('username').value.trim();
-            if (!username) return;
-
-            currentUsername = username;
-            const searchBtn = document.getElementById('searchBtn');
-            searchBtn.disabled = true;
-            searchBtn.innerHTML = '<span>🔄 Searching...</span>';
-            
-            showLoading();
-            
-            const options = {
-                caseInsensitive: document.getElementById('caseInsensitive').checked,
-                validateUrls: document.getElementById('validateUrls').checked,
-                popularFirst: document.getElementById('popularFirst').checked
-            };
-
-            try {
-                const response = await fetch(`${API_BASE}/search`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, options })
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    allResults = data.results;
-                    filteredResults = data.results;
-                    updateStats(username, data.stats);
-                    displayResults(filteredResults);
-                    document.getElementById('filterSection').style.display = 'block';
-                    showNotification('✅ Search completed successfully!', 'success');
-                } else {
-                    throw new Error(data.error || 'Search failed');
-                }
-            } catch (error) {
-                console.error('Search error:', error);
-                showNotification('❌ Error: ' + error.message, 'error');
-                showEmptyState('Error occurred during search. Please try again.');
-            } finally {
-                searchBtn.disabled = false;
-                searchBtn.innerHTML = '<span>Search</span>';
-            }
+        function toggleDrawer(open) {
+            document.getElementById('detailsDrawer').classList.toggle('open', open);
         }
 
-        function showLoading() {
-            const container = document.getElementById('resultsContainer');
-            container.innerHTML = `
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <h3>🔍 Searching across platforms...</h3>
-                    <p>Please wait while we gather results</p>
-                </div>
-            `;
-        }
+        function startScan() {
+            const target = document.getElementById('targetInput').value;
+            if(!target) return;
 
-        function updateStats(username, stats) {
-            document.getElementById('totalPlatforms').textContent = stats.totalPlatforms;
-            document.getElementById('visiblePlatforms').textContent = stats.totalPlatforms;
-            document.getElementById('searchTime').textContent = stats.searchTime + 's';
-            document.getElementById('lastSearched').textContent = username.length > 12 ? username.substring(0, 12) + '...' : username;
-            document.getElementById('statsBar').style.display = 'grid';
-        }
+            const tbody = document.getElementById('resultsBody');
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center p-4"><i class="ri-loader-4-line ri-spin text-accent"></i> Scanning...</td></tr>`;
 
-        function displayResults(results) {
-            const container = document.getElementById('resultsContainer');
-            const resultsHeader = document.getElementById('resultsHeader');
-            const resultsCount = document.getElementById('resultsCount');
-            
-            const platforms = Object.keys(results);
-            
-            if (platforms.length === 0) {
-                showEmptyState('No results found for current filters');
-                resultsHeader.style.display = 'none';
-                return;
-            }
-
-            resultsHeader.style.display = 'flex';
-            resultsCount.textContent = platforms.length;
-            
-            const gridClass = currentView === 'grid' ? 'results-grid' : 'results-list';
-            container.innerHTML = `<div class="${gridClass}" id="resultsGrid"></div>`;
-            
-            const grid = document.getElementById('resultsGrid');
-            platforms.forEach((platform, index) => {
-                const card = createPlatformCard(platform, results[platform], index);
-                grid.appendChild(card);
-            });
-        }
-
-        function createPlatformCard(platform, data, index) {
-            const card = document.createElement('div');
-            card.className = 'platform-card';
-            card.style.animationDelay = `${index * 0.04}s`;
-            
-            const categoryBadge = `<span class="badge badge-category">${data.category}</span>`;
-            let statusBadge = '';
-            
-            if (data.validated) {
-                if (data.validationStatus === 'verified') {
-                    statusBadge = '<span class="badge badge-verified">✓ Verified</span>';
-                } else if (data.validationStatus === 'not_found') {
-                    statusBadge = '<span class="badge badge-not-found">✗ Not Found</span>';
-                }
-            }
-            
-            card.innerHTML = `
-                <div class="platform-header">
-                    <div class="platform-name">${platform}</div>
-                    <div class="platform-badges">
-                        ${categoryBadge}
-                        ${statusBadge}
-                    </div>
-                </div>
-                <a href="${data.url}" target="_blank" rel="noopener noreferrer" class="platform-url">
-                    🔗 ${data.url}
-                </a>
-                <div class="platform-actions">
-                    <button class="action-btn" onclick="copyToClipboard('${escapeHtml(data.url)}')">
-                        📋 Copy
-                    </button>
-                    <button class="action-btn" onclick="window.open('${escapeHtml(data.url)}', '_blank')">
-                        🚀 Visit
-                    </button>
-                    <button class="action-btn" onclick="validateSingleUrl('${escapeHtml(platform)}', '${escapeHtml(data.url)}', event)">
-                        ✓ Check
-                    </button>
-                </div>
-            `;
-            
-            return card;
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        async function validateSingleUrl(platform, url, event) {
-            const btn = event.target;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '⏳ Checking...';
-            btn.disabled = true;
-            
-            try {
-                const response = await fetch(`${API_BASE}/validate-url`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url, platform })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    if (data.exists === true) {
-                        showNotification('✅ Profile exists!', 'success');
-                        btn.innerHTML = '✓ Exists';
-                    } else if (data.exists === false) {
-                        showNotification('❌ Profile not found', 'error');
-                        btn.innerHTML = '✗ Not Found';
-                    } else {
-                        showNotification('⚠️ Unable to verify', 'warning');
-                        btn.innerHTML = '? Unknown';
-                    }
-                } else {
-                    throw new Error(data.error || 'Validation failed');
-                }
-            } catch (error) {
-                console.error('Validation error:', error);
-                showNotification('❌ Validation failed: ' + error.message, 'error');
-                btn.innerHTML = originalText;
-            } finally {
-                btn.disabled = false;
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                }, 3000);
-            }
-        }
-
-        function filterByCategory(category) {
-            currentFilter = category;
-            
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            applyFilters();
-        }
-
-        function applyFilters() {
-            let results = { ...allResults };
-            
-            if (currentFilter !== 'all') {
-                const filtered = {};
-                Object.keys(results).forEach(platform => {
-                    if (results[platform].category === currentFilter) {
-                        filtered[platform] = results[platform];
-                    }
-                });
-                results = filtered;
-            }
-            
-            filteredResults = results;
-            document.getElementById('visiblePlatforms').textContent = Object.keys(results).length;
-            displayResults(results);
-        }
-
-        function changeView(view) {
-            currentView = view;
-            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            displayResults(filteredResults);
-        }
-
-        function clearSearch() {
-            document.getElementById('username').value = '';
-            document.getElementById('username').focus();
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                showNotification('📋 URL copied to clipboard!', 'success');
-            }).catch(err => {
-                showNotification('❌ Failed to copy', 'error');
-            });
-        }
-
-        function exportResults() {
-            if (Object.keys(filteredResults).length === 0) {
-                showNotification('❌ No results to export', 'error');
-                return;
-            }
-
-            const exportData = {
-                username: currentUsername,
-                timestamp: new Date().toISOString(),
-                totalResults: Object.keys(filteredResults).length,
-                results: filteredResults
-            };
-
-            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `tracklyst_${currentUsername}_${Date.now()}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-
-            showNotification('💾 Results exported successfully!', 'success');
-        }
-
-        function showEmptyState(message = 'No results found') {
-            const container = document.getElementById('resultsContainer');
-            container.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon">😔</div>
-                    <h3>${message}</h3>
-                    <p>Try adjusting your filters or search again</p>
-                </div>
-            `;
-        }
-
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
             setTimeout(() => {
-                notification.style.animation = 'slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) reverse';
-                setTimeout(() => notification.remove(), 400);
-            }, 3000);
+                // Mock Results
+                const platforms = [
+                    { icon: 'ri-twitter-x-line', name: 'Twitter/X', id: target, cat: 'Social', conf: '98%', status: 'Found' },
+                    { icon: 'ri-github-fill', name: 'GitHub', id: target, cat: 'Code', conf: '100%', status: 'Found' },
+                    { icon: 'ri-linkedin-fill', name: 'LinkedIn', id: target, cat: 'Pro', conf: '85%', status: 'Likely' },
+                    { icon: 'ri-reddit-line', name: 'Reddit', id: 'u/'+target, cat: 'Social', conf: '92%', status: 'Found' },
+                    { icon: 'ri-spotify-line', name: 'Spotify', id: '--', cat: 'Media', conf: '0%', status: 'Missing' },
+                ];
+
+                let html = '';
+                platforms.forEach(p => {
+                    const statusColor = p.status === 'Found' ? 'text-success' : (p.status === 'Missing' ? 'text-muted' : 'text-warning');
+                    html += `
+                        <tr onclick="toggleDrawer(true)">
+                            <td><i class="ri-checkbox-blank-circle-line text-muted"></i></td>
+                            <td><div class="flex-center" style="justify-content:start; gap:8px;"><i class="${p.icon}"></i> ${p.name}</div></td>
+                            <td class="font-mono text-xs">${p.id}</td>
+                            <td><span class="badge badge-neutral">${p.cat}</span></td>
+                            <td><div style="width: 60px; height: 4px; background: var(--bg-surface); border-radius:2px;"><div style="width: ${p.conf}; background: var(--success); height: 100%;"></div></div></td>
+                            <td class="${statusColor} font-bold text-xs">${p.status}</td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            }, 1200);
         }
-
-        async function showHistory() {
-            try {
-                const response = await fetch(`${API_BASE}/history`);
-                const data = await response.json();
-                
-                if (data.success && data.history.length > 0) {
-                    showNotification(`📊 Found ${data.history.length} searches in history`, 'success');
-                    console.log('Search History:', data.history);
-                } else {
-                    showNotification('📊 No search history yet', 'info');
-                }
-            } catch (error) {
-                console.error('History error:', error);
-                showNotification('❌ Failed to load history', 'error');
-            }
-        }
-
-        async function showStats() {
-            try {
-                const response = await fetch(`${API_BASE}/stats`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    showNotification(`📈 ${data.totalPlatforms} platforms | ${data.totalSearches} searches`, 'success');
-                    console.log('Platform Stats:', data);
-                } else {
-                    throw new Error('Failed to load stats');
-                }
-            } catch (error) {
-                console.error('Stats error:', error);
-                showNotification('❌ Failed to load stats', 'error');
-            }
-        }
-
-        async function loadPlatformStats() {
-            try {
-                const response = await fetch(`${API_BASE}/platforms`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                if (data.success && data.totalCount > 0) {
-                    console.log(`✅ Loaded ${data.totalCount} platforms`);
-                    console.log(`📊 Categories: ${data.categories.join(', ')}`);
-                    
-                    // Update the empty state with actual platform count
-                    const emptyStateText = document.querySelector('.empty-state p');
-                    if (emptyStateText && emptyStateText.textContent.includes('500+')) {
-                        emptyStateText.textContent = `Enter a username above to search across ${data.totalCount}+ platforms`;
-                    }
-                } else {
-                    console.warn('⚠️ No platforms loaded. Check data.json file.');
-                }
-            } catch (error) {
-                console.error('❌ Failed to load platform stats:', error);
-            }
-        }
-
-        // Auto-save search preferences
-        const checkboxes = ['caseInsensitive', 'validateUrls', 'popularFirst'];
-        checkboxes.forEach(id => {
-            const checkbox = document.getElementById(id);
-            const saved = localStorage.getItem(id);
-            if (saved !== null) {
-                checkbox.checked = saved === 'true';
-            }
-            checkbox.addEventListener('change', () => {
-                localStorage.setItem(id, checkbox.checked);
-            });
-        });
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                e.preventDefault();
-                document.getElementById('username').focus();
-            }
-            if (e.key === 'Escape') {
-                clearSearch();
-            }
-        });
     </script>
 </body>
 </html>

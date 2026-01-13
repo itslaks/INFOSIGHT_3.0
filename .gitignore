@@ -39,6 +39,9 @@ instance/
 *.sqlite
 *.sqlite3
 
+# Note: prompt_optimizer.db is used by inkwell_ai.py but should not be committed
+# It will be auto-generated on first run
+
 # Environment Variables
 .env
 .env.local
@@ -155,3 +158,81 @@ static/temp/
 # AI Model caches
 .transformers/
 .torch/
+
+# Local LLM files (llama folder)
+llama/
+llm/
+
+# Audio files and cache
+audio/
+audio/cache/
+*.mp3
+
+# Database files (auto-generated)
+*.db
+*.sqlite
+*.sqlite3
+infosight_ai.db
+cybersentr_ai.db
+inkwell_ultimate.db
+prompt_optimizer.db
+lana_ai.db
+
+# Log files
+*.log
+infosight_ai.log
+webseeker.log
+
+# Temporary files and directories
+app/temp/
+app/__pycache__/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Generated images
+static/generated_images/
+
+# YOLO model files
+yolov8n.pt
+runs/
+
+# Check token script output
+check_token.py
+
+# Data files (auto-generated)
+data/lana_ai.db
+data/lana_memory.json
+data/encryption_metadata.json
+
+# Encrypted files directory
+encrypted/
+
+# Code snippets (if empty or auto-generated)
+docs/code-snippets/*.txt
+docs/code-snippets/*.md
+
+# Python cache in all subdirectories
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Core module cache
+core/__pycache__/
+config/__pycache__/
+utils/__pycache__/
+tests/__pycache__/
+
+# Model files (already covered by models/ but explicit)
+*.pth
+*.pt
+*.h5
+*.pkl
+*.onnx
+*.tflite
+
+# JSON files that might be auto-generated (keep data.json and responses.json)
+# Uncomment if you want to exclude specific JSON files
+# data/lana_memory.json
+# data/encryption_metadata.json

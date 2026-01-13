@@ -1658,8 +1658,8 @@
                             <div class="model-option-title">🖥️ Ollama (Local)</div>
                             <div class="model-option-desc">LLaMA 3.2 - Fast, private, local processing</div>
                         </div>
-                        <div class="model-option" data-model="gemini">
-                            <div class="model-option-title">☁️ Google Gemini (Cloud)</div>
+                        <div class="model-option" data-model="groq">
+                            <div class="model-option-title">☁️ Groq Cloud (LLM Router)</div>
                             <div class="model-option-desc">Advanced AI - Enhanced analysis capabilities</div>
                         </div>
                     </div>
@@ -1898,13 +1898,13 @@
                     option.classList.add('selected');
                     
                     selectedModel = option.dataset.model;
-                    const modelName = selectedModel === 'ollama' ? 'Ollama (Local)' : 'Google Gemini (Cloud)';
+                    const modelName = selectedModel === 'ollama' ? 'Ollama (Local)' : 'Groq Cloud (LLM Router)';
                     currentModelSpan.textContent = modelName;
                     
-                    document.getElementById('modelSelectorBtn').querySelector('span:nth-child(2)').textContent = modelName;
-                    console.log('Model switched to:', selectedModel); // Debug line
+                    const btnText = document.getElementById('modelSelectorBtn').querySelector('span:nth-child(2)');
+                    if (btnText) btnText.textContent = modelName;
                     
-                    showAlert(`Switched to ${modelName}`, 'success');
+                    showAlert(`Switched to ${modelName}. Fallback to local LLM enabled automatically.`, 'success');
                     modelDropdown.classList.remove('active');
                 });
             });
@@ -1926,17 +1926,24 @@
         async function checkSystemHealth() {
             try {
                 const response = await fetch(`${API_BASE_URL}/health`);
+                if (!response.ok) {
+                    console.error(`Health check failed: ${response.status} ${response.statusText}`);
+                    return;
+                }
                 const data = await response.json();
                 
                 if (data.status === 'OPERATIONAL') {
                     document.getElementById('systemStatus').textContent = 'System Online';
                     updateSystemStatus(data.systems);
                 } else {
-                    showAlert('System health check failed', 'error');
+                    console.warn('System health check returned non-operational status');
                 }
             } catch (error) {
-                showAlert('Unable to connect to backend server', 'error');
-                document.getElementById('systemStatus').textContent = 'System Offline';
+                console.error('Health check error:', error);
+                const statusEl = document.getElementById('systemStatus');
+                if (statusEl) {
+                    statusEl.textContent = 'System Offline';
+                }
             }
         }
 
@@ -2015,7 +2022,7 @@
             searchBtn.disabled = true;
             searchBtn.innerHTML = '<span>⏳ Investigating...</span>';
 
-            setTimeout(() => { searchQuery.value = originalQuery; }, 0);
+            setTimeout(() => { searchQuery.value = query; }, 0);
             
             // Reset progress
             for (let i = 1; i <= 6; i++) {
@@ -2035,8 +2042,7 @@
                     body: JSON.stringify({
                         query: query,
                         threads: parseInt(document.getElementById('threadCount').value),
-                        scrape_limit: parseInt(document.getElementById('scrapeLimit').value),
-                        model: selectedModel
+                        scrape_limit: parseInt(document.getElementById('scrapeLimit').value)
                     })
                 });
 
@@ -2119,8 +2125,12 @@
             
             document.getElementById('investigationId').textContent = data.investigation_id || 'N/A';
             document.getElementById('investigationTime').textContent = new Date(data.timestamp).toLocaleString();
+            const modelUsed = data.query_analysis?.model_used || (selectedModel === 'ollama' ? 'ollama' : 'groq');
             document.getElementById('investigationModel').textContent = 
-                selectedModel === 'ollama' ? 'Ollama LLaMA 3.2' : 'Google Gemini';
+                modelUsed === 'llama-3.3-70b-versatile' ? 'Llama 3.3 70B' : 
+                (modelUsed === 'llama-3.1-8b-instant' ? 'Llama 3.1 8B' : 
+                (modelUsed === 'local-ollama' ? 'Local Ollama' : 
+                (modelUsed === 'ollama' ? 'Ollama LLaMA' : 'Groq Cloud')));
             
             const statusBadge = document.getElementById('investigationStatus');
             const status = data.statistics?.status || 'COMPLETED';
@@ -2140,8 +2150,8 @@
             // Artifacts
             displayArtifacts(data.artifacts);
 
-            // Sources
-            displaySources(data.sources);
+            // Sources with metadata
+            displaySources(data.sources, data.sources_metadata, data.scrape_breakdown);
 
             // Report
             document.getElementById('reportContent').textContent = data.report;
@@ -2208,6 +2218,27 @@
                     description: 'Successfully analyzed sources'
                 },
                 { 
+                    label: 'Dark Web Sources', 
+                    value: stats.scrape_breakdown?.dark_web || 0, 
+                    icon: '🌑',
+                    description: 'Dark web (.onion) sources scraped',
+                    color: 'var(--error)'
+                },
+                { 
+                    label: 'Deep Web Sources', 
+                    value: stats.scrape_breakdown?.deep_web || 0, 
+                    icon: '🔒',
+                    description: 'Deep web sources scraped',
+                    color: 'var(--warning)'
+                },
+                { 
+                    label: 'Surface Web Sources', 
+                    value: stats.scrape_breakdown?.surface_web || 0, 
+                    icon: '🌐',
+                    description: 'Surface web sources scraped',
+                    color: 'var(--success)'
+                },
+                { 
                     label: 'Artifacts Extracted', 
                     value: stats.artifacts_extracted || 0, 
                     icon: '💎',
@@ -2236,14 +2267,18 @@
             statCards.forEach(stat => {
                 const card = document.createElement('div');
                 card.className = 'stat-card slide-up';
+                const borderColor = stat.color ? `border-top: 3px solid ${stat.color};` : '';
                 card.innerHTML = `
                     <div class="stat-header">
                         <span class="stat-label">${stat.label}</span>
                         <span class="stat-icon">${stat.icon}</span>
                     </div>
-                    <div class="stat-value">${stat.value}</div>
+                    <div class="stat-value" ${stat.color ? `style="color: ${stat.color};"` : ''}>${stat.value}</div>
                     <div class="stat-description">${stat.description}</div>
                 `;
+                if (borderColor) {
+                    card.style.cssText = borderColor;
+                }
                 statsGrid.appendChild(card);
             });
         }
@@ -2446,33 +2481,6 @@
                 <div class="artifacts-grid" id="artifactsGrid">
             `;
 
-            artifactsSection.innerHTML = html;
-            setupArtifactFilters();
-
-        function setupArtifactFilters() {
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    
-                    const filter = btn.dataset.filter;
-                    const categories = document.querySelectorAll('.artifact-category');
-                    
-                    categories.forEach(cat => {
-                        const title = cat.querySelector('.category-title').textContent.toLowerCase();
-                        let show = filter === 'all';
-                        
-                        if (filter === 'crypto' && (title.includes('bitcoin') || title.includes('ethereum') || title.includes('monero') || title.includes('litecoin'))) show = true;
-                        if (filter === 'network' && (title.includes('ip') || title.includes('domain') || title.includes('url'))) show = true;
-                        if (filter === 'identity' && (title.includes('email') || title.includes('phone') || title.includes('twitter') || title.includes('telegram'))) show = true;
-                        if (filter === 'security' && (title.includes('hash') || title.includes('api') || title.includes('key'))) show = true;
-                        
-                        cat.style.display = show ? 'block' : 'none';
-                    });
-                });
-            });
-        }
-
             // Email Addresses
             if (artifacts.emails && artifacts.emails.length > 0) {
                 html += createArtifactCategory('📧 Email Addresses', artifacts.emails);
@@ -2579,13 +2587,14 @@
                 `;
             }
 
-            html += `</div>`;
+            html += `</div></div>`;
             
             if (summary.total_artifacts === 0) {
                 html += '<div class="no-artifacts">No artifacts were extracted from the analyzed sources.</div>';
             }
 
             artifactsSection.innerHTML = html;
+            setupArtifactFilters();
         }
 
         function setupArtifactFilters() {
@@ -2664,8 +2673,8 @@
             return html;
         }
 
-        // Display Sources
-        function displaySources(sources) {
+        // Display Sources with Web Layer Categorization
+        function displaySources(sources, sourcesMetadata = null, scrapeBreakdown = null) {
             const sourcesSection = document.getElementById('sourcesSection');
             
             if (!sources || sources.length === 0) {
@@ -2675,32 +2684,122 @@
 
             sourcesSection.style.display = 'block';
             
+            // Count by web layer
+            const breakdown = scrapeBreakdown || {dark: [], deep: [], surface: []};
+            const darkCount = breakdown.dark?.length || 0;
+            const deepCount = breakdown.deep?.length || 0;
+            const surfaceCount = breakdown.surface?.length || 0;
+            
             let html = `
                 <h3>🌐 Analyzed Sources (${sources.length})</h3>
-                <div class="sources-list">
+                <div class="sources-breakdown" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div class="breakdown-card" style="background: rgba(220, 38, 38, 0.1); border: 2px solid var(--error); border-radius: 10px; padding: 1rem; text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌑</div>
+                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--error);">${darkCount}</div>
+                        <div style="color: var(--text-secondary); font-size: 0.9rem;">Dark Web</div>
+                    </div>
+                    <div class="breakdown-card" style="background: rgba(251, 191, 36, 0.1); border: 2px solid var(--warning); border-radius: 10px; padding: 1rem; text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔒</div>
+                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--warning);">${deepCount}</div>
+                        <div style="color: var(--text-secondary); font-size: 0.9rem;">Deep Web</div>
+                    </div>
+                    <div class="breakdown-card" style="background: rgba(74, 222, 128, 0.1); border: 2px solid var(--success); border-radius: 10px; padding: 1rem; text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌐</div>
+                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--success);">${surfaceCount}</div>
+                        <div style="color: var(--text-secondary); font-size: 0.9rem;">Surface Web</div>
+                    </div>
+                </div>
+                <div class="sources-filters" style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                    <button class="filter-btn active" data-filter="all" onclick="filterSources('all')">All Sources</button>
+                    <button class="filter-btn" data-filter="dark" onclick="filterSources('dark')">🌑 Dark Web</button>
+                    <button class="filter-btn" data-filter="deep" onclick="filterSources('deep')">🔒 Deep Web</button>
+                    <button class="filter-btn" data-filter="surface" onclick="filterSources('surface')">🌐 Surface Web</button>
+                </div>
+                <div class="sources-list" id="sourcesList">
             `;
 
             sources.forEach((source, index) => {
-                const isOnion = source.includes('.onion');
+                // Get metadata if available
+                let sourceUrl = source;
+                let webLayer = 'surface';
+                let sourceType = 'Surface Web';
+                let metadata = null;
+                
+                if (sourcesMetadata && sourcesMetadata[index]) {
+                    const meta = sourcesMetadata[index];
+                    sourceUrl = meta.url || source;
+                    webLayer = meta.web_layer || (sourceUrl.includes('.onion') ? 'dark' : 'surface');
+                    sourceType = meta.type || sourceType;
+                    metadata = meta.metadata || null;
+                } else if (typeof source === 'object') {
+                    sourceUrl = source.url || source.link || source;
+                    webLayer = source.web_layer || (sourceUrl.includes('.onion') ? 'dark' : 'surface');
+                    sourceType = source.type || sourceType;
+                } else {
+                    // Auto-detect
+                    if (source.includes('.onion')) {
+                        webLayer = 'dark';
+                        sourceType = 'Dark Web (.onion)';
+                    } else {
+                        const deepIndicators = ['/login', '/admin', '/database', '/api/', 'pastebin', 'github.com/gist'];
+                        if (deepIndicators.some(ind => source.includes(ind))) {
+                            webLayer = 'deep';
+                            sourceType = 'Deep Web';
+                        }
+                    }
+                }
+                
+                const layerColors = {
+                    'dark': 'var(--error)',
+                    'deep': 'var(--warning)',
+                    'surface': 'var(--success)'
+                };
+                
+                const layerIcons = {
+                    'dark': '🌑',
+                    'deep': '🔒',
+                    'surface': '🌐'
+                };
+                
                 html += `
-                    <div class="source-item">
+                    <div class="source-item" data-web-layer="${webLayer}" style="border-left: 4px solid ${layerColors[webLayer]};">
                         <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem; flex-wrap: wrap;">
                             <div style="flex: 1; min-width: 200px;">
-                                <span class="source-type">${isOnion ? 'ONION' : 'CLEARNET'}</span>
-                                <div class="source-url">${index + 1}. ${source}</div>
-                            </div>
-                            ${typeof source === 'object' && source.source ? `
-                                <div style="font-size: 0.8rem; color: var(--text-secondary); padding: 0.3rem 0.6rem; background: var(--charcoal); border-radius: 4px;">
-                                    via ${source.source}
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <span style="font-size: 1.2rem;">${layerIcons[webLayer]}</span>
+                                    <span class="source-type" style="background: ${layerColors[webLayer]}; color: white; padding: 0.3rem 0.8rem; border-radius: 6px; font-weight: 700; font-size: 0.75rem;">${sourceType.toUpperCase()}</span>
                                 </div>
-                            ` : ''}
+                                <div class="source-url">${index + 1}. ${sourceUrl}</div>
+                                ${metadata && metadata.load_time ? `
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.3rem;">
+                                        Loaded in ${metadata.load_time.toFixed(2)}s | ${metadata.content_length || 0} bytes
+                                    </div>
+                                ` : ''}
+                            </div>
                         </div>
                     </div>
                 `;
             });
-
+            
             html += `</div>`;
+            
             sourcesSection.innerHTML = html;
+        }
+        
+        // Filter sources by web layer
+        function filterSources(layer) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.filter === layer) btn.classList.add('active');
+            });
+            
+            document.querySelectorAll('.source-item').forEach(item => {
+                if (layer === 'all' || item.dataset.webLayer === layer) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
         }
 
         // Copy Report

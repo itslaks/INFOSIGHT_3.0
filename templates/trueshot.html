@@ -750,6 +750,246 @@
             color: var(--text-secondary);
         }
 
+        /* Forensic Analysis Cards */
+        .forensics-grid,
+        .ai-signatures-grid,
+        .biometric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .forensic-card,
+        .signature-card,
+        .biometric-card {
+            background: var(--surface-light);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .forensic-card.detected,
+        .signature-card.detected {
+            border-left: 4px solid var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .forensic-card.normal,
+        .signature-card.normal {
+            border-left: 4px solid var(--success);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-detected {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+
+        .status-normal {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .card-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .card-metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-name {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .metric-val {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* Hashes Container */
+        .hashes-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .hash-item {
+            background: var(--surface-light);
+            padding: 1.25rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .hash-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .hash-name {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .hash-value {
+            font-family: 'Courier New', monospace;
+            background: var(--surface);
+            padding: 0.75rem;
+            border-radius: 8px;
+            word-break: break-all;
+            font-size: 0.85rem;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .copy-btn {
+            background: var(--surface-hover);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .copy-btn.copied {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
+        /* Keyboard Shortcuts Help */
+        .shortcuts-help {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            background: var(--surface);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            z-index: 999;
+            display: none;
+            max-width: 300px;
+        }
+
+        .shortcuts-help.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .shortcuts-title {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--primary);
+        }
+
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            font-size: 0.85rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .shortcut-item:last-child {
+            border-bottom: none;
+        }
+
+        .shortcut-key {
+            background: var(--surface-light);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
+
+        /* Action Buttons Enhanced */
+        .action-buttons {
+            display: none;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-icon-only {
+            padding: 0.9rem;
+            min-width: 48px;
+        }
+
+        /* Quick Actions Bar */
+        .quick-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .quick-action-btn {
+            background: var(--surface-light);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .quick-action-btn:hover {
+            background: var(--surface-hover);
+            border-color: var(--primary);
+        }
+
         /* Responsive Design */
         @media (max-width: 1024px) {
             .main-layout {
@@ -757,8 +997,23 @@
             }
 
             .summary-grid,
-            .technical-grid {
+            .technical-grid,
+            .forensics-grid,
+            .ai-signatures-grid,
+            .biometric-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .analysis-tabs {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+            }
+
+            .shortcuts-help {
+                bottom: 1rem;
+                left: 1rem;
+                right: 1rem;
+                max-width: none;
             }
         }
 
@@ -795,7 +1050,7 @@
                 <i class="fas fa-shield-halved"></i>
             </div>
             <h1 class="title">TrueShot AI</h1>
-            <p class="subtitle">Professional AI Image Authentication & Analysis System</p>
+            <p class="subtitle">Ultra-Advanced AI Image Detection & Forensic Analysis System</p>
             
             <div class="stats-bar">
                 <div class="stat-item">
@@ -803,12 +1058,16 @@
                     <div class="stat-label">Images Analyzed</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-value">98.5%</div>
+                    <div class="stat-value">95-98%</div>
                     <div class="stat-label">Accuracy Rate</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-value">&lt;2s</div>
-                    <div class="stat-label">Avg. Analysis Time</div>
+                    <div class="stat-value">50+</div>
+                    <div class="stat-label">Detection Methods</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">v4.0</div>
+                    <div class="stat-label">Ultra-Advanced</div>
                 </div>
             </div>
         </header>
@@ -827,6 +1086,9 @@
                     <div class="upload-text">
                         <h3>Drop your image here</h3>
                         <p>or click to browse from your device</p>
+                        <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);">
+                            <i class="fas fa-keyboard"></i> Tip: Press <kbd style="background: var(--surface); padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.8rem;">Ctrl+V</kbd> to paste from clipboard
+                        </p>
                     </div>
                     <div class="supported-formats">
                         <span class="format-badge">PNG</span>
@@ -871,6 +1133,18 @@
                         Clear
                     </button>
                 </div>
+
+                <div class="quick-actions" id="quickActions" style="display: none;">
+                    <button class="quick-action-btn" id="exportJsonBtn" title="Export as JSON">
+                        <i class="fas fa-file-code"></i> Export JSON
+                    </button>
+                    <button class="quick-action-btn" id="copyResultsBtn" title="Copy Results (Ctrl+C)">
+                        <i class="fas fa-copy"></i> Copy Results
+                    </button>
+                    <button class="quick-action-btn" id="showShortcutsBtn" title="Show Shortcuts (?)">
+                        <i class="fas fa-keyboard"></i> Shortcuts
+                    </button>
+                </div>
             </div>
 
             <!-- Results Section -->
@@ -902,6 +1176,15 @@
                         <button class="tab-btn active" data-tab="summary">
                             <i class="fas fa-chart-simple"></i> Summary
                         </button>
+                        <button class="tab-btn" data-tab="forensics">
+                            <i class="fas fa-fingerprint"></i> Forensics
+                        </button>
+                        <button class="tab-btn" data-tab="ai-signatures">
+                            <i class="fas fa-robot"></i> AI Signatures
+                        </button>
+                        <button class="tab-btn" data-tab="biometric">
+                            <i class="fas fa-user-shield"></i> Biometric
+                        </button>
                         <button class="tab-btn" data-tab="reasoning">
                             <i class="fas fa-lightbulb"></i> Reasoning
                         </button>
@@ -911,11 +1194,26 @@
                         <button class="tab-btn" data-tab="factors">
                             <i class="fas fa-list-check"></i> Factors
                         </button>
+                        <button class="tab-btn" data-tab="hashes">
+                            <i class="fas fa-hashtag"></i> Hashes
+                        </button>
                     </div>
 
                     <!-- Tab Contents -->
                     <div class="tab-content active" id="summaryTab">
                         <div class="summary-grid" id="summaryGrid"></div>
+                    </div>
+
+                    <div class="tab-content" id="forensicsTab">
+                        <div class="forensics-grid" id="forensicsGrid"></div>
+                    </div>
+
+                    <div class="tab-content" id="ai-signaturesTab">
+                        <div class="ai-signatures-grid" id="aiSignaturesGrid"></div>
+                    </div>
+
+                    <div class="tab-content" id="biometricTab">
+                        <div class="biometric-grid" id="biometricGrid"></div>
                     </div>
 
                     <div class="tab-content" id="reasoningTab">
@@ -929,6 +1227,10 @@
                     <div class="tab-content" id="factorsTab">
                         <div class="factors-list" id="factorsList"></div>
                     </div>
+
+                    <div class="tab-content" id="hashesTab">
+                        <div class="hashes-container" id="hashesContainer"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -939,7 +1241,38 @@
         <div class="loading-content">
             <div class="spinner"></div>
             <div class="loading-text">Analyzing Image...</div>
-            <div class="loading-subtext">Running deep analysis with AI detection algorithms</div>
+            <div class="loading-subtext">Running v4.0 Ultra-Advanced detection algorithms</div>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Help -->
+    <div class="shortcuts-help" id="shortcutsHelp">
+        <div class="shortcuts-title">
+            <i class="fas fa-keyboard"></i> Keyboard Shortcuts
+        </div>
+        <div class="shortcut-item">
+            <span>Upload Image</span>
+            <span class="shortcut-key">Ctrl+U</span>
+        </div>
+        <div class="shortcut-item">
+            <span>Analyze</span>
+            <span class="shortcut-key">Ctrl+Enter</span>
+        </div>
+        <div class="shortcut-item">
+            <span>Clear</span>
+            <span class="shortcut-key">Esc</span>
+        </div>
+        <div class="shortcut-item">
+            <span>Paste Image</span>
+            <span class="shortcut-key">Ctrl+V</span>
+        </div>
+        <div class="shortcut-item">
+            <span>Copy Results</span>
+            <span class="shortcut-key">Ctrl+C</span>
+        </div>
+        <div class="shortcut-item">
+            <span>Show Shortcuts</span>
+            <span class="shortcut-key">?</span>
         </div>
     </div>
 
@@ -979,6 +1312,105 @@
                 document.querySelectorAll('.tab-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
                 });
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', this.handleKeyboard.bind(this));
+
+                // Paste from clipboard
+                document.addEventListener('paste', this.handlePaste.bind(this));
+
+                // Prevent default paste behavior on file input
+                document.addEventListener('paste', (e) => {
+                    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                        e.preventDefault();
+                    }
+                });
+
+                // Quick actions
+                const exportJsonBtn = document.getElementById('exportJsonBtn');
+                const copyResultsBtn = document.getElementById('copyResultsBtn');
+                const showShortcutsBtn = document.getElementById('showShortcutsBtn');
+                
+                if (exportJsonBtn) {
+                    exportJsonBtn.addEventListener('click', () => this.exportResults('json'));
+                }
+                if (copyResultsBtn) {
+                    copyResultsBtn.addEventListener('click', () => this.copyResults());
+                }
+                if (showShortcutsBtn) {
+                    showShortcutsBtn.addEventListener('click', () => {
+                        document.getElementById('shortcutsHelp').classList.toggle('show');
+                    });
+                }
+            }
+
+            handleKeyboard(e) {
+                // Show/hide shortcuts help
+                if (e.key === '?' && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+                    e.preventDefault();
+                    const help = document.getElementById('shortcutsHelp');
+                    help.classList.toggle('show');
+                    return;
+                }
+
+                // Close shortcuts help with Escape
+                if (e.key === 'Escape') {
+                    document.getElementById('shortcutsHelp').classList.remove('show');
+                    if (!this.currentFile) {
+                        this.clearImage();
+                    }
+                    return;
+                }
+
+                // Ctrl+U: Upload
+                if (e.ctrlKey && e.key === 'u') {
+                    e.preventDefault();
+                    this.fileInput.click();
+                    return;
+                }
+
+                // Ctrl+Enter: Analyze
+                if (e.ctrlKey && e.key === 'Enter') {
+                    e.preventDefault();
+                    if (this.currentFile) {
+                        this.analyzeImage();
+                    }
+                    return;
+                }
+
+                // Ctrl+C: Copy results (when results are visible)
+                if (e.ctrlKey && e.key === 'c' && this.currentResult) {
+                    e.preventDefault();
+                    this.copyResults();
+                    return;
+                }
+
+                // Tab navigation with numbers
+                if (e.ctrlKey && e.key >= '1' && e.key <= '8') {
+                    e.preventDefault();
+                    const tabs = ['summary', 'forensics', 'ai-signatures', 'biometric', 'reasoning', 'technical', 'factors', 'hashes'];
+                    const tabIndex = parseInt(e.key) - 1;
+                    if (tabs[tabIndex]) {
+                        this.switchTab(tabs[tabIndex]);
+                    }
+                }
+            }
+
+            handlePaste(e) {
+                const items = e.clipboardData?.items;
+                if (!items) return;
+
+                for (let item of items) {
+                    if (item.type.indexOf('image') !== -1) {
+                        e.preventDefault();
+                        const blob = item.getAsFile();
+                        if (blob) {
+                            this.handleFile(blob);
+                            this.showToast('Image Pasted', 'Image pasted from clipboard', 'success');
+                        }
+                        break;
+                    }
+                }
             }
 
             handleDragOver(e) {
@@ -1046,9 +1478,11 @@
 
             clearImage() {
                 this.currentFile = null;
+                this.currentResult = null;
                 this.imagePreview.style.display = 'none';
                 this.imageInfo.style.display = 'none';
                 this.actionButtons.style.display = 'none';
+                document.getElementById('quickActions').style.display = 'none';
                 this.fileInput.value = '';
                 this.emptyState.style.display = 'flex';
                 this.resultsContent.style.display = 'none';
@@ -1074,23 +1508,37 @@
                     const data = await response.json();
                     
                     if (data.status === 'success') {
-                        this.displayResults(data.result);
-                        this.analysisCount++;
-                        localStorage.setItem('analysisCount', this.analysisCount);
-                        this.updateStats();
-                        this.showToast('Analysis Complete', 'Image analysis completed successfully', 'success');
+                        if (data.result) {
+                            this.displayResults(data.result);
+                            this.analysisCount++;
+                            localStorage.setItem('analysisCount', this.analysisCount);
+                            this.updateStats();
+                            this.showToast('Analysis Complete', 'Image analysis completed successfully', 'success');
+                        } else {
+                            throw new Error('No analysis result received');
+                        }
                     } else {
-                        throw new Error(data.message);
+                        throw new Error(data.message || 'Analysis failed');
                     }
                 } catch (error) {
                     console.error('Analysis error:', error);
-                    this.showToast('Analysis Failed', error.message, 'error');
+                    let errorMessage = 'Analysis failed';
+                    if (error.message) {
+                        errorMessage = error.message;
+                    } else if (typeof error === 'string') {
+                        errorMessage = error;
+                    }
+                    this.showToast('Analysis Failed', errorMessage, 'error');
+                    // Show empty state on error
+                    this.emptyState.style.display = 'flex';
+                    this.resultsContent.style.display = 'none';
                 } finally {
                     this.loadingOverlay.style.display = 'none';
                 }
             }
 
             displayResults(result) {
+                this.currentResult = result; // Store for copy functionality
                 this.emptyState.style.display = 'none';
                 this.resultsContent.style.display = 'block';
 
@@ -1120,6 +1568,12 @@
                 // Display summary
                 this.displaySummary(result);
 
+                // Display v4.0 new features
+                this.displayForensics(result.analysis?.forensics);
+                this.displayAISignatures(result.analysis?.ai_signatures);
+                this.displayBiometric(result.analysis?.biometric);
+                this.displayHashes(result.analysis?.hashes);
+
                 // Display reasoning
                 this.displayReasoning(result.reasoning);
 
@@ -1129,8 +1583,30 @@
                 // Display confidence factors
                 this.displayFactors(result.confidence_factors);
 
+                // Show quick actions
+                document.getElementById('quickActions').style.display = 'flex';
+
                 // Switch to summary tab
                 this.switchTab('summary');
+            }
+
+            exportResults(format = 'json') {
+                if (!this.currentResult) {
+                    this.showToast('No Results', 'No analysis results to export', 'warning');
+                    return;
+                }
+
+                if (format === 'json') {
+                    const dataStr = JSON.stringify(this.currentResult, null, 2);
+                    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(dataBlob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `trueshot-analysis-${Date.now()}.json`;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                    this.showToast('Export Complete', 'Results exported as JSON', 'success');
+                }
             }
 
             getClassificationType(confidence, prediction) {
@@ -1138,24 +1614,354 @@
                 return prediction.toLowerCase().replace(/\s+/g, '-');
             }
 
+            displayForensics(forensics) {
+                if (!forensics) {
+                    document.getElementById('forensicsGrid').innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No forensic analysis data available</p>';
+                    return;
+                }
+
+                const cards = [];
+
+                // ELA Analysis
+                if (forensics.ela) {
+                    const ela = forensics.ela;
+                    cards.push({
+                        title: 'Error Level Analysis (ELA)',
+                        icon: 'fa-compress',
+                        detected: ela.has_compression_anomaly,
+                        metrics: [
+                            { name: 'ELA Score', value: ela.ela_score?.toFixed(2) || '0.00' },
+                            { name: 'ELA Variance', value: ela.ela_variance?.toFixed(2) || '0.00' },
+                            { name: 'Compression Uniformity', value: ela.compression_uniformity?.toFixed(2) || '0.00' }
+                        ]
+                    });
+                }
+
+                // Double JPEG
+                if (forensics.double_jpeg) {
+                    const dj = forensics.double_jpeg;
+                    cards.push({
+                        title: 'Double JPEG Detection',
+                        icon: 'fa-layer-group',
+                        detected: dj.has_double_compression,
+                        metrics: [
+                            { name: 'Double JPEG Score', value: dj.double_jpeg_score?.toFixed(2) || '0.00' },
+                            { name: 'Coefficient Variance', value: dj.coefficient_variance?.toFixed(2) || '0.00' }
+                        ]
+                    });
+                }
+
+                // Copy-Move
+                if (forensics.copy_move) {
+                    const cm = forensics.copy_move;
+                    cards.push({
+                        title: 'Copy-Move Forgery',
+                        icon: 'fa-copy',
+                        detected: cm.has_copy_move,
+                        metrics: [
+                            { name: 'Copy-Move Score', value: cm.copy_move_score?.toFixed(3) || '0.000' },
+                            { name: 'Similar Regions', value: cm.similar_regions || 0 },
+                            { name: 'Total Keypoints', value: cm.total_keypoints || 0 }
+                        ]
+                    });
+                }
+
+                // Splicing
+                if (forensics.splicing) {
+                    const sp = forensics.splicing;
+                    cards.push({
+                        title: 'Splicing Detection',
+                        icon: 'fa-scissors',
+                        detected: sp.has_splicing,
+                        metrics: [
+                            { name: 'Splicing Score', value: sp.splicing_score?.toFixed(3) || '0.000' },
+                            { name: 'Edge Components', value: sp.edge_components || 0 },
+                            { name: 'Edge Density', value: sp.edge_density?.toFixed(3) || '0.000' }
+                        ]
+                    });
+                }
+
+                // JPEG Quality
+                if (forensics.jpeg_quality) {
+                    const jq = forensics.jpeg_quality;
+                    cards.push({
+                        title: 'JPEG Quality Estimation',
+                        icon: 'fa-gauge-high',
+                        detected: jq.appears_uncompressed,
+                        metrics: [
+                            { name: 'Estimated Quality', value: jq.estimated_jpeg_quality || 100 },
+                            { name: 'Compression Difference', value: jq.compression_difference?.toFixed(2) || '0.00' }
+                        ]
+                    });
+                }
+
+                const html = cards.map(card => `
+                    <div class="forensic-card ${card.detected ? 'detected' : 'normal'}">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fas ${card.icon}"></i>
+                                ${card.title}
+                            </div>
+                            <span class="card-status ${card.detected ? 'status-detected' : 'status-normal'}">
+                                ${card.detected ? 'Detected' : 'Normal'}
+                            </span>
+                        </div>
+                        <div class="card-metrics">
+                            ${card.metrics.map(m => `
+                                <div class="card-metric">
+                                    <span class="metric-name">${m.name}</span>
+                                    <span class="metric-val">${m.value}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('forensicsGrid').innerHTML = html || '<p style="text-align: center; color: var(--text-secondary);">No forensic data available</p>';
+            }
+
+            displayAISignatures(signatures) {
+                if (!signatures) {
+                    document.getElementById('aiSignaturesGrid').innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No AI signature data available</p>';
+                    return;
+                }
+
+                const cards = [];
+
+                // GAN Fingerprint
+                if (signatures.gan_fingerprint) {
+                    const gan = signatures.gan_fingerprint;
+                    cards.push({
+                        title: 'GAN Fingerprint',
+                        icon: 'fa-fingerprint',
+                        detected: gan.gan_fingerprint_detected,
+                        metrics: [
+                            { name: 'GAN Score', value: gan.gan_score?.toFixed(3) || '0.000' },
+                            { name: 'Periodic Peaks', value: gan.periodic_peaks || 0 },
+                            { name: 'Grid Regularity', value: gan.grid_regularity?.toFixed(3) || '0.000' }
+                        ]
+                    });
+                }
+
+                // Diffusion Signature
+                if (signatures.diffusion_signature) {
+                    const diff = signatures.diffusion_signature;
+                    cards.push({
+                        title: 'Diffusion Model Signature',
+                        icon: 'fa-wand-magic-sparkles',
+                        detected: diff.diffusion_signature_detected,
+                        metrics: [
+                            { name: 'Diffusion Score', value: diff.diffusion_score?.toFixed(3) || '0.000' },
+                            { name: 'Tiling Artifacts', value: diff.has_tiling_artifacts ? 'Yes' : 'No' },
+                            { name: 'Common Size', value: diff.is_common_size ? 'Yes' : 'No' },
+                            { name: 'Tile Uniformity', value: diff.tile_uniformity?.toFixed(2) || '0.00' },
+                            { name: 'Hue Smoothness', value: diff.hue_smoothness?.toFixed(2) || '0.00' }
+                        ]
+                    });
+                }
+
+                // Adversarial Perturbation
+                if (signatures.adversarial_perturbation) {
+                    const adv = signatures.adversarial_perturbation;
+                    cards.push({
+                        title: 'Adversarial Perturbation',
+                        icon: 'fa-shield-virus',
+                        detected: adv.has_adversarial_noise,
+                        metrics: [
+                            { name: 'Perturbation Score', value: adv.perturbation_score?.toFixed(3) || '0.000' },
+                            { name: 'Noise Variance', value: adv.noise_variance?.toFixed(2) || '0.00' },
+                            { name: 'Noise Kurtosis', value: adv.noise_kurtosis?.toFixed(2) || '0.00' }
+                        ]
+                    });
+                }
+
+                const html = cards.map(card => `
+                    <div class="signature-card ${card.detected ? 'detected' : 'normal'}">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fas ${card.icon}"></i>
+                                ${card.title}
+                            </div>
+                            <span class="card-status ${card.detected ? 'status-detected' : 'status-normal'}">
+                                ${card.detected ? 'Detected' : 'Not Detected'}
+                            </span>
+                        </div>
+                        <div class="card-metrics">
+                            ${card.metrics.map(m => `
+                                <div class="card-metric">
+                                    <span class="metric-name">${m.name}</span>
+                                    <span class="metric-val">${m.value}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('aiSignaturesGrid').innerHTML = html || '<p style="text-align: center; color: var(--text-secondary);">No AI signature data available</p>';
+            }
+
+            displayBiometric(biometric) {
+                if (!biometric || !biometric.face_manipulation) {
+                    document.getElementById('biometricGrid').innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No biometric analysis data available</p>';
+                    return;
+                }
+
+                const face = biometric.face_manipulation;
+                const html = `
+                    <div class="biometric-card ${face.has_face_manipulation ? 'detected' : 'normal'}">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="fas fa-user-shield"></i>
+                                Face Manipulation Detection
+                            </div>
+                            <span class="card-status ${face.has_face_manipulation ? 'status-detected' : 'status-normal'}">
+                                ${face.has_face_manipulation ? 'Manipulation Detected' : 'Natural Face'}
+                            </span>
+                        </div>
+                        <div class="card-metrics">
+                            <div class="card-metric">
+                                <span class="metric-name">Faces Detected</span>
+                                <span class="metric-val">${face.faces_detected || 0}</span>
+                            </div>
+                            <div class="card-metric">
+                                <span class="metric-name">Manipulation Score</span>
+                                <span class="metric-val">${face.manipulation_score?.toFixed(3) || '0.000'}</span>
+                            </div>
+                            ${face.face_details && face.face_details.length > 0 ? `
+                                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--text-secondary);">Face Details:</div>
+                                    ${face.face_details.map((detail, idx) => `
+                                        <div style="background: var(--surface); padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem;">
+                                            <div style="font-weight: 600; margin-bottom: 0.5rem;">Face ${idx + 1}</div>
+                                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.85rem;">
+                                                <div><span style="color: var(--text-secondary);">Texture Score:</span> ${detail.texture_score?.toFixed(2) || '0.00'}</div>
+                                                <div><span style="color: var(--text-secondary);">Lighting Variance:</span> ${detail.lighting_variance?.toFixed(2) || '0.00'}</div>
+                                                <div><span style="color: var(--text-secondary);">Too Smooth:</span> ${detail.is_too_smooth ? 'Yes' : 'No'}</div>
+                                                <div><span style="color: var(--text-secondary);">Edge Discontinuity:</span> ${detail.edge_discontinuity?.toFixed(2) || '0.00'}</div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('biometricGrid').innerHTML = html;
+            }
+
+            displayHashes(hashes) {
+                if (!hashes) {
+                    document.getElementById('hashesContainer').innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No hash data available</p>';
+                    return;
+                }
+
+                const hashTypes = [
+                    { key: 'average_hash', name: 'Average Hash (aHash)', icon: 'fa-hashtag' },
+                    { key: 'perceptual_hash', name: 'Perceptual Hash (pHash)', icon: 'fa-hashtag' },
+                    { key: 'difference_hash', name: 'Difference Hash (dHash)', icon: 'fa-hashtag' },
+                    { key: 'wavelet_hash', name: 'Wavelet Hash (wHash)', icon: 'fa-hashtag' }
+                ];
+
+                const html = `
+                    <div style="margin-bottom: 1rem; padding: 1rem; background: var(--surface-light); border-radius: 12px; border: 1px solid var(--border);">
+                        <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary);">
+                            <i class="fas fa-info-circle"></i> Hash Diversity: ${hashes.hash_diversity || 0}
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                            Different hash algorithms produce different values. Higher diversity indicates more unique image characteristics.
+                        </div>
+                    </div>
+                    ${hashTypes.map(hashType => {
+                        const value = hashes[hashType.key] || '';
+                        if (!value) return '';
+                        return `
+                            <div class="hash-item">
+                                <div class="hash-header">
+                                    <div class="hash-name">
+                                        <i class="fas ${hashType.icon}"></i> ${hashType.name}
+                                    </div>
+                                    <button class="copy-btn" onclick="window.trueShotAI.copyToClipboard('${value}', this)">
+                                        <i class="fas fa-copy"></i> Copy
+                                    </button>
+                                </div>
+                                <div class="hash-value">${value}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                `;
+
+                document.getElementById('hashesContainer').innerHTML = html || '<p style="text-align: center; color: var(--text-secondary);">No hash data available</p>';
+            }
+
+            copyToClipboard(text, button) {
+                navigator.clipboard.writeText(text).then(() => {
+                    const originalHTML = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    button.classList.add('copied');
+                    setTimeout(() => {
+                        button.innerHTML = originalHTML;
+                        button.classList.remove('copied');
+                    }, 2000);
+                    this.showToast('Copied!', 'Hash value copied to clipboard', 'success');
+                }).catch(err => {
+                    this.showToast('Copy Failed', 'Failed to copy to clipboard', 'error');
+                });
+            }
+
+            copyResults() {
+                if (!this.currentResult) {
+                    this.showToast('No Results', 'No analysis results to copy', 'warning');
+                    return;
+                }
+
+                const result = {
+                    prediction: this.currentResult.prediction,
+                    confidence: (this.currentResult.confidence * 100).toFixed(2) + '%',
+                    timestamp: new Date().toISOString(),
+                    analysis: {
+                        forensics: this.currentResult.analysis?.forensics,
+                        ai_signatures: this.currentResult.analysis?.ai_signatures,
+                        biometric: this.currentResult.analysis?.biometric,
+                        hashes: this.currentResult.analysis?.hashes
+                    }
+                };
+
+                const text = JSON.stringify(result, null, 2);
+                navigator.clipboard.writeText(text).then(() => {
+                    this.showToast('Results Copied', 'Analysis results copied to clipboard', 'success');
+                }).catch(err => {
+                    this.showToast('Copy Failed', 'Failed to copy results', 'error');
+                });
+            }
+
             displaySummary(result) {
                 const summaryGrid = document.getElementById('summaryGrid');
-                const summary = result.analysis_summary;
+                // Use analysis_summary if available, otherwise extract from analysis
+                const summary = result.analysis_summary || {
+                    noise_level: result.analysis?.noise?.noise_level || 0,
+                    texture_score: result.analysis?.texture?.texture_consistency || 0,
+                    color_entropy: result.analysis?.color?.entropy || 0,
+                    has_exif: result.analysis?.metadata?.has_exif || false,
+                    dimensions: result.analysis?.dimensions || { width: 0, height: 0, total_pixels: 0, aspect_ratio: 0 },
+                    color_diversity: result.analysis?.color?.color_diversity || 0,
+                    smoothness: result.analysis?.artifacts?.smoothness_score || 0
+                };
                 
                 const metrics = [
                     {
                         label: 'Noise Level',
-                        value: summary.noise_level.toFixed(2),
+                        value: (summary.noise_level || 0).toFixed(2),
                         subtext: summary.noise_level > 8 && summary.noise_level < 25 ? 'Natural range' : 'Suspicious'
                     },
                     {
                         label: 'Texture Score',
-                        value: summary.texture_score.toFixed(2),
+                        value: (summary.texture_score || 0).toFixed(2),
                         subtext: summary.texture_score < 500 ? 'Too uniform' : 'Normal variation'
                     },
                     {
                         label: 'Color Entropy',
-                        value: summary.color_entropy.toFixed(2) + ' bits',
+                        value: (summary.color_entropy || 0).toFixed(2) + ' bits',
                         subtext: summary.color_entropy < 6.0 ? 'Low diversity' : 'Good diversity'
                     },
                     {
@@ -1165,25 +1971,84 @@
                     },
                     {
                         label: 'Dimensions',
-                        value: `${summary.dimensions.width} × ${summary.dimensions.height}`,
-                        subtext: `${(summary.dimensions.total_pixels / 1000000).toFixed(1)}MP`
+                        value: `${summary.dimensions?.width || 0} × ${summary.dimensions?.height || 0}`,
+                        subtext: `${((summary.dimensions?.total_pixels || 0) / 1000000).toFixed(1)}MP`
                     },
                     {
                         label: 'Aspect Ratio',
-                        value: summary.dimensions.aspect_ratio.toFixed(2),
+                        value: (summary.dimensions?.aspect_ratio || 0).toFixed(2),
                         subtext: 'Width / Height'
                     },
                     {
                         label: 'Color Diversity',
-                        value: (summary.color_diversity * 100).toFixed(2) + '%',
+                        value: ((summary.color_diversity || 0) * 100).toFixed(2) + '%',
                         subtext: summary.color_diversity < 0.3 ? 'Color banding' : 'Good range'
                     },
                     {
                         label: 'Smoothness',
-                        value: summary.smoothness.toFixed(2),
+                        value: (summary.smoothness || 0).toFixed(2),
                         subtext: summary.smoothness < 50 ? 'Too smooth' : 'Natural texture'
                     }
                 ];
+
+                // Add v4.0 metrics if available
+                const analysis = result.analysis || {};
+                
+                // Forensic metrics
+                if (analysis.forensics) {
+                    if (analysis.forensics.ela) {
+                        metrics.push({
+                            label: 'ELA Anomaly',
+                            value: analysis.forensics.ela.has_compression_anomaly ? 'Detected' : 'Normal',
+                            subtext: `Variance: ${analysis.forensics.ela.ela_variance?.toFixed(1) || 0}`
+                        });
+                    }
+                    if (analysis.forensics.double_jpeg) {
+                        metrics.push({
+                            label: 'Double JPEG',
+                            value: analysis.forensics.double_jpeg.has_double_compression ? 'Detected' : 'Normal',
+                            subtext: `Score: ${analysis.forensics.double_jpeg.double_jpeg_score?.toFixed(1) || 0}`
+                        });
+                    }
+                }
+
+                // AI Signature metrics
+                if (analysis.ai_signatures) {
+                    if (analysis.ai_signatures.gan_fingerprint) {
+                        metrics.push({
+                            label: 'GAN Fingerprint',
+                            value: analysis.ai_signatures.gan_fingerprint.gan_fingerprint_detected ? 'Detected' : 'Not Found',
+                            subtext: `Score: ${analysis.ai_signatures.gan_fingerprint.gan_score?.toFixed(2) || 0}`
+                        });
+                    }
+                    if (analysis.ai_signatures.diffusion_signature) {
+                        metrics.push({
+                            label: 'Diffusion Signature',
+                            value: analysis.ai_signatures.diffusion_signature.diffusion_signature_detected ? 'Detected' : 'Not Found',
+                            subtext: `Score: ${analysis.ai_signatures.diffusion_signature.diffusion_score?.toFixed(2) || 0}`
+                        });
+                    }
+                }
+
+                // Biometric metrics
+                if (analysis.biometric?.face_manipulation) {
+                    const face = analysis.biometric.face_manipulation;
+                    metrics.push({
+                        label: 'Face Analysis',
+                        value: `${face.faces_detected || 0} face(s)`,
+                        subtext: face.has_face_manipulation ? 'Manipulation detected' : 'Natural'
+                    });
+                }
+
+                // Statistical metrics
+                if (analysis.statistical?.benford_law) {
+                    const benford = analysis.statistical.benford_law;
+                    metrics.push({
+                        label: "Benford's Law",
+                        value: benford.follows_benford ? 'Follows' : 'Deviates',
+                        subtext: `Score: ${benford.benford_score?.toFixed(2) || 0}`
+                    });
+                }
 
                 summaryGrid.innerHTML = metrics.map(metric => `
                     <div class="metric-card">

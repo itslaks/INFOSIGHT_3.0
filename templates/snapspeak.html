@@ -178,7 +178,7 @@
 
         #imageInput { display: none; }
 
-        .image-preview {
+       .image-preview {
             background: var(--bg-card);
             border-radius: 20px;
             padding: 2rem;
@@ -192,12 +192,19 @@
             overflow: hidden;
         }
 
+        .image-preview.drag-over {
+            border-color: var(--primary);
+            background: rgba(0, 212, 255, 0.05);
+        }
+
         .image-preview img {
             max-width: 100%;
             max-height: 500px;
             object-fit: contain;
             border-radius: 12px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            cursor: grab;
+            transform-origin: center center;
         }
 
         .preview-placeholder {
@@ -592,6 +599,47 @@
             border-left: 3px solid var(--primary);
         }
 
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(0, 212, 255, 0.15);
+            color: var(--primary);
+            font-size: 0.8rem;
+            cursor: help;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-meta {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+        }
+
+        .history-favorite {
+            color: var(--accent);
+        }
+
         @media (max-width: 768px) {
             h1 { font-size: 2.5rem; }
             .container { padding: 1rem; }
@@ -632,14 +680,59 @@
                     <i class="fas fa-brain"></i>
                     <span>Analyze</span>
                 </button>
+                <button id="compareBtn" class="btn btn-secondary" style="background: linear-gradient(135deg, var(--secondary), #ff8c00);" onclick="triggerCompareInput()">
+                    <i class="fas fa-columns"></i>
+                    <span>Compare Images</span>
+                </button>
             </div>
         </div>
+
+        <!-- Advanced API console: quick access to all single-image endpoints -->
+        <div class="result-card" style="margin-top: 1rem; padding: 1.5rem 1.5rem 1.2rem 1.5rem;">
+            <div class="result-header" style="border-bottom: none; padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                <div class="result-icon"><i class="fas fa-tools"></i></div>
+                <div class="result-title" style="font-size: 1.2rem; display:flex; align-items:center; gap:0.5rem;">
+                    Advanced Forensic Toolbox
+                    <span class="info-icon" title="Run individual forensic tools (metadata, steganography, privacy, blockchain, quality, etc.) on the currently selected image for focused investigations.">
+                        <i class="fas fa-info-circle"></i>
+                    </span>
+                </div>
+            </div>
+            <div class="result-content" style="display:flex; flex-wrap:wrap; gap:0.8rem; align-items:center;">
+                <label for="advancedEndpointSelect" style="font-size:0.9rem; color:var(--text-secondary);">Run endpoint:</label>
+                <select id="advancedEndpointSelect" style="flex:1; min-width:260px; padding:0.5rem 0.75rem; border-radius:8px; border:1px solid var(--border); background:rgba(10,14,39,0.8); color:var(--text-primary);">
+                    <!-- options populated by JS on DOMContentLoaded -->
+                </select>
+                <button class="btn btn-primary" style="padding:0.6rem 1.4rem;" onclick="runAdvancedEndpoint()">
+                    <i class="fas fa-play"></i>
+                    <span>Run</span>
+                </button>
+            </div>
+            <p style="margin-top:0.6rem; font-size:0.8rem; color:var(--text-secondary);">
+                Uses the currently selected image and streams full JSON results from any forensic endpoint (metadata, stego, vision, blockchain, privacy, quality, export, etc.).
+            </p>
+        </div>
+
+        <!-- Hidden inputs for comparison & batch operations -->
+        <input type="file" id="compareInput" accept="image/*" multiple style="display:none" onchange="compareImages(event)">
+        <input type="file" id="batchInput" accept="image/*" multiple style="display:none" onchange="runBatchAnalysis(event)">
 
         <div class="image-preview" id="imagePreview">
             <div class="preview-placeholder">
                 <i class="fas fa-image"></i>
                 <p>No image selected</p>
             </div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:-1rem; margin-bottom:1.5rem; font-size:0.85rem;">
+            <button class="btn btn-primary" style="padding:0.4rem 0.8rem;" onclick="zoomOut()">
+                <i class="fas fa-search-minus"></i>
+            </button>
+            <button class="btn btn-primary" style="padding:0.4rem 0.8rem;" onclick="resetZoomPan()">
+                <i class="fas fa-compress-arrows-alt"></i>
+            </button>
+            <button class="btn btn-primary" style="padding:0.4rem 0.8rem;" onclick="zoomIn()">
+                <i class="fas fa-search-plus"></i>
+            </button>
         </div>
 
         <div class="loading" id="loading">
@@ -651,21 +744,176 @@
         </div>
 
         <div class="results-section" id="resultsSection"></div>
+
+        <div class="result-card" id="historyCard" style="margin-top: 1.5rem;">
+            <div class="result-header">
+                <div class="result-icon"><i class="fas fa-history"></i></div>
+                <div class="result-title">History & Favorites</div>
+            </div>
+            <div class="result-content" id="historyList" style="font-size:0.9rem; color:var(--text-secondary);">
+                No analyses yet. Run an analysis to start building history.
+            </div>
+        </div>
     </div>
 
     <script>
         let currentImage = null;
+        let zoomLevel = 1;
+        let panX = 0;
+        let panY = 0;
+        let isPanning = false;
+        let panStartX = 0;
+        let panStartY = 0;
+
+        const HISTORY_STORAGE_KEY = 'snapspeak_history_v1';
+        let analysisHistory = [];
+
+        // Map of advanced endpoints that work with a single image file
+        const ADVANCED_ENDPOINTS = {
+            // Forensics
+            'forensics_camera_fingerprint': {
+                path: '/snapspeak_ai/api/forensics/camera-fingerprint',
+                label: 'Forensics · Camera Fingerprint (PRNU + hashes)'
+            },
+            'forensics_location_intel': {
+                path: '/snapspeak_ai/api/forensics/location-intelligence',
+                label: 'Forensics · Location Intelligence (GPS metadata)'
+            },
+            'forensics_edit_history': {
+                path: '/snapspeak_ai/api/forensics/edit-history',
+                label: 'Forensics · Edit History Reconstruction'
+            },
+            'forensics_validate_timestamp': {
+                path: '/snapspeak_ai/api/forensics/validate-timestamp',
+                label: 'Forensics · Timestamp Consistency Check'
+            },
+            // Steganography
+            'stego_deep_scan': {
+                path: '/snapspeak_ai/api/stego/deep-scan',
+                label: 'Stego · Deep Scan (ensemble)'
+            },
+            'stego_extract_payload': {
+                path: '/snapspeak_ai/api/stego/extract-payload',
+                label: 'Stego · Extract Payload (LSB preview)'
+            },
+            'stego_tool_identification': {
+                path: '/snapspeak_ai/api/stego/tool-identification',
+                label: 'Stego · Tool Identification'
+            },
+            'stego_stats': {
+                path: '/snapspeak_ai/api/stego/statistical-analysis',
+                label: 'Stego · Statistical Analysis'
+            },
+            // Reverse search (single image variants)
+            'reverse_multi_engine': {
+                path: '/snapspeak_ai/api/reverse-search/multi-engine',
+                label: 'Reverse Search · Multi-Engine Fingerprints'
+            },
+            'reverse_provenance': {
+                path: '/snapspeak_ai/api/reverse-search/provenance',
+                label: 'Reverse Search · Provenance Skeleton'
+            },
+            'reverse_copyright': {
+                path: '/snapspeak_ai/api/reverse-search/copyright-check',
+                label: 'Reverse Search · Copyright Check Skeleton'
+            },
+            // Vision
+            'vision_advanced_objects': {
+                path: '/snapspeak_ai/api/vision/advanced-objects',
+                label: 'Vision · Advanced Objects (YOLO/SAM hooks)'
+            },
+            'vision_scene': {
+                path: '/snapspeak_ai/api/vision/scene-understanding',
+                label: 'Vision · Scene Understanding'
+            },
+            'vision_ocr': {
+                path: '/snapspeak_ai/api/vision/ocr-advanced',
+                label: 'Vision · OCR (multi-language)'
+            },
+            'vision_face_attributes': {
+                path: '/snapspeak_ai/api/vision/face-attributes',
+                label: 'Vision · Face Attributes'
+            },
+            'vision_document': {
+                path: '/snapspeak_ai/api/vision/document-parse',
+                label: 'Vision · Document Parsing'
+            },
+            // Blockchain / provenance
+            'blockchain_c2pa': {
+                path: '/snapspeak_ai/api/blockchain/c2pa-verify',
+                label: 'Blockchain · C2PA/CAI Verification (stub)'
+            },
+            'blockchain_nft': {
+                path: '/snapspeak_ai/api/blockchain/nft-check',
+                label: 'Blockchain · NFT Ownership Check (stub)'
+            },
+            'blockchain_signature': {
+                path: '/snapspeak_ai/api/blockchain/digital-signature',
+                label: 'Blockchain · Digital Signature (stub)'
+            },
+            // Comparison & edits
+            'compare_detect_edits': {
+                path: '/snapspeak_ai/api/compare/detect-edits',
+                label: 'Compare · Edit Detection (heuristics)'
+            },
+            // Privacy
+            'privacy_pii': {
+                path: '/snapspeak_ai/api/privacy/pii-detect',
+                label: 'Privacy · PII & Sensitive Content Hints'
+            },
+            'privacy_risk': {
+                path: '/snapspeak_ai/api/privacy/risk-assessment',
+                label: 'Privacy · Risk Assessment'
+            },
+            'privacy_auto_redact': {
+                path: '/snapspeak_ai/api/privacy/auto-redact',
+                label: 'Privacy · Auto-Redact Regions (faces)'
+            },
+            // Quality
+            'quality_technical': {
+                path: '/snapspeak_ai/api/quality/technical-assessment',
+                label: 'Quality · Technical Assessment'
+            },
+            'quality_aesthetic': {
+                path: '/snapspeak_ai/api/quality/aesthetic-score',
+                label: 'Quality · Aesthetic Score'
+            },
+            'quality_report': {
+                path: '/snapspeak_ai/api/quality/professional-report',
+                label: 'Quality · Professional Report Summary'
+            },
+            // Export & visualization
+            'export_forensic_package': {
+                path: '/snapspeak_ai/api/export/forensic-package',
+                label: 'Export · Forensic Package (hashes + metadata)'
+            },
+            'visualize_heatmap': {
+                path: '/snapspeak_ai/api/visualize/heatmap',
+                label: 'Visualize · Edge/Attention Heatmap Stats'
+            },
+            'visualize_timeline': {
+                path: '/snapspeak_ai/api/visualize/timeline',
+                label: 'Visualize · Metadata Timeline'
+            }
+        };
+
+function handleSelectedFile(file) {
+    if (!file) return;
+    const imagePreview = document.getElementById('imagePreview');
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        currentImage = e.target.result;
+        imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="fade-in">`;
+        resetZoomPan();
+        attachPanZoomListeners();
+    };
+    reader.readAsDataURL(file);
+}
 
 function previewImage(event) {
-    const imagePreview = document.getElementById('imagePreview');
     const file = event.target.files[0];
     if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            currentImage = e.target.result;
-            imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="fade-in">`;
-        }
-        reader.readAsDataURL(file);
+        handleSelectedFile(file);
     }
 }
 
@@ -735,6 +983,7 @@ async function analyzeImage() {
         setTimeout(() => {
             loadingDiv.style.display = "none";
             displayResults(result);
+            addToHistory(result, fileInput.files[0].name);
         }, 800);
 
     } catch (error) {
@@ -746,6 +995,559 @@ async function analyzeImage() {
             `<p style="color: var(--error);">${error.message}</p>`
         );
         console.error('Error:', error);
+    }
+}
+
+// ---------- NEW: Advanced backend features (batch 1) ----------
+
+function triggerCompareInput() {
+    document.getElementById('compareInput').click();
+}
+
+function triggerBatchInput() {
+    document.getElementById('batchInput').click();
+}
+
+async function deepForensicScan() {
+    const fileInput = document.getElementById('imageInput');
+    const resultsSection = document.getElementById('resultsSection');
+    const loadingDiv = document.getElementById('loading');
+    const loadingBar = document.getElementById('loadingBar');
+    const loadingText = document.getElementById('loadingText');
+
+    if (!fileInput.files[0]) {
+        alert("Please select an image first.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+
+    loadingDiv.style.display = "block";
+    loadingBar.style.width = '0%';
+    loadingText.innerText = "Running deep steganography scan...";
+
+    try {
+        loadingBar.style.width = '40%';
+        const response = await fetch('/snapspeak_ai/api/stego/deep-scan', {
+            method: 'POST',
+            body: formData
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+        loadingBar.style.width = '100%';
+        loadingText.innerText = "Deep scan complete!";
+        setTimeout(() => {
+            loadingDiv.style.display = "none";
+            // Append deep scan card without clearing main analysis
+            const stegCard = createResultCard(
+                'fas fa-user-secret',
+                'Deep Steganography Scan',
+                `<pre style="white-space: pre-wrap; font-size: 0.9rem; background: rgba(0,212,255,0.05); padding: 1rem; border-radius: 8px; max-height: 300px; overflow:auto;">${escapeHtml(JSON.stringify(result.ensemble_summary || result, null, 2))}</pre>`
+            );
+            resultsSection.innerHTML = stegCard + resultsSection.innerHTML;
+            scrollToResults();
+        }, 500);
+    } catch (err) {
+        console.error(err);
+        loadingDiv.style.display = "none";
+        alert("Deep scan failed: " + err.message);
+    }
+}
+
+async function compareImages(event) {
+    const files = event.target.files;
+    const resultsSection = document.getElementById('resultsSection');
+    const loadingDiv = document.getElementById('loading');
+    const loadingBar = document.getElementById('loadingBar');
+    const loadingText = document.getElementById('loadingText');
+
+    if (!files || files.length < 2) {
+        alert("Please select at least two images to compare.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file_a', files[0]);
+    formData.append('file_b', files[1]);
+
+    loadingDiv.style.display = "block";
+    loadingBar.style.width = '0%';
+    loadingText.innerText = "Computing visual diff between images...";
+
+    try {
+        loadingBar.style.width = '35%';
+        const response = await fetch('/snapspeak_ai/api/compare/visual-diff', {
+            method: 'POST',
+            body: formData
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+        loadingBar.style.width = '100%';
+        loadingText.innerText = "Comparison complete!";
+
+        setTimeout(() => {
+            loadingDiv.style.display = "none";
+            const compareHtml = createResultCard(
+                'fas fa-columns',
+                'Visual Difference Analysis',
+                `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${(result.average_pixel_difference || 0).toFixed(1)}</div>
+                        <div class="stat-label">Average Pixel Difference</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${result.width || 0}×${result.height || 0}</div>
+                        <div class="stat-label">Aligned Resolution</div>
+                    </div>
+                </div>
+                <p style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.9rem;">
+                    A lower average pixel difference generally indicates more visually similar images.
+                    The server also generated a heatmap highlighting regions of change (available for download via a future endpoint).
+                </p>
+                `
+            );
+            resultsSection.innerHTML = compareHtml + resultsSection.innerHTML;
+            scrollToResults();
+        }, 500);
+    } catch (err) {
+        console.error(err);
+        loadingDiv.style.display = "none";
+        alert("Comparison failed: " + err.message);
+    }
+}
+
+async function runBatchAnalysis(event) {
+    const files = event.target.files;
+    const resultsSection = document.getElementById('resultsSection');
+    const loadingDiv = document.getElementById('loading');
+    const loadingBar = document.getElementById('loadingBar');
+    const loadingText = document.getElementById('loadingText');
+
+    if (!files || files.length === 0) {
+        alert("Please select one or more images for batch analysis.");
+        return;
+    }
+
+    const formData = new FormData();
+    Array.from(files).forEach(f => formData.append('files', f));
+
+    loadingDiv.style.display = "block";
+    loadingBar.style.width = '0%';
+    loadingText.innerText = "Running batch analysis on selected images...";
+
+    try {
+        loadingBar.style.width = '30%';
+        const response = await fetch('/snapspeak_ai/api/batch/upload-folder', {
+            method: 'POST',
+            body: formData
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+        loadingBar.style.width = '100%';
+        loadingText.innerText = "Batch analysis complete!";
+
+        setTimeout(() => {
+            loadingDiv.style.display = "none";
+
+            const images = result.images || [];
+            const rows = images.map(img => `
+                <tr>
+                    <td>${escapeHtml(img.filename || '')}</td>
+                    <td>${escapeHtml(img.quality?.sharpness_laplacian_var ?? '')}</td>
+                    <td>${escapeHtml(img.quality?.noise_std ?? '')}</td>
+                    <td>${escapeHtml(img.hashes?.average_hash ?? '')}</td>
+                </tr>
+            `).join('');
+
+            const batchHtml = createResultCard(
+                'fas fa-layer-group',
+                'Batch Analysis Summary',
+                `
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    Processed ${images.length} image(s). This summary shows quick technical metrics and fingerprints; 
+                    use individual analysis for full forensic detail.
+                </p>
+                <div style="max-height: 260px; overflow:auto; border-radius: 8px; border:1px solid var(--border);">
+                    <table style="width:100%; border-collapse: collapse; font-size: 0.9rem;">
+                        <thead style="background: rgba(0,212,255,0.05);">
+                            <tr>
+                                <th style="padding: 0.6rem; border-bottom:1px solid var(--border); text-align:left;">Filename</th>
+                                <th style="padding: 0.6rem; border-bottom:1px solid var(--border); text-align:left;">Sharpness</th>
+                                <th style="padding: 0.6rem; border-bottom:1px solid var(--border); text-align:left;">Noise</th>
+                                <th style="padding: 0.6rem; border-bottom:1px solid var(--border); text-align:left;">Average Hash</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows}
+                        </tbody>
+                    </table>
+                </div>
+                `
+            );
+
+            resultsSection.innerHTML = batchHtml + resultsSection.innerHTML;
+            scrollToResults();
+        }, 500);
+    } catch (err) {
+        console.error(err);
+        loadingDiv.style.display = "none";
+        alert("Batch analysis failed: " + err.message);
+    }
+}
+
+async function generateForensicReport() {
+    const fileInput = document.getElementById('imageInput');
+    const resultsSection = document.getElementById('resultsSection');
+    const loadingDiv = document.getElementById('loading');
+    const loadingBar = document.getElementById('loadingBar');
+    const loadingText = document.getElementById('loadingText');
+
+    if (!fileInput.files[0]) {
+        alert("Please select an image first.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+
+    loadingDiv.style.display = "block";
+    loadingBar.style.width = '0%';
+    loadingText.innerText = "Building forensic report...";
+
+    try {
+        loadingBar.style.width = '35%';
+        const response = await fetch('/snapspeak_ai/api/export/pdf-report', {
+            method: 'POST',
+            body: formData
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+        loadingBar.style.width = '100%';
+        loadingText.innerText = "Report assembled!";
+
+        setTimeout(() => {
+            loadingDiv.style.display = "none";
+            const report = result.report || {};
+            const reportHtml = createResultCard(
+                'fas fa-file-alt',
+                'Forensic Report (JSON Summary)',
+                `
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    This JSON summary can be sent to a PDF generation service or exported for further investigation.
+                </p>
+                <pre style="white-space: pre-wrap; font-size: 0.9rem; background: rgba(0,212,255,0.05); padding: 1rem; border-radius: 8px; max-height: 320px; overflow:auto;">${escapeHtml(JSON.stringify(report.summary || report, null, 2))}</pre>
+                <button class="btn btn-primary" style="margin-top:1rem;" onclick="copyToClipboard('${escapeHtml(JSON.stringify(report, null, 2))}')">
+                    <i class="fas fa-copy"></i> Copy Full JSON
+                </button>
+                `
+            );
+            resultsSection.innerHTML = reportHtml + resultsSection.innerHTML;
+            scrollToResults();
+        }, 500);
+    } catch (err) {
+        console.error(err);
+        loadingDiv.style.display = "none";
+        alert("Report generation failed: " + err.message);
+    }
+}
+
+// Generic runner for any single-image forensic endpoint in ADVANCED_ENDPOINTS
+async function runAdvancedEndpoint() {
+    const select = document.getElementById('advancedEndpointSelect');
+    const key = select.value;
+    const config = ADVANCED_ENDPOINTS[key];
+    const fileInput = document.getElementById('imageInput');
+    const resultsSection = document.getElementById('resultsSection');
+    const loadingDiv = document.getElementById('loading');
+    const loadingBar = document.getElementById('loadingBar');
+    const loadingText = document.getElementById('loadingText');
+
+    if (!config) {
+        alert("Please choose a tool from the Advanced Forensic Toolbox.");
+        return;
+    }
+    if (!fileInput.files[0]) {
+        alert("Please select an image first.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+
+    loadingDiv.style.display = "block";
+    loadingBar.style.width = '0%';
+    loadingText.innerText = `Running: ${config.label} ...`;
+
+    try {
+        loadingBar.style.width = '40%';
+        const response = await fetch(config.path, {
+            method: 'POST',
+            body: formData
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        loadingBar.style.width = '100%';
+        loadingText.innerText = "Endpoint completed!";
+
+        setTimeout(() => {
+            loadingDiv.style.display = "none";
+            const cardHtml = createResultCard(
+                'fas fa-microscope',
+                config.label,
+                `<pre style="white-space: pre-wrap; font-size: 0.9rem; background: rgba(0,212,255,0.05); padding: 1rem; border-radius: 8px; max-height: 320px; overflow:auto;">${escapeHtml(JSON.stringify(data, null, 2))}</pre>`
+            );
+            resultsSection.innerHTML = cardHtml + resultsSection.innerHTML;
+            scrollToResults();
+        }, 500);
+    } catch (err) {
+        console.error(err);
+        loadingDiv.style.display = "none";
+        alert(`Advanced endpoint failed: ${err.message}`);
+    }
+}
+
+// ---- Zoom & Pan ----
+
+function applyImageTransform() {
+    const img = document.querySelector('#imagePreview img');
+    if (!img) return;
+    img.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
+}
+
+function resetZoomPan() {
+    zoomLevel = 1;
+    panX = 0;
+    panY = 0;
+    applyImageTransform();
+}
+
+function zoomIn() {
+    zoomLevel = Math.min(5, zoomLevel + 0.25);
+    applyImageTransform();
+}
+
+function zoomOut() {
+    zoomLevel = Math.max(0.25, zoomLevel - 0.25);
+    applyImageTransform();
+}
+
+function attachPanZoomListeners() {
+    const preview = document.getElementById('imagePreview');
+    const img = preview ? preview.querySelector('img') : null;
+    if (!preview || !img) return;
+
+    preview.onmousedown = (e) => {
+        if (!img) return;
+        isPanning = true;
+        panStartX = e.clientX - panX;
+        panStartY = e.clientY - panY;
+        img.style.cursor = 'grabbing';
+    };
+    preview.onmouseup = () => {
+        isPanning = false;
+        if (img) img.style.cursor = 'grab';
+    };
+    preview.onmouseleave = () => {
+        isPanning = false;
+        if (img) img.style.cursor = 'grab';
+    };
+    preview.onmousemove = (e) => {
+        if (!isPanning) return;
+        panX = e.clientX - panStartX;
+        panY = e.clientY - panStartY;
+        applyImageTransform();
+    };
+    preview.onwheel = (e) => {
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 0.1 : -0.1;
+        zoomLevel = Math.min(5, Math.max(0.25, zoomLevel + delta));
+        applyImageTransform();
+    };
+}
+
+// ---- History & Favorites ----
+
+function loadHistory() {
+    try {
+        const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
+        analysisHistory = raw ? JSON.parse(raw) : [];
+    } catch {
+        analysisHistory = [];
+    }
+    renderHistory();
+}
+
+function saveHistory() {
+    try {
+        localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(analysisHistory));
+    } catch (e) {
+        console.warn('Failed to persist history:', e);
+    }
+}
+
+function addToHistory(result, filename) {
+    const entry = {
+        id: Date.now(),
+        filename: filename || 'Unknown',
+        timestamp: new Date().toISOString(),
+        favorite: false,
+        summary: {
+            faces: result.faces?.count || 0,
+            stegRisk: result.steganography?.overall_risk || 'N/A'
+        },
+        result
+    };
+    analysisHistory.unshift(entry);
+    if (analysisHistory.length > 20) {
+        analysisHistory = analysisHistory.slice(0, 20);
+    }
+    saveHistory();
+    renderHistory();
+}
+
+function toggleFavorite(id) {
+    analysisHistory = analysisHistory.map(item =>
+        item.id === id ? { ...item, favorite: !item.favorite } : item
+    );
+    saveHistory();
+    renderHistory();
+}
+
+function loadFromHistory(id) {
+    const item = analysisHistory.find(h => h.id === id);
+    if (!item) return;
+    displayResults(item.result);
+    scrollToResults();
+}
+
+function renderHistory() {
+    const container = document.getElementById('historyList');
+    if (!container) return;
+    if (!analysisHistory.length) {
+        container.innerHTML = 'No analyses yet. Run an analysis to start building history.';
+        return;
+    }
+    const rows = analysisHistory.map(item => {
+        const date = new Date(item.timestamp);
+        const label = `${item.filename} · ${date.toLocaleString()}`;
+        const risk = item.summary.stegRisk;
+        return `
+            <div class="history-item">
+                <div class="history-meta">
+                    <span>${escapeHtml(label)}</span>
+                    <span style="font-size:0.8rem; color:var(--text-secondary);">
+                        Faces: ${item.summary.faces} · Stego: ${escapeHtml(risk)}
+                    </span>
+                </div>
+                <div class="history-actions">
+                    <button class="btn btn-primary" style="padding:0.3rem 0.6rem; font-size:0.75rem;" onclick="loadFromHistory(${item.id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-primary" style="padding:0.3rem 0.6rem; font-size:0.75rem;" onclick="toggleFavorite(${item.id})">
+                        <i class="${item.favorite ? 'fas' : 'far'} fa-star history-favorite"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+    container.innerHTML = rows;
+}
+
+// Reverse image search helper – uses backend fingerprints + opens free web engines
+async function runReverseSearch() {
+    const fileInput = document.getElementById('imageInput');
+    const resultsSection = document.getElementById('resultsSection');
+    const loadingDiv = document.getElementById('loading');
+    const loadingBar = document.getElementById('loadingBar');
+    const loadingText = document.getElementById('loadingText');
+
+    if (!fileInput.files[0]) {
+        alert("Please select an image first.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+
+    loadingDiv.style.display = "block";
+    loadingBar.style.width = '0%';
+    loadingText.innerText = "Generating fingerprints for reverse image search...";
+
+    try {
+        loadingBar.style.width = '40%';
+        const response = await fetch('/snapspeak_ai/api/reverse-search/multi-engine', {
+            method: 'POST',
+            body: formData
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+        loadingBar.style.width = '100%';
+        loadingText.innerText = "Reverse-search data ready!";
+
+        setTimeout(() => {
+            loadingDiv.style.display = "none";
+            const hashes = result.image_fingerprints || {};
+            const cardHtml = createResultCard(
+                'fas fa-search',
+                'Reverse Image Search & Provenance',
+                `
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                    Use these fingerprints with online engines to track this image across the web and verify provenance.
+                </p>
+                <div class="hash-grid" style="margin-bottom: 1.5rem;">
+                    ${hashes.sha256 ? `
+                    <div class="hash-item">
+                        <div class="hash-label"><i class="fas fa-shield-alt"></i> SHA-256</div>
+                        <div class="hash-value">${escapeHtml(hashes.sha256)}</div>
+                    </div>` : ''}
+                    ${hashes.perceptual_hash ? `
+                    <div class="hash-item">
+                        <div class="hash-label"><i class="fas fa-eye"></i> Perceptual Hash</div>
+                        <div class="hash-value">${escapeHtml(hashes.perceptual_hash)}</div>
+                    </div>` : ''}
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:0.8rem; margin-bottom:1rem;">
+                    <button class="btn btn-primary" style="padding:0.6rem 1rem;" onclick="window.open('https://images.google.com/', '_blank')">
+                        <i class="fab fa-google"></i> Google Images
+                    </button>
+                    <button class="btn btn-primary" style="padding:0.6rem 1rem;" onclick="window.open('https://tineye.com/', '_blank')">
+                        <i class="fas fa-search"></i> TinEye
+                    </button>
+                    <button class="btn btn-primary" style="padding:0.6rem 1rem;" onclick="window.open('https://yandex.com/images/', '_blank')">
+                        <i class="fas fa-globe"></i> Yandex Images
+                    </button>
+                    <button class="btn btn-primary" style="padding:0.6rem 1rem;" onclick="window.open('https://www.bing.com/visualsearch', '_blank')">
+                        <i class="fab fa-microsoft"></i> Bing Visual Search
+                    </button>
+                </div>
+                <p style="font-size:0.85rem; color:var(--text-secondary);">
+                    These services are free to use in your browser. Upload the same image there to see matches, edits,
+                    and usage history across the web. For automated large-scale reverse search, connect server-side APIs
+                    (SerpAPI, TinEye API, etc.) to this module.
+                </p>
+                `
+            );
+            resultsSection.innerHTML = cardHtml + resultsSection.innerHTML;
+            scrollToResults();
+        }, 500);
+    } catch (err) {
+        console.error(err);
+        loadingDiv.style.display = "none";
+        alert("Reverse search preparation failed: " + err.message);
     }
 }
 
@@ -778,21 +1580,23 @@ function displayResults(result) {
     `;
     resultsSection.innerHTML += statsHtml;
 
-   // 2. GEMINI AI ANALYSIS - Most Important (Human-readable insights)
-    if (result.gemini_analysis) {
-        const geminiHtml = createResultCard(
+   // 2. LLM AI ANALYSIS - Most Important (Human-readable insights)
+    // Note: gemini_analysis field name kept for backward compatibility, but now uses LLM Router
+    if (result.gemini_analysis && result.gemini_analysis.detailed_analysis) {
+        const aiHtml = createResultCard(
             'fas fa-robot',
             'AI-Powered Deep Analysis',
-            `<span class="gemini-badge"><i class="fas fa-sparkles"></i> Powered by Gemini AI</span>
-            <div style="margin-top: 1.5rem; line-height: 1.8;">${formatGeminiResponse(result.gemini_analysis.detailed_analysis)}</div>`
+            `<span class="gemini-badge"><i class="fas fa-sparkles"></i> Powered by LLM Router (Groq/Ollama)</span>
+            <div style="margin-top: 1.5rem; line-height: 1.8;">${formatGeminiResponse(result.gemini_analysis.detailed_analysis)}</div>
+            ${result.gemini_analysis.model_used === 'local' ? '<div style="margin-top: 1rem; padding: 0.5rem; background: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; color: #ffc107; font-size: 0.9rem;">⚠️ Analysis generated using local model (Ollama)</div>' : ''}`
         );
-        resultsSection.innerHTML += geminiHtml;
+        resultsSection.innerHTML += aiHtml;
     } else if(result.basic_caption) {
         resultsSection.innerHTML += createResultCard(
             'fas fa-comment-alt',
             'Basic Image Caption',
             `<p>${escapeHtml(result.basic_caption)}</p>
-            ${!result.gemini_enabled ? '<p style="color: var(--warning); margin-top: 1rem;"><i class="fas fa-info-circle"></i> Set GEMINI_API_KEY environment variable for advanced AI analysis</p>' : ''}`
+            ${!result.gemini_enabled ? '<p style="color: var(--warning); margin-top: 1rem;"><i class="fas fa-info-circle"></i> LLM Router available for advanced AI analysis</p>' : ''}`
         );
     }
 
@@ -850,6 +1654,7 @@ function displayResults(result) {
 
 function formatGeminiResponse(text) {
     // Format the Gemini response for better readability
+    if (!text) return '';
     let formatted = escapeHtml(text);
     
     // Convert section headers (ALL CAPS with optional punctuation)
@@ -959,34 +1764,39 @@ function createResultCard(icon, title, content) {
 }
 
 function createColorCard(colorData) {
+    if (!colorData || !colorData.colors || !Array.isArray(colorData.colors)) {
+        return '';
+    }
+    
     let html = '<div class="result-card fade-in"><div class="result-header">';
     html += '<div class="result-icon"><i class="fas fa-palette"></i></div>';
-    html += `<div class="result-title">Color Analysis <span style="font-size: 0.8rem; color: var(--text-secondary);">(${escapeHtml(colorData.color_scheme)})</span></div>`;
+    html += `<div class="result-title">Color Analysis <span style="font-size: 0.8rem; color: var(--text-secondary);">(${escapeHtml(colorData.color_scheme || 'Unknown')})</span></div>`;
     html += '</div><div class="result-content">';
     
     // Summary
     html += `<p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
         Detected ${colorData.colors.length} dominant colors using K-means clustering. 
-        Overall scheme: <strong style="color: var(--primary);">${escapeHtml(colorData.color_scheme)}</strong>
+        Overall scheme: <strong style="color: var(--primary);">${escapeHtml(colorData.color_scheme || 'Unknown')}</strong>
     </p>`;
     
     html += '<div class="color-grid">';
 
     colorData.colors.forEach((color, index) => {
+        if (!color) return;
         html += `<div class="color-card">
             <div class="color-display">
-                <div class="color-box" style="background-color: ${escapeHtml(color.hex)}"></div>
+                <div class="color-box" style="background-color: ${escapeHtml(color.hex || '#000000')}"></div>
                 <div class="color-details">
-                    <div class="color-name">${escapeHtml(color.name)}</div>
-                    <div class="color-value">${escapeHtml(color.hex)}</div>
-                    <div class="color-value">${escapeHtml(color.rgb)}</div>
-                    <div class="color-value">${escapeHtml(color.hsv)}</div>
+                    <div class="color-name">${escapeHtml(color.name || 'Unknown')}</div>
+                    <div class="color-value">${escapeHtml(color.hex || '')}</div>
+                    <div class="color-value">${escapeHtml(color.rgb || '')}</div>
+                    <div class="color-value">${escapeHtml(color.hsv || '')}</div>
                     <div class="color-value" style="margin-top: 0.5rem;">
                         <span style="background: rgba(0,212,255,0.2); padding: 0.2rem 0.5rem; border-radius: 4px; margin-right: 0.5rem;">
-                            ${escapeHtml(color.temperature)}
+                            ${escapeHtml(color.temperature || 'N/A')}
                         </span>
                         <span style="background: rgba(123,44,191,0.2); padding: 0.2rem 0.5rem; border-radius: 4px;">
-                            ${escapeHtml(color.saturation)} Sat
+                            ${escapeHtml(color.saturation || 'N/A')} Sat
                         </span>
                     </div>
                 </div>
@@ -994,10 +1804,10 @@ function createColorCard(colorData) {
             <div class="color-percentage">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                     <span style="color: var(--text-secondary); font-size: 0.9rem;">Image Coverage</span>
-                    <span style="color: var(--primary); font-weight: 600; font-size: 1.1rem;">${color.percentage}%</span>
+                    <span style="color: var(--primary); font-weight: 600; font-size: 1.1rem;">${color.percentage || 0}%</span>
                 </div>
                 <div class="percentage-bar">
-                    <div class="percentage-fill" style="width: ${color.percentage}%; background: linear-gradient(90deg, ${color.hex}, ${adjustBrightness(color.hex, -20)})"></div>
+                    <div class="percentage-fill" style="width: ${color.percentage || 0}%; background: linear-gradient(90deg, ${escapeHtml(color.hex || '#000000')}, ${adjustBrightness(color.hex || '#000000', -20)})"></div>
                 </div>
             </div>
         </div>`;
@@ -1399,6 +2209,12 @@ function formatKey(key) {
 }
 
 function escapeHtml(text) {
+    // Handle null, undefined, or non-string values
+    if (text == null || text === undefined) {
+        return '';
+    }
+    // Convert to string if not already
+    const str = String(text);
     const map = {
         '&': '&amp;',
         '<': '&lt;',
@@ -1406,7 +2222,7 @@ function escapeHtml(text) {
         '"': '&quot;',
         "'": '&#039;'
     };
-    return text.replace(/[&<>"']/g, m => map[m]);
+    return str.replace(/[&<>"']/g, m => map[m]);
 }
 
 function adjustBrightness(hex, percent) {
@@ -1528,21 +2344,23 @@ function displayResults(result) {
     `;
     resultsSection.innerHTML += statsHtml;
 
-    // 2. GEMINI AI ANALYSIS - Most Important (Human-readable insights)
-    if (result.gemini_analysis) {
-        const geminiHtml = createResultCard(
+    // 2. LLM AI ANALYSIS - Most Important (Human-readable insights)
+    // Note: gemini_analysis field name kept for backward compatibility, but now uses LLM Router
+    if (result.gemini_analysis && result.gemini_analysis.detailed_analysis) {
+        const aiHtml = createResultCard(
             'fas fa-robot',
             'AI-Powered Deep Analysis',
-            `<span class="gemini-badge"><i class="fas fa-sparkles"></i> Powered by Gemini 1.5 Flash</span>
-            <div style="margin-top: 1.5rem; white-space: pre-line; line-height: 1.8;">${escapeHtml(result.gemini_analysis.detailed_analysis)}</div>`
+            `<span class="gemini-badge"><i class="fas fa-sparkles"></i> Powered by LLM Router (Groq/Ollama)</span>
+            <div style="margin-top: 1.5rem; white-space: pre-line; line-height: 1.8;">${escapeHtml(result.gemini_analysis.detailed_analysis)}</div>
+            ${result.gemini_analysis.model_used === 'local' ? '<div style="margin-top: 1rem; padding: 0.5rem; background: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; color: #ffc107; font-size: 0.9rem;">⚠️ Analysis generated using local model (Ollama)</div>' : ''}`
         );
-        resultsSection.innerHTML += geminiHtml;
+        resultsSection.innerHTML += aiHtml;
     } else if(result.basic_caption) {
         resultsSection.innerHTML += createResultCard(
             'fas fa-comment-alt',
             'Basic Image Caption',
             `<p>${escapeHtml(result.basic_caption)}</p>
-            ${!result.gemini_enabled ? '<p style="color: var(--warning); margin-top: 1rem;"><i class="fas fa-info-circle"></i> Set GEMINI_API_KEY environment variable for advanced AI analysis</p>' : ''}`
+            ${!result.gemini_enabled ? '<p style="color: var(--warning); margin-top: 1rem;"><i class="fas fa-info-circle"></i> LLM Router available for advanced AI analysis</p>' : ''}`
         );
     }
 
@@ -1700,6 +2518,52 @@ document.head.appendChild(style);
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('SnapSpeak AI initialized');
+
+    // Populate advanced endpoint select
+    const select = document.getElementById('advancedEndpointSelect');
+    if (select) {
+        Object.entries(ADVANCED_ENDPOINTS).forEach(([key, cfg]) => {
+            const opt = document.createElement('option');
+            opt.value = key;
+            opt.textContent = cfg.label;
+            select.appendChild(opt);
+        });
+    }
+
+    // Drag & drop support on image preview
+    const preview = document.getElementById('imagePreview');
+    const fileInput = document.getElementById('imageInput');
+    if (preview && fileInput) {
+        ['dragenter', 'dragover'].forEach(evt => {
+            preview.addEventListener(evt, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                preview.classList.add('drag-over');
+            });
+        });
+        ['dragleave', 'drop'].forEach(evt => {
+            preview.addEventListener(evt, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (evt === 'dragleave') {
+                    preview.classList.remove('drag-over');
+                    return;
+                }
+                preview.classList.remove('drag-over');
+                const files = e.dataTransfer?.files;
+                if (files && files[0]) {
+                    // Mirror into the hidden file input for consistency
+                    const dt = new DataTransfer();
+                    dt.items.add(files[0]);
+                    fileInput.files = dt.files;
+                    handleSelectedFile(files[0]);
+                }
+            });
+        });
+    }
+
+    // Load persisted history
+    loadHistory();
     
     // Add keyboard shortcuts
     document.addEventListener('keydown', function(e) {
