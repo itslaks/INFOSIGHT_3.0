@@ -3,1083 +3,1943 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InkWell AI - Prompt Enhancement</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='inkwell_ai.css') }}">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>InkWell AI Ultimate - Advanced Prompt Engineering</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         :root {
-            --bg-dark: #0a0e27;
-            --bg-darker: #050812;
-            --bg-card: #1a1f3a;
-            --bg-input: #141829;
-            --border-color: #2d3561;
-            --primary: #00d9ff;
-            --primary-hover: #00b8d4;
-            --secondary: #a855f7;
-            --accent: #ff006e;
-            --success: #00ff88;
-            --error: #ff3366;
-            --warning: #ffb300;
-            --text-primary: #ffffff;
-            --text-secondary: #b0b8d4;
-            --text-tertiary: #8892b0;
-            --gradient-1: linear-gradient(135deg, #00d9ff 0%, #a855f7 100%);
-            --gradient-2: linear-gradient(135deg, #ff006e 0%, #a855f7 100%);
+            --primary: #8B5CF6; --primary-dark: #7C3AED; --secondary: #10B981;
+            --accent: #F59E0B; --bg-dark: #0F172A; --bg-card: #1E293B;
+            --bg-hover: #334155; --text-primary: #F1F5F9; --text-secondary: #94A3B8;
+            --border: #334155; --success: #10B981; --error: #EF4444;
         }
-
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, var(--bg-darker) 0%, var(--bg-dark) 100%);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
-            line-height: 1.6;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark); color: var(--text-primary);
+            line-height: 1.6; min-height: 100vh;
         }
-
-        .container {
-            max-width: 1800px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
+        
         .header {
-            background: linear-gradient(135deg, rgba(26, 31, 58, 0.8) 0%, rgba(20, 24, 41, 0.6) 100%);
-            -webkit-backdrop-filter: blur(10px);
+            background: var(--bg-card); border-bottom: 2px solid var(--border);
+            padding: 1.25rem 2rem; display: flex; justify-content: space-between;
+            align-items: center; position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             backdrop-filter: blur(10px);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 48px 40px;
-            margin-bottom: 40px;
-            box-shadow: 0 8px 32px rgba(0, 217, 255, 0.05);
         }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .header-left h1 {
-            font-size: 3em;
-            font-weight: 800;
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
+        
+        .logo {
+            display: flex; align-items: center; gap: 0.75rem;
+            font-size: 1.625rem; font-weight: 700; 
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text; background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 8px;
         }
-
-        .header-left p {
-            color: var(--text-secondary);
-            font-size: 1.1em;
+        
+        .nav-tabs {
+            display: flex; gap: 0.5rem;
         }
-
-        .header-controls {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
+        
+        .nav-tab {
+            padding: 0.5rem 1rem; border: 1px solid transparent;
+            border-radius: 0.5rem; cursor: pointer; font-weight: 600;
+            font-size: 0.875rem; color: var(--text-secondary);
+            transition: all 0.2s; background: transparent;
         }
-
-        .control-group-header {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 8px;
-            display: flex;
-            gap: 8px;
-            align-items: center;
+        
+        .nav-tab:hover {
+            color: var(--text-primary); background: var(--bg-hover);
         }
-
-        .control-label {
-            font-size: 0.7em;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--text-tertiary);
-            padding: 10px 14px;
-            letter-spacing: 1px;
-        }
-
-        .toggle-btn, .view-btn {
-            padding: 10px 18px;
-            border: 1px solid transparent;
-            background: transparent;
-            color: var(--text-secondary);
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85em;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .toggle-btn.active, .view-btn.active {
-            background: rgba(0, 217, 255, 0.1);
-            color: var(--primary);
+        
+        .nav-tab.active {
+            color: var(--primary); background: rgba(139,92,246,0.1);
             border-color: var(--primary);
-            box-shadow: 0 0 16px rgba(0, 217, 255, 0.2);
         }
-
-        .toggle-btn:hover, .view-btn:hover {
-            color: var(--primary);
-            border-color: rgba(0, 217, 255, 0.5);
+        
+        .header-actions { display: flex; gap: 0.75rem; }
+        
+        .btn {
+            padding: 0.5rem 1.25rem; border: none; border-radius: 0.5rem;
+            font-weight: 600; cursor: pointer; transition: all 0.2s;
+            font-size: 0.875rem;
         }
-
-        .content-wrapper {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 32px;
+        
+        .btn-secondary {
+            background: transparent; color: var(--text-secondary);
+            border: 1px solid var(--border);
         }
-
-        .content-wrapper.single-col {
-            grid-template-columns: 1fr;
+        
+        .btn-secondary:hover {
+            background: var(--bg-hover); color: var(--text-primary);
         }
-
-        .panel {
-            background: linear-gradient(135deg, rgba(26, 31, 58, 0.6) 0%, rgba(20, 24, 41, 0.4) 100%);
-            -webkit-backdrop-filter: blur(10px);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 36px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            transition: all 0.4s ease;
+        
+        .btn-primary {
+            background: var(--primary); color: white;
         }
-
-        .panel:hover {
-            border-color: rgba(0, 217, 255, 0.3);
-            box-shadow: 0 12px 48px rgba(0, 217, 255, 0.1);
+        
+        .btn-primary:hover {
+            background: var(--primary-dark); transform: translateY(-1px);
         }
-
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 28px;
-            padding-bottom: 18px;
-            border-bottom: 2px solid var(--border-color);
+        
+        .container { 
+            max-width: 1600px; margin: 0 auto; padding: 2rem; 
+            min-height: calc(100vh - 80px);
         }
-
-        .panel-title {
-            font-size: 1.4em;
-            font-weight: 700;
+        
+        .view { display: none; }
+        .view.active { display: block; }
+        
+        .grid {
+            display: grid; grid-template-columns: 300px 1fr 360px;
+            gap: 2rem; margin-top: 1.5rem;
+        }
+        
+        @media (max-width: 1200px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+        
+        .card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 1rem; padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            box-shadow: 0 8px 12px rgba(0,0,0,0.3);
+        }
+        
+        .card-header {
+            font-size: 0.9375rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            color: var(--primary); margin-bottom: 1.5rem;
+            display: flex; align-items: center; gap: 0.5rem;
+            padding-bottom: 0.75rem; border-bottom: 2px solid var(--border);
+        }
+        
+        .strategy-list { display: flex; flex-direction: column; gap: 0.75rem; }
+        
+        .strategy-item {
+            padding: 0.875rem; border: 1px solid var(--border);
+            border-radius: 0.75rem; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; gap: 0.75rem;
+        }
+        
+        .strategy-item:hover {
+            background: var(--bg-hover); border-color: var(--primary);
+        }
+        
+        .strategy-item.active {
+            background: rgba(139,92,246,0.15); border-color: var(--primary);
+        }
+        
+        .strategy-icon { font-size: 1.5rem; }
+        .strategy-content { flex: 1; }
+        .strategy-name { 
+            font-weight: 600; font-size: 0.875rem; 
             color: var(--text-primary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
-
-        .char-count {
-            font-size: 0.8em;
-            color: var(--text-tertiary);
-            background: rgba(0, 217, 255, 0.05);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            border: 1px solid rgba(0, 217, 255, 0.2);
+        .strategy-desc {
+            font-size: 0.75rem; color: var(--text-secondary); 
+            margin-top: 0.25rem; line-height: 1.4;
         }
-
-        textarea {
-            width: 100%;
-            padding: 18px;
-            border: 2px solid var(--border-color);
-            border-radius: 14px;
-            background: var(--bg-input);
-            color: var(--text-primary);
-            font-family: 'Monaco', 'Courier New', monospace;
-            font-size: 1em;
-            line-height: 1.8;
-            resize: vertical;
-            min-height: 240px;
-            margin-bottom: 24px;
-            transition: all 0.3s ease;
+        
+        .checkbox {
+            width: 20px; height: 20px; border: 2px solid var(--border);
+            border-radius: 0.25rem; display: flex; align-items: center;
+            justify-content: center; color: var(--primary); font-weight: 700;
         }
-
-        textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: rgba(0, 217, 255, 0.02);
-            box-shadow: 0 0 0 4px rgba(0, 217, 255, 0.08);
+        
+        .strategy-item.active .checkbox { border-color: var(--primary); }
+        
+        .level-selector { margin-top: 1.5rem; }
+        .level-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 0.5rem; margin-top: 0.75rem;
         }
-
-        textarea::placeholder {
-            color: var(--text-tertiary);
+        
+        .level-option {
+            padding: 0.625rem; border: 1px solid var(--border);
+            border-radius: 0.5rem; text-align: center;
+            font-size: 0.8125rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; color: var(--text-secondary);
         }
-
-        .controls-section {
-            display: none;
-            margin-bottom: 28px;
-            padding-bottom: 28px;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        .controls-section.visible {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .control-group {
-            margin-bottom: 28px;
-        }
-
-        .control-label-main {
-            font-size: 0.75em;
-            font-weight: 800;
-            text-transform: uppercase;
-            color: var(--primary);
-            margin-bottom: 14px;
-            letter-spacing: 1.5px;
-        }
-
-        .level-selector {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-        }
-
-        .level-btn {
-            padding: 14px;
-            border: 2px solid var(--border-color);
-            background: transparent;
-            color: var(--text-secondary);
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 0.8em;
-            text-transform: uppercase;
-            transition: all 0.3s ease;
-        }
-
-        .level-btn:hover {
-            border-color: var(--secondary);
+        
+        .level-option:hover { background: var(--bg-hover); }
+        .level-option.active {
+            background: rgba(16,185,129,0.15); border-color: var(--secondary);
             color: var(--secondary);
         }
-
-        .level-btn.active {
-            background: linear-gradient(135deg, var(--secondary), var(--accent));
-            color: white;
-            border-color: transparent;
-            box-shadow: 0 8px 24px rgba(168, 85, 247, 0.4);
-            transform: scale(1.05);
+        
+        .editor {
+            display: flex; flex-direction: column; min-height: 600px;
         }
-
-        .enhancement-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
+        
+        .editor-tabs {
+            display: flex; gap: 0.5rem; margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;
         }
-
-        .enhancement-item {
-            display: flex;
-            align-items: center;
-            padding: 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            background: transparent;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        
+        .tab {
+            padding: 0.5rem 1rem; border: 1px solid transparent;
+            border-radius: 0.5rem; cursor: pointer; font-weight: 600;
+            font-size: 0.875rem; color: var(--text-secondary);
+            transition: all 0.2s;
         }
-
-        .enhancement-item:hover {
+        
+        .tab:hover {
+            color: var(--text-primary); background: var(--bg-hover);
+        }
+        
+        .tab.active {
+            color: var(--primary); background: rgba(139,92,246,0.1);
             border-color: var(--primary);
-            background: rgba(0, 217, 255, 0.05);
         }
-
-        .enhancement-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            margin-right: 10px;
-            accent-color: var(--primary);
+        
+        .editor-content { flex: 1; }
+        
+        .editor-textarea {
+            width: 100%; min-height: 450px; background: var(--bg-dark);
+            border: 1px solid var(--border); border-radius: 0.75rem;
+            padding: 1.5rem; color: var(--text-primary);
+            font-family: 'Courier New', monospace; font-size: 0.9375rem;
+            line-height: 1.8; resize: vertical;
+            transition: border-color 0.2s;
         }
-
-        .enhancement-item label {
-            cursor: pointer;
-            font-size: 0.9em;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin: 0;
+        
+        .editor-textarea:focus {
+            outline: none; border-color: var(--primary);
         }
-
-        .button-group {
+        
+        .comparison {
+            display: none; grid-template-columns: 1fr 1fr;
+            gap: 1rem; min-height: 400px;
+        }
+        
+        .comparison.active { display: grid; }
+        
+        .comparison-pane {
+            background: var(--bg-dark); border: 1px solid var(--border);
+            border-radius: 0.75rem; padding: 1.25rem; overflow-y: auto;
+        }
+        
+        .comparison-label {
+            font-size: 0.875rem; font-weight: 700; text-transform: uppercase;
+            color: var(--primary); margin-bottom: 1rem;
+            letter-spacing: 0.05em;
+        }
+        
+        .comparison-text {
+            font-family: 'Courier New', monospace; font-size: 0.875rem;
+            line-height: 1.7; white-space: pre-wrap;
+            background: var(--bg-card); padding: 1rem;
+            border-radius: 0.5rem; border: 1px solid var(--border);
+            min-height: 200px; max-height: 400px; overflow-y: auto;
+        }
+        
+        .metrics {
+            display: flex; gap: 1.5rem; margin-top: 1rem;
+            padding-top: 1rem; border-top: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        
+        .metric {
+            display: flex; align-items: center; gap: 0.75rem;
+        }
+        
+        .metric-icon {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 0.5rem; display: flex; align-items: center;
+            justify-content: center; font-size: 1.25rem;
+        }
+        
+        .metric-label { font-size: 0.75rem; color: var(--text-secondary); }
+        .metric-value { font-size: 1.25rem; font-weight: 700; }
+        
+        .results { max-height: 600px; overflow-y: auto; }
+        
+        .score-card {
+            background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(16,185,129,0.1));
+            border: 1px solid var(--primary); border-radius: 0.75rem;
+            padding: 1.25rem; margin-bottom: 1.25rem;
+        }
+        
+        .score-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 1rem;
+        }
+        
+        .score-label {
+            font-size: 0.875rem; font-weight: 600; color: var(--text-secondary);
+        }
+        
+        .score-value {
+            font-size: 2rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .score-bar {
+            width: 100%; height: 8px; background: rgba(139,92,246,0.2);
+            border-radius: 1rem; overflow: hidden;
+        }
+        
+        .score-fill {
+            height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 1rem; transition: width 1s ease-out;
+        }
+        
+        .improvements { margin-top: 1.25rem; }
+        
+        .improvement-item {
+            display: flex; gap: 0.75rem; padding: 0.875rem;
+            background: rgba(16,185,129,0.1); border-left: 3px solid var(--secondary);
+            border-radius: 0.5rem; margin-bottom: 0.625rem; font-size: 0.875rem;
+        }
+        
+        .improvement-icon { color: var(--secondary); font-weight: 700; }
+        
+        .enhance-button {
+            position: fixed; bottom: 2rem; left: 50%;
+            transform: translateX(-50%); padding: 1.125rem 2.75rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white; border: none; border-radius: 3rem;
+            font-size: 1.125rem; font-weight: 700; cursor: pointer;
+            display: none; align-items: center; gap: 0.75rem;
+            box-shadow: 0 10px 30px rgba(139,92,246,0.5);
+            transition: all 0.3s; z-index: 50;
+            letter-spacing: 0.025em;
+        }
+        
+        .enhance-button.show {
             display: flex;
-            gap: 14px;
-            margin-top: 28px;
         }
-
-        .btn {
-            flex: 1;
-            padding: 16px 24px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 0.85em;
-            transition: all 0.3s ease;
+        
+        .view.active ~ .enhance-button {
+            display: none;
+        }
+        
+        #optimizeView.active ~ .enhance-button {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
-
-        .btn-primary {
-            background: var(--gradient-1);
-            color: var(--bg-dark);
-            box-shadow: 0 8px 24px rgba(0, 217, 255, 0.4);
+        
+        .enhance-button:hover {
+            transform: translateX(-50%) translateY(-3px);
+            box-shadow: 0 15px 40px rgba(139,92,246,0.6);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
         }
-
-        .btn-primary:hover:not(:disabled) {
-            box-shadow: 0 12px 36px rgba(0, 217, 255, 0.6);
-            transform: translateY(-2px);
+        
+        .enhance-button:active {
+            transform: translateX(-50%) translateY(-1px);
         }
-
-        .btn-primary:active:not(:disabled) {
-            transform: translateY(0);
+        
+        .enhance-button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .enhance-button.processing {
+            background: linear-gradient(135deg, var(--secondary), #059669);
         }
-
-        .btn-secondary {
-            background: transparent;
-            color: var(--primary);
-            border: 2px solid var(--border-color);
-        }
-
-        .btn-secondary:hover:not(:disabled) {
-            border-color: var(--primary);
-            background: rgba(0, 217, 255, 0.1);
-            box-shadow: 0 4px 16px rgba(0, 217, 255, 0.2);
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 3px solid rgba(0, 217, 255, 0.2);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
+        
         @keyframes spin {
+            from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
-
-        .tabs {
-            display: flex;
-            gap: 8px;
-            border-bottom: 2px solid var(--border-color);
-            margin-bottom: 28px;
+        
+        .spinning { animation: spin 1s linear infinite; }
+        
+        .empty-state {
+            text-align: center; padding: 3rem 2rem; color: var(--text-secondary);
         }
-
-        .tab-btn {
-            padding: 14px 18px;
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-weight: 700;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-            font-size: 0.85em;
-            text-transform: uppercase;
-        }
-
-        .tab-btn:hover {
-            color: var(--primary);
-        }
-
-        .tab-btn.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
+        
+        .empty-icon { 
+            font-size: 4rem; margin-bottom: 1.5rem; opacity: 0.6;
             display: block;
-            animation: fadeIn 0.3s ease;
         }
-
-        .output-box {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 18px;
-            min-height: 140px;
-            max-height: 450px;
-            overflow-y: auto;
-            font-family: 'Monaco', 'Courier New', monospace;
-            font-size: 0.9em;
-            line-height: 1.8;
-            color: var(--text-primary);
-            white-space: pre-wrap;
-            word-break: break-word;
-            margin-bottom: 18px;
+        
+        .empty-state p {
+            font-size: 0.9375rem; line-height: 1.6;
+            margin-top: 0.5rem;
         }
-
-        .output-actions {
-            display: flex;
-            gap: 12px;
+        
+        .modal {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.8); z-index: 200;
+            padding: 2rem; overflow-y: auto;
         }
-
-        .copy-btn, .fav-btn {
-            flex: 1;
-            padding: 12px 18px;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 0.8em;
-            font-weight: 700;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            background: transparent;
+        
+        .modal.active {
+            display: flex; align-items: center; justify-content: center;
         }
-
-        .copy-btn {
-            color: var(--primary);
-            border-color: var(--primary);
+        
+        .modal-content {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 1rem; width: 100%; max-width: 800px;
+            max-height: 85vh; overflow-y: auto;
         }
-
-        .copy-btn:hover {
-            background: var(--primary);
-            color: var(--bg-dark);
+        
+        .modal-header {
+            padding: 1.5rem; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
         }
-
-        .fav-btn {
-            color: var(--secondary);
-            border-color: var(--secondary);
+        
+        .modal-title { font-size: 1.25rem; font-weight: 700; }
+        .modal-body { padding: 1.5rem; }
+        
+        .template-item {
+            padding: 1rem; background: var(--bg-dark);
+            border: 1px solid var(--border); border-radius: 0.75rem;
+            margin-bottom: 0.75rem; cursor: pointer; transition: all 0.2s;
         }
-
-        .fav-btn:hover {
-            background: var(--secondary);
-            color: var(--bg-dark);
+        
+        .template-item:hover {
+            background: var(--bg-hover); border-color: var(--primary);
         }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 28px;
+        
+        .template-name {
+            font-weight: 600; color: var(--primary); margin-bottom: 0.25rem;
         }
-
-        .metric-card {
-            background: linear-gradient(135deg, rgba(0, 217, 255, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 24px;
-            text-align: center;
-            transition: all 0.3s ease;
+        
+        .template-category {
+            display: inline-block; padding: 0.125rem 0.5rem;
+            background: rgba(139,92,246,0.2); color: var(--primary);
+            border-radius: 0.25rem; font-size: 0.75rem; margin-bottom: 0.5rem;
         }
-
-        .metric-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-4px);
+        
+        .template-desc {
+            font-size: 0.875rem; color: var(--text-secondary);
         }
-
-        .metric-label {
-            font-size: 0.7em;
-            text-transform: uppercase;
-            color: var(--text-tertiary);
-            margin-bottom: 12px;
-            font-weight: 700;
+        
+        .variation-item {
+            padding: 1.25rem; background: var(--bg-dark);
+            border: 1px solid var(--border); border-radius: 0.75rem;
+            margin-bottom: 1rem;
         }
-
-        .metric-value {
-            font-size: 2.4em;
-            font-weight: 800;
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
+        
+        .variation-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 1rem;
+            flex-wrap: wrap; gap: 0.75rem;
+        }
+        
+        .variation-badge {
+            padding: 0.25rem 0.75rem; background: rgba(139,92,246,0.2);
+            color: var(--primary); border-radius: 0.5rem;
+            font-size: 0.875rem; font-weight: 600;
+        }
+        
+        .variation-score {
+            font-size: 1.5rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text; background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
-
+        
+        .variation-text {
+            font-family: 'Courier New', monospace; font-size: 0.875rem;
+            padding: 1.25rem; background: var(--bg-card);
+            border-radius: 0.5rem; margin-bottom: 1rem;
+            max-height: 300px; overflow-y: auto;
+            line-height: 1.7; white-space: pre-wrap;
+            border: 1px solid var(--border);
+        }
+        
+        .stat-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem; margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            padding: 1.25rem; background: var(--bg-card);
+            border: 1px solid var(--border); border-radius: 0.75rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem; color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+        
+        .chart-container {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1.5rem;
+        }
+        
+        .category-bar {
+            display: flex; align-items: center; gap: 1rem;
+            padding: 0.75rem; background: var(--bg-dark);
+            border-radius: 0.5rem; margin-bottom: 0.75rem;
+        }
+        
+        .category-name {
+            min-width: 100px; font-weight: 600; font-size: 0.875rem;
+        }
+        
+        .category-progress {
+            flex: 1; height: 8px; background: rgba(139,92,246,0.2);
+            border-radius: 1rem; overflow: hidden;
+        }
+        
+        .category-fill {
+            height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 1rem; transition: width 1s ease-out;
+        }
+        
+        .category-count {
+            min-width: 40px; text-align: right;
+            font-weight: 700; color: var(--text-secondary);
+        }
+        
+        .batch-item {
+            padding: 1.25rem; background: var(--bg-dark);
+            border: 1px solid var(--border); border-radius: 0.75rem;
+            margin-bottom: 1rem; transition: all 0.2s;
+        }
+        
+        .batch-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 8px rgba(139,92,246,0.2);
+        }
+        
+        .batch-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 0.75rem;
+        }
+        
+        .batch-index {
+            font-weight: 700; color: var(--primary);
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem; border-radius: 0.5rem;
+            font-size: 0.75rem; font-weight: 600;
+        }
+        
+        .status-success {
+            background: rgba(16,185,129,0.2); color: var(--success);
+        }
+        
+        .status-error {
+            background: rgba(239,68,68,0.2); color: var(--error);
+        }
+        
+        .batch-text {
+            font-size: 0.875rem; color: var(--text-secondary);
+            overflow: hidden; text-overflow: ellipsis;
+            display: -webkit-box; 
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        
+        .form-group { margin-bottom: 1.25rem; }
+        .form-label {
+            display: block; font-weight: 600; margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .form-input {
+            width: 100%; padding: 0.75rem; background: var(--bg-dark);
+            border: 1px solid var(--border); border-radius: 0.5rem;
+            color: var(--text-primary); font-size: 0.875rem;
+        }
+        
+        .form-input:focus {
+            outline: none; border-color: var(--primary);
+        }
+        
+        .form-textarea {
+            min-height: 120px; resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+        
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border); border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+        
+        .progress-container {
+            width: 100%; height: 6px; background: rgba(139,92,246,0.2);
+            border-radius: 1rem; overflow: hidden; margin: 1rem 0;
+        }
+        
+        .progress-bar {
+            height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 1rem; transition: width 0.3s ease;
+        }
+        
         .alert {
-            padding: 16px 20px;
-            border-radius: 12px;
-            margin-bottom: 18px;
-            font-size: 0.9em;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 600;
-            animation: slideIn 0.3s ease;
+            padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem;
+            font-size: 0.875rem;
         }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        
         .alert-success {
-            background: rgba(0, 255, 136, 0.1);
-            border: 1px solid rgba(0, 255, 136, 0.3);
+            background: rgba(16,185,129,0.1); border: 1px solid var(--success);
             color: var(--success);
         }
-
+        
         .alert-error {
-            background: rgba(255, 51, 102, 0.1);
-            border: 1px solid rgba(255, 51, 102, 0.3);
+            background: rgba(239,68,68,0.1); border: 1px solid var(--error);
             color: var(--error);
         }
-
-        .alert-info {
-            background: rgba(0, 217, 255, 0.1);
-            border: 1px solid rgba(0, 217, 255, 0.3);
+        
+        .tooltip {
+            position: relative; display: inline-block;
+        }
+        
+        .tooltip:hover::after {
+            content: attr(data-tooltip); position: absolute;
+            bottom: 125%; left: 50%; transform: translateX(-50%);
+            padding: 0.5rem; background: var(--bg-dark);
+            border: 1px solid var(--border); border-radius: 0.5rem;
+            font-size: 0.75rem; white-space: nowrap; z-index: 1000;
+        }
+        
+        .result-pane {
+            margin-top: 1.5rem; padding: 1.25rem;
+            background: var(--bg-dark); border: 1px solid var(--border);
+            border-radius: 0.75rem; position: relative;
+        }
+        
+        .result-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 1rem;
+        }
+        
+        .result-label {
+            font-size: 0.875rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.05em;
             color: var(--primary);
         }
-
-        ::-webkit-scrollbar {
-            width: 8px;
+        
+        .copy-btn {
+            padding: 0.5rem 1rem; background: var(--primary);
+            color: white; border: none; border-radius: 0.5rem;
+            font-size: 0.75rem; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; gap: 0.5rem;
+            transition: all 0.2s;
         }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-input);
+        
+        .copy-btn:hover {
+            background: var(--primary-dark); transform: translateY(-1px);
         }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(0, 217, 255, 0.2);
-            border-radius: 4px;
+        
+        .copy-btn:active {
+            transform: translateY(0);
         }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary);
+        
+        .copy-btn.copied {
+            background: var(--success);
         }
-
-        @media (max-width: 1024px) {
-            .content-wrapper {
-                grid-template-columns: 1fr;
-            }
-            .metrics-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .enhancement-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        
+        .result-text {
+            font-family: 'Courier New', monospace; font-size: 0.875rem;
+            line-height: 1.7; white-space: pre-wrap;
+            color: var(--text-primary); background: var(--bg-card);
+            padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border);
+            max-height: 400px; overflow-y: auto;
         }
-
-        @media (max-width: 768px) {
-            .header {
-                padding: 28px 24px;
-            }
-            .header-left h1 {
-                font-size: 2em;
-            }
-            .level-selector {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .enhancement-grid, .metrics-grid {
-                grid-template-columns: 1fr;
-            }
+        
+        .comparison-pane {
+            position: relative;
+        }
+        
+        .comparison-copy-btn {
+            position: absolute; top: 0.5rem; right: 0.5rem;
+            padding: 0.375rem 0.75rem; background: rgba(139,92,246,0.2);
+            color: var(--primary); border: 1px solid var(--primary);
+            border-radius: 0.5rem; font-size: 0.75rem; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 0.375rem;
+            transition: all 0.2s; z-index: 10;
+        }
+        
+        .comparison-copy-btn:hover {
+            background: var(--primary); color: white;
+        }
+        
+        .comparison-copy-btn.copied {
+            background: var(--success); border-color: var(--success);
+            color: white;
+        }
+        
+        .metric-info {
+            display: flex; flex-direction: column;
+        }
+        
+        .toast {
+            position: fixed; bottom: 2rem; right: 2rem;
+            padding: 1rem 1.5rem; background: var(--bg-card);
+            border: 1px solid var(--border); border-radius: 0.75rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: flex; align-items: center; gap: 0.75rem;
+            z-index: 1000; transform: translateY(100px);
+            opacity: 0; transition: all 0.3s;
+        }
+        
+        .toast.show {
+            transform: translateY(0); opacity: 1;
+        }
+        
+        .toast.success {
+            border-color: var(--success);
+        }
+        
+        .toast.info {
+            background: rgba(59,130,246,0.1); border: 1px solid #3B82F6;
+            color: #3B82F6;
+        }
+        
+        .toast.error {
+            background: rgba(239,68,68,0.1); border: 1px solid var(--error);
+            color: var(--error);
+        }
+        
+        .toast-icon {
+            font-size: 1.5rem;
+        }
+        
+        .toast-message {
+            font-weight: 600; color: var(--text-primary);
+        }
+        
+        .empty-prompt {
+            color: var(--text-secondary); font-style: italic;
+            text-align: center; padding: 2rem;
+        }
+        
+        .comparison-text {
+            padding-right: 4rem;
         }
     </style>
 </head>
 <body>
+    <div class="header">
+        <div class="logo">
+            <span style="font-size: 2rem;">✒️</span>
+            <span>InkWell AI Ultimate</span>
+        </div>
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchView('optimize', this)">🎯 Optimize</button>
+            <button class="nav-tab" onclick="switchView('analyze', this)">📊 Analyze</button>
+            <button class="nav-tab" onclick="switchView('variations', this)">🧪 A/B Test</button>
+            <button class="nav-tab" onclick="switchView('insights', this)">📈 Insights</button>
+            <button class="nav-tab" onclick="switchView('batch', this)">⚡ Batch</button>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="showTemplates()">📋 Templates</button>
+            <button class="btn btn-secondary" onclick="exportPrompt()">💾 Export</button>
+        </div>
+    </div>
+    
     <div class="container">
-        <div class="header">
-            <div class="header-content">
-                <div class="header-left">
-                    <h1>InkWell AI</h1>
-                    <p>Transform prompts into powerful AI instructions</p>
-                </div>
-                <div class="header-controls">
-                    <div class="control-group-header">
-                        <span class="control-label">Mode</span>
-                        <button class="toggle-btn active" data-mode="simple">Simple</button>
-                        <button class="toggle-btn" data-mode="advanced">Advanced</button>
+        <!-- OPTIMIZE VIEW -->
+        <div id="optimizeView" class="view active">
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">⚙️ Enhancement Strategies</div>
+                    <div class="strategy-list">
+                        <div class="strategy-item active" data-strategy="clarity">
+                            <span class="strategy-icon">🔍</span>
+                            <div class="strategy-content">
+                                <div class="strategy-name">Clarity</div>
+                                <div class="strategy-desc">Remove ambiguity</div>
+                            </div>
+                            <div class="checkbox">✓</div>
+                        </div>
+                        <div class="strategy-item active" data-strategy="structure">
+                            <span class="strategy-icon">📋</span>
+                            <div class="strategy-content">
+                                <div class="strategy-name">Structure</div>
+                                <div class="strategy-desc">Add organization</div>
+                            </div>
+                            <div class="checkbox">✓</div>
+                        </div>
+                        <div class="strategy-item active" data-strategy="specificity">
+                            <span class="strategy-icon">🎯</span>
+                            <div class="strategy-content">
+                                <div class="strategy-name">Specificity</div>
+                                <div class="strategy-desc">Make precise</div>
+                            </div>
+                            <div class="checkbox">✓</div>
+                        </div>
+                        <div class="strategy-item" data-strategy="context">
+                            <span class="strategy-icon">🌐</span>
+                            <div class="strategy-content">
+                                <div class="strategy-name">Context</div>
+                                <div class="strategy-desc">Add background</div>
+                            </div>
+                            <div class="checkbox"></div>
+                        </div>
+                        <div class="strategy-item" data-strategy="examples">
+                            <span class="strategy-icon">💡</span>
+                            <div class="strategy-content">
+                                <div class="strategy-name">Examples</div>
+                                <div class="strategy-desc">Include demos</div>
+                            </div>
+                            <div class="checkbox"></div>
+                        </div>
+                        <div class="strategy-item" data-strategy="role_definition">
+                            <span class="strategy-icon">👤</span>
+                            <div class="strategy-content">
+                                <div class="strategy-name">Role</div>
+                                <div class="strategy-desc">Define expertise</div>
+                            </div>
+                            <div class="checkbox"></div>
+                        </div>
                     </div>
-                    <div class="control-group-header">
-                        <span class="control-label">View</span>
-                        <button class="view-btn active" data-view="split">Split</button>
-                        <button class="view-btn" data-view="comparison">Compare</button>
+                    <div class="level-selector">
+                        <div class="card-header">⚡ Enhancement Level</div>
+                        <div class="level-grid">
+                            <div class="level-option" data-level="light">Light</div>
+                            <div class="level-option active" data-level="moderate">Moderate</div>
+                            <div class="level-option" data-level="aggressive">Aggressive</div>
+                            <div class="level-option" data-level="expert">Expert</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card editor">
+                    <div class="editor-tabs">
+                        <div class="tab active" onclick="switchTab('edit', this)">✏️ Edit</div>
+                        <div class="tab" onclick="switchTab('compare', this)">⚖️ Compare</div>
+                    </div>
+                    <div class="editor-content">
+                        <textarea id="promptInput" class="editor-textarea" 
+                                  placeholder="Enter your prompt here to get started... (max 397 characters)
+
+💡 Example prompts:
+• Create a Python function to calculate fibonacci numbers efficiently
+• Write a blog post about sustainable energy solutions
+• Analyze customer feedback data and provide actionable insights
+• Design a REST API for an e-commerce platform"
+                                  maxlength="397"
+                                  oninput="updateWordCount(); updateCharCounter('promptInput', 'promptCharCounter')"></textarea>
+                        <div id="promptCharCounter" style="text-align: right; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">0/397 characters</div>
+                        <div id="comparisonView" class="comparison">
+                            <div class="comparison-pane">
+                                <div class="comparison-label">Original Prompt</div>
+                                <button class="comparison-copy-btn" onclick="copyToClipboard('originalText', this)" title="Copy original prompt">
+                                    <span>📋</span> <span class="copy-text">Copy</span>
+                                </button>
+                                <div class="comparison-text" id="originalText" style="min-height: 200px;"></div>
+                            </div>
+                            <div class="comparison-pane">
+                                <div class="comparison-label">Enhanced Prompt</div>
+                                <button class="comparison-copy-btn" onclick="copyToClipboard('enhancedText', this)" title="Copy enhanced prompt">
+                                    <span>📋</span> <span class="copy-text">Copy</span>
+                                </button>
+                                <div class="comparison-text" id="enhancedText" style="min-height: 200px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metrics">
+                        <div class="metric">
+                            <div class="metric-icon">📝</div>
+                            <div class="metric-info">
+                                <div class="metric-label">Words</div>
+                                <div class="metric-value" id="wordCount">0</div>
+                            </div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-icon">⭐</div>
+                            <div class="metric-info">
+                                <div class="metric-label">Quality</div>
+                                <div class="metric-value" id="qualityScore">--</div>
+                            </div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-icon">🎯</div>
+                            <div class="metric-info">
+                                <div class="metric-label">Clarity</div>
+                                <div class="metric-value" id="clarityScore">--</div>
+                            </div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-icon">🔧</div>
+                            <div class="metric-info">
+                                <div class="metric-label">Structure</div>
+                                <div class="metric-value" id="structureScore">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">📊 Analysis & Results</div>
+                    <div class="results">
+                        <div class="score-card">
+                            <div class="score-header">
+                                <div class="score-label">Overall Quality Score</div>
+                                <div class="score-value" id="overallScore">--</div>
+                            </div>
+                            <div class="score-bar">
+                                <div class="score-fill" id="scoreFill" style="width: 0%"></div>
+                            </div>
+                            <div style="margin-top: 1rem; font-size: 0.75rem; color: var(--text-secondary);">
+                                <div>Quality metrics calculated based on clarity, specificity, structure, and completeness.</div>
+                            </div>
+                        </div>
+                        <div class="result-pane">
+                            <div class="result-header">
+                            <div class="result-label">Enhanced Prompt</div>
+                                <button class="copy-btn" onclick="copyToClipboard('enhancedPrompt', this)" id="copyEnhancedBtn">
+                                    <span>📋</span> <span>Copy</span>
+                                </button>
+                        </div>
+                            <div class="result-text" id="enhancedPrompt">
+                                <div class="empty-prompt">No prompt enhanced yet. Enter a prompt and click "Enhance Prompt" to get started.</div>
+                            </div>
+                        </div>
+                        <div class="improvements" id="improvementsList"></div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="content-wrapper" id="contentWrapper">
-            <div class="panel">
-                <div class="panel-header">
-                    <span class="panel-title">Your Prompt</span>
-                    <span class="char-count" id="charCount">0 / 5000</span>
+        
+        <!-- ANALYZE VIEW -->
+        <div id="analyzeView" class="view">
+            <div class="card">
+                <div class="card-header">📊 Prompt Analysis</div>
+                <textarea id="analyzeInput" class="editor-textarea" 
+                          placeholder="Enter a prompt to analyze... (max 397 characters)" 
+                          maxlength="397"
+                          style="min-height: 300px;"
+                          oninput="updateCharCounter('analyzeInput', 'analyzeCharCounter')"></textarea>
+                <div id="analyzeCharCounter" style="text-align: right; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">0/397 characters</div>
+                <button class="btn btn-primary" onclick="analyzePrompt()" style="margin-top: 1rem;">Analyze Prompt</button>
+                <div id="analyzeResults" style="margin-top: 2rem;"></div>
+            </div>
+        </div>
+        
+        <!-- VARIATIONS VIEW -->
+        <div id="variationsView" class="view">
+            <div class="card">
+                <div class="card-header">🧪 A/B Test Variations</div>
+                <textarea id="variationsInput" class="editor-textarea" 
+                          placeholder="Enter a prompt to generate variations... (max 397 characters)" 
+                          maxlength="397"
+                          style="min-height: 200px;"
+                          oninput="updateCharCounter('variationsInput', 'variationsCharCounter')"></textarea>
+                <div id="variationsCharCounter" style="text-align: right; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">0/397 characters</div>
+                <div style="margin-top: 1rem; display: flex; gap: 1rem; align-items: center;">
+                    <button class="btn btn-primary" onclick="generateVariations()">Generate Variations</button>
+                    <label style="color: var(--text-secondary);">
+                        Number: <input type="number" id="numVariations" value="3" min="1" max="4" 
+                                      style="width: 60px; padding: 0.5rem; background: var(--bg-dark); 
+                                      border: 1px solid var(--border); border-radius: 0.5rem; color: var(--text-primary);">
+                    </label>
                 </div>
-
-                <div id="alertContainer"></div>
-
-                <textarea 
-                    id="promptInput" 
-                    placeholder="Enter your prompt here...&#10;Example: Create a Python function that validates email addresses and handles edge cases..."></textarea>
-
-                <div class="controls-section" id="controlsSection">
-                    <div class="control-group">
-                        <div class="control-label-main">Enhancement Level</div>
-                        <div class="level-selector">
-                            <button class="level-btn" data-level="light">Light</button>
-                            <button class="level-btn active" data-level="moderate">Moderate</button>
-                            <button class="level-btn" data-level="aggressive">Aggressive</button>
-                            <button class="level-btn" data-level="expert">Expert</button>
-                        </div>
-                    </div>
-
-                    <div class="control-group">
-                        <div class="control-label-main">Enhancements</div>
-                        <div class="enhancement-grid">
-                            <label class="enhancement-item">
-                                <input type="checkbox" name="enhancement" value="clarity" checked>
-                                <label>Clarity</label>
-                            </label>
-                            <label class="enhancement-item">
-                                <input type="checkbox" name="enhancement" value="structure" checked>
-                                <label>Structure</label>
-                            </label>
-                            <label class="enhancement-item">
-                                <input type="checkbox" name="enhancement" value="context">
-                                <label>Context</label>
-                            </label>
-                            <label class="enhancement-item">
-                                <input type="checkbox" name="enhancement" value="specificity" checked>
-                                <label>Specificity</label>
-                            </label>
-                            <label class="enhancement-item">
-                                <input type="checkbox" name="enhancement" value="role_play">
-                                <label>Role-Play</label>
-                            </label>
-                            <label class="enhancement-item">
-                                <input type="checkbox" name="enhancement" value="output_format">
-                                <label>Format</label>
-                            </label>
-                            <label class="enhancement-item">
-                                <input type="checkbox" name="enhancement" value="constraints">
-                                <label>Constraints</label>
-                            </label>
-                            <label class="enhancement-item">
-                                <input type="checkbox" name="enhancement" value="examples">
-                                <label>Examples</label>
-                            </label>
-                            <label class="enhancement-item">
-                                <input type="checkbox" name="enhancement" value="tone_control">
-                                <label>Tone</label>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="button-group">
-                    <button class="btn btn-primary" id="enhanceBtn">✨ Enhance</button>
-                    <button class="btn btn-secondary" id="analyzeBtn">📊 Analyze</button>
-                </div>
-                <div class="button-group">
-                    <button class="btn btn-secondary" id="clearBtn">🗑️ Clear</button>
-                    <button class="btn btn-secondary" id="historyToggle">⏱️ History</button>
+                <div id="variationsResults" style="margin-top: 2rem;"></div>
+            </div>
+        </div>
+        
+        <!-- INSIGHTS VIEW -->
+        <div id="insightsView" class="view">
+            <div class="card">
+                <div class="card-header">📈 Usage Insights</div>
+                <div id="insightsContent" class="empty-state">
+                    <div class="empty-icon">📊</div>
+                    <div>Enter a user ID to view insights</div>
+                    <input type="text" id="userIdInput" placeholder="User ID (default: anonymous)" 
+                           class="form-input" style="margin-top: 1rem; max-width: 300px;">
+                    <button class="btn btn-primary" onclick="loadInsights()" style="margin-top: 1rem;">Load Insights</button>
                 </div>
             </div>
-
-            <div class="panel" id="resultsPanel">
-                <div class="panel-header">
-                    <span class="panel-title">Results</span>
-                </div>
-
-                <div class="tabs">
-                    <button class="tab-btn active" data-tab="analysis">Analysis</button>
-                    <button class="tab-btn" data-tab="enhanced">Enhanced</button>
-                    <button class="tab-btn" data-tab="ai">AI Enhanced</button>
-                </div>
-
-                <div class="tab-content active" id="analysis-tab">
-                    <div class="metrics-grid">
-                        <div class="metric-card">
-                            <div class="metric-label">Category</div>
-                            <div class="metric-value" id="category">—</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Words</div>
-                            <div class="metric-value" id="wordCount">0</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Clarity</div>
-                            <div class="metric-value" id="clarityScore">—</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Structure</div>
-                            <div class="metric-value" id="structureScore">—</div>
+        </div>
+        
+        <!-- BATCH VIEW -->
+        <div id="batchView" class="view">
+            <div class="grid" style="grid-template-columns: 1fr;">
+                <div class="card">
+                    <div class="card-header">⚡ Batch Processing</div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            Enter prompts (one per line)
+                            <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: normal; margin-left: 0.5rem;">
+                                (Maximum 50 prompts)
+                            </span>
+                        </label>
+                        <textarea id="batchInput" class="form-textarea" 
+                                  placeholder="Enter your prompts here, one per line (max 397 chars per prompt)...&#10;&#10;Example:&#10;Create a Python function to calculate fibonacci numbers&#10;Write a blog post about sustainable energy&#10;Analyze customer feedback data"
+                                  style="min-height: 300px;"
+                                  oninput="updateBatchCount()"></textarea>
+                        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-secondary);">
+                            <span id="batchPromptCount">0</span> prompts ready
                         </div>
                     </div>
-                </div>
-
-                <div class="tab-content" id="enhanced-tab">
-                    <div class="output-box" id="enhancedOutput">No results yet</div>
-                    <div class="output-actions">
-                        <button class="copy-btn" onclick="copyToClipboard('enhancedOutput')">📋 Copy</button>
-                        <button class="fav-btn" onclick="addFavorite('enhanced')">❤️ Save</button>
+                    <div style="display: flex; gap: 1rem; align-items: center; margin-top: 1.5rem;">
+                        <button class="btn btn-primary" onclick="processBatch()" id="batchProcessBtn">
+                            <span>🚀</span> Process Batch
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearBatchInput()" id="batchClearBtn">
+                            <span>🗑️</span> Clear
+                        </button>
                     </div>
                 </div>
-
-                <div class="tab-content" id="ai-tab">
-                    <div class="output-box" id="aiOutput">No results yet</div>
-                    <div class="output-actions">
-                        <button class="copy-btn" onclick="copyToClipboard('aiOutput')">📋 Copy</button>
-                        <button class="fav-btn" onclick="addFavorite('ai')">❤️ Save</button>
-                    </div>
+            </div>
+            
+            <!-- Batch Results Section -->
+            <div id="batchResultsContainer" style="margin-top: 2rem; display: none;">
+                <div class="card">
+                    <div class="card-header">📊 Batch Processing Results</div>
+                    <div id="batchStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;"></div>
+                    <div id="batchResults"></div>
                 </div>
             </div>
         </div>
     </div>
-
+    
+    <!-- Enhance Button -->
+    <button id="enhanceBtn" class="enhance-button" onclick="enhancePrompt()">
+        <span id="enhanceIcon">✨</span>
+        <span id="enhanceText">Enhance Prompt</span>
+    </button>
+    
+                         <!-- Templates Modal -->
+    <div class="modal" id="templatesModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Prompt Templates</div>
+                <button class="btn btn-secondary" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body" id="templatesContent"></div>
+        </div>
+    </div>
+    
     <script>
-        const API_BASE = 'http://127.0.0.1:5000/inkwell_ai/api';;
-        let currentMode = 'simple';
-        let currentData = null;
-        const userId = 'user_' + Math.random().toString(36).substr(2, 9);
-
-        console.log('🚀 InkWell AI initialized');
-        console.log('👤 User ID:', userId);
-
-        // Mode Toggle
-        document.querySelectorAll('[data-mode]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                console.log('Mode changed to:', e.target.dataset.mode);
-                document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                currentMode = e.target.dataset.mode;
-                
-                const controlsSection = document.getElementById('controlsSection');
-                
-                if (currentMode === 'advanced') {
-                    controlsSection.classList.add('visible');
-                    console.log('✓ Advanced mode enabled');
-                } else {
-                    controlsSection.classList.remove('visible');
-                    console.log('✓ Simple mode enabled');
-                }
-            });
-        });
-
-        // View Toggle
-        document.querySelectorAll('[data-view]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('[data-view]').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-            });
-        });
-
-        // Level Button Toggle
-        document.querySelectorAll('.level-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                console.log('Enhancement level:', e.target.dataset.level);
-            });
-        });
-
-        // Tab Navigation
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const tabName = e.target.dataset.tab;
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                e.target.classList.add('active');
-                document.getElementById(`${tabName}-tab`).classList.add('active');
-            });
-        });
-
-        // Character Counter
-        document.getElementById('promptInput').addEventListener('input', (e) => {
-            const count = e.target.value.length;
-            const charCountEl = document.getElementById('charCount');
-            charCountEl.textContent = `${count} / 5000`;
+        let selectedStrategies = ['clarity', 'structure', 'specificity'];
+        let selectedLevel = 'moderate';
+        let currentEnhanced = '';
+        
+        // API Base URL
+        const API_BASE = '/inkwell_ai/api';
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupStrategySelection();
+            setupLevelSelection();
+            setupBatchInput();
+            console.log('InkWell AI initialized. API Base:', API_BASE);
             
-            if (count > 4500) {
-                charCountEl.style.color = 'var(--error)';
-            } else if (count > 3000) {
-                charCountEl.style.color = 'var(--warning)';
-            } else {
-                charCountEl.style.color = 'var(--text-tertiary)';
+            // Show enhance button for optimize view on load
+            if (document.getElementById('optimizeView').classList.contains('active')) {
+                document.getElementById('enhanceBtn').classList.add('show');
             }
         });
-
-        // Enhance Button
-        document.getElementById('enhanceBtn').addEventListener('click', enhancePrompt);
-
-        // Analyze Button
-        document.getElementById('analyzeBtn').addEventListener('click', analyzePrompt);
-
-        // Clear Button
-        document.getElementById('clearBtn').addEventListener('click', () => {
-            document.getElementById('promptInput').value = '';
-            document.getElementById('charCount').textContent = '0 / 5000';
-            document.getElementById('charCount').style.color = 'var(--text-tertiary)';
-            document.getElementById('resultsPanel').style.display = 'none';
-            clearAlerts();
-            console.log('✓ Cleared');
-        });
-
-        // History Toggle
-        document.getElementById('historyToggle').addEventListener('click', loadHistory);
-
-        async function enhancePrompt() {
-            const prompt = document.getElementById('promptInput').value.trim();
+        
+        function setupBatchInput() {
+            const batchInput = document.getElementById('batchInput');
+            const promptCount = document.getElementById('batchPromptCount');
             
-            console.log('📝 Enhance button clicked');
-            console.log('Prompt length:', prompt.length);
-            
-            if (!prompt) {
-                showAlert('Please enter a prompt to enhance', 'error');
-                return;
-            }
-
-            if (prompt.length > 5000) {
-                showAlert('Prompt is too long (max 5000 characters)', 'error');
-                return;
-            }
-
-            const btn = document.getElementById('enhanceBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Processing...';
-
-            try {
-                const selectedEnhancements = Array.from(
-                    document.querySelectorAll('input[name="enhancement"]:checked')
-                ).map(input => input.value);
-                
-                const selectedLevel = document.querySelector('.level-btn.active')?.dataset.level || 'moderate';
-
-                console.log('Selected enhancements:', selectedEnhancements);
-                console.log('Selected level:', selectedLevel);
-
-                const requestBody = {
-                    prompt: prompt,
-                    enhancements: selectedEnhancements,
-                    enhancement_level: selectedLevel,
-                    use_gemini: true,
-                    user_id: userId
-                };
-
-                console.log('Sending request to:', `${API_BASE}/optimize`);
-
-                const response = await fetch(`${API_BASE}/optimize`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestBody)
+            if (batchInput && promptCount) {
+                batchInput.addEventListener('input', () => {
+                    const text = batchInput.value.trim();
+                    const prompts = text ? text.split('\n').filter(p => p.trim()) : [];
+                    promptCount.textContent = prompts.length;
                 });
-
-                console.log('Response status:', response.status);
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to enhance prompt');
-                }
-
-                const data = await response.json();
-                console.log('✓ Enhancement successful');
-                console.log('Data received:', data);
-                
-                currentData = data;
-                displayResults(data);
-                document.getElementById('resultsPanel').style.display = 'block';
-                showAlert('✓ Prompt enhanced successfully!', 'success');
-
-            } catch (error) {
-                console.error('❌ Enhancement error:', error);
-                showAlert(error.message || 'Failed to enhance prompt. Make sure the backend is running.', 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '✨ Enhance';
             }
         }
-
-        async function analyzePrompt() {
-            const prompt = document.getElementById('promptInput').value.trim();
+        
+        function clearBatchInput() {
+            document.getElementById('batchInput').value = '';
+            document.getElementById('batchPromptCount').textContent = '0';
+            document.getElementById('batchResultsContainer').style.display = 'none';
+        }
+        
+        function setupStrategySelection() {
+            document.querySelectorAll('.strategy-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    item.classList.toggle('active');
+                    const checkbox = item.querySelector('.checkbox');
+                    checkbox.textContent = item.classList.contains('active') ? '✓' : '';
+                    updateSelectedStrategies();
+                });
+            });
+        }
+        
+        function setupLevelSelection() {
+            document.querySelectorAll('.level-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    document.querySelectorAll('.level-option').forEach(o => o.classList.remove('active'));
+                    option.classList.add('active');
+                    selectedLevel = option.dataset.level;
+                });
+            });
+        }
+        
+        function updateSelectedStrategies() {
+            selectedStrategies = [];
+            document.querySelectorAll('.strategy-item.active').forEach(item => {
+                selectedStrategies.push(item.dataset.strategy);
+            });
+        }
+        
+        function updateWordCount() {
+            const text = document.getElementById('promptInput').value;
+            const words = text.trim().split(/\s+/).filter(w => w).length;
+            document.getElementById('wordCount').textContent = words;
+        }
+        
+        function switchView(viewName, element) {
+            // Hide all views
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            // Show selected view
+            document.getElementById(viewName + 'View').classList.add('active');
             
-            if (!prompt) {
-                showAlert('Please enter a prompt to analyze', 'error');
+            // Update nav tabs
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            if (element) element.classList.add('active');
+            
+            // Show/hide enhance button only for optimize view
+            const enhanceBtn = document.getElementById('enhanceBtn');
+            if (viewName === 'optimize') {
+                enhanceBtn.classList.add('show');
+            } else {
+                enhanceBtn.classList.remove('show');
+            }
+        }
+        
+        function switchTab(tab, element) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            if (element) element.classList.add('active');
+            
+            const textarea = document.getElementById('promptInput');
+            const comparison = document.getElementById('comparisonView');
+            
+            if (tab === 'edit') {
+                textarea.style.display = 'block';
+                comparison.classList.remove('active');
+            } else {
+                textarea.style.display = 'none';
+                comparison.classList.add('active');
+            }
+        }
+        
+        // OWASP: Character counter function for input validation feedback
+        function updateCharCounter(inputId, counterId) {
+            const input = document.getElementById(inputId);
+            const counter = document.getElementById(counterId);
+            if (input && counter) {
+                const length = input.value.length;
+                counter.textContent = `${length}/397 characters`;
+                if (length > 397) {
+                    counter.style.color = 'var(--error)';
+                } else if (length > 350) {
+                    counter.style.color = 'var(--accent)';
+                } else {
+                    counter.style.color = 'var(--text-secondary)';
+                }
+            }
+        }
+        
+        async function enhancePrompt() {
+            const input = document.getElementById('promptInput').value.trim();
+            
+            // OWASP: Client-side validation - check length before sending
+            if (!input) {
+                showToast('Please enter a prompt first', 'error');
                 return;
             }
-
-            const btn = document.getElementById('analyzeBtn');
+            
+            // OWASP: Enforce 397 character limit (matches backend validation)
+            if (input.length > 397) {
+                showToast('Prompt exceeds 397 character limit. Please shorten your prompt.', 'error');
+                const promptInput = document.getElementById('promptInput');
+                promptInput.value = input.substring(0, 397);
+                updateCharCounter('promptInput', 'promptCharCounter');
+                return;
+            }
+            
+            const btn = document.getElementById('enhanceBtn');
+            const icon = document.getElementById('enhanceIcon');
+            const text = document.getElementById('enhanceText');
+            
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span> Analyzing...';
-
+            btn.classList.add('processing');
+            icon.classList.add('spinning');
+            text.textContent = 'Processing...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/optimize`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt: input,
+                        strategies: selectedStrategies,
+                        level: selectedLevel
+                    })
+                });
+                
+                // OWASP: Handle rate limit (429) responses gracefully
+                if (response.status === 429) {
+                    const errorData = await response.json().catch(() => ({}));
+                    const retryAfter = errorData.retry_after || 'a few moments';
+                    showToast(`Rate limit exceeded. Please try again in ${retryAfter}.`, 'error');
+                    throw new Error(`Rate limit exceeded. Please try again later.`);
+                }
+                
+                // OWASP: Handle validation errors (400)
+                if (response.status === 400) {
+                    const errorData = await response.json().catch(() => ({}));
+                    const errorMsg = errorData.error || errorData.message || 'Invalid input';
+                    showToast(errorMsg, 'error');
+                    throw new Error(errorMsg);
+                }
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `Server error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success !== false) {
+                    displayResults(data);
+                    showComparison(data);
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Error connecting to server. Please check your connection.');
+                console.error(error);
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('processing');
+                icon.classList.remove('spinning');
+                text.textContent = 'Enhance Prompt';
+            }
+        }
+        
+        function displayResults(data) {
+            const metrics = data.metrics;
+            const overall = Math.round(metrics.overall_score || 0);
+            
+            document.getElementById('overallScore').textContent = overall;
+            document.getElementById('qualityScore').textContent = overall;
+            document.getElementById('clarityScore').textContent = Math.round(metrics.clarity_score || 0);
+            document.getElementById('structureScore').textContent = Math.round(metrics.structure_score || 0);
+            
+            setTimeout(() => {
+                document.getElementById('scoreFill').style.width = overall + '%';
+            }, 100);
+            
+            // Update enhanced prompt display
+            const enhancedPromptEl = document.getElementById('enhancedPrompt');
+            if (data.best_version) {
+                enhancedPromptEl.textContent = data.best_version;
+                enhancedPromptEl.classList.remove('empty-prompt');
+            } else {
+                enhancedPromptEl.innerHTML = '<div class="empty-prompt">No prompt enhanced yet. Enter a prompt and click "Enhance Prompt" to get started.</div>';
+            }
+            
+            const improvementsList = document.getElementById('improvementsList');
+            if (improvementsList) {
+            improvementsList.innerHTML = '';
+            
+            if (data.improvements && data.improvements.length) {
+                data.improvements.forEach(imp => {
+                    const div = document.createElement('div');
+                    div.className = 'improvement-item';
+                    div.innerHTML = `
+                        <span class="improvement-icon">✓</span>
+                        <span>${escapeHtml(imp)}</span>
+                    `;
+                    improvementsList.appendChild(div);
+                });
+                }
+            }
+            
+            currentEnhanced = data.best_version;
+        }
+        
+        function showComparison(data) {
+            document.getElementById('originalText').textContent = data.original;
+            document.getElementById('enhancedText').textContent = data.best_version;
+            const compareTab = document.querySelector('.tab[onclick*="compare"]');
+            switchTab('compare', compareTab);
+        }
+        
+        async function analyzePrompt() {
+            const input = document.getElementById('analyzeInput').value.trim();
+            // OWASP: Client-side validation
+            if (!input) {
+                showToast('Please enter a prompt to analyze', 'error');
+                return;
+            }
+            
+            // OWASP: Enforce 397 character limit
+            if (input.length > 397) {
+                showToast('Prompt exceeds 397 character limit. Please shorten your prompt.', 'error');
+                const analyzeInput = document.getElementById('analyzeInput');
+                analyzeInput.value = input.substring(0, 397);
+                updateCharCounter('analyzeInput', 'analyzeCharCounter');
+                return;
+            }
+            
             try {
                 const response = await fetch(`${API_BASE}/analyze`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        prompt: prompt,
-                        user_id: userId
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: input })
                 });
-
-                if (!response.ok) {
-                    throw new Error('Failed to analyze prompt');
+                
+                // OWASP: Handle rate limit (429) responses
+                if (response.status === 429) {
+                    const errorData = await response.json().catch(() => ({}));
+                    const retryAfter = errorData.retry_after || 'a few moments';
+                    showToast(`Rate limit exceeded. Please try again in ${retryAfter}.`, 'error');
+                    return;
                 }
-
+                
+                // OWASP: Handle validation errors (400)
+                if (response.status === 400) {
+                    const errorData = await response.json().catch(() => ({}));
+                    showToast(errorData.error || errorData.message || 'Invalid input', 'error');
+                    return;
+                }
+                
                 const data = await response.json();
+                const resultsDiv = document.getElementById('analyzeResults');
                 
-                document.getElementById('category').textContent = data.category;
-                document.getElementById('wordCount').textContent = data.word_count;
-                document.getElementById('clarityScore').textContent = Math.round(data.metrics.clarity_score);
-                document.getElementById('structureScore').textContent = Math.round(data.metrics.structure_score);
-
-                document.getElementById('resultsPanel').style.display = 'block';
-                
-                // Switch to analysis tab
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                document.querySelector('[data-tab="analysis"]').classList.add('active');
-                document.getElementById('analysis-tab').classList.add('active');
-                
-                showAlert('✓ Analysis complete!', 'success');
-
+                if (data.success) {
+                    const metrics = data.metrics;
+                    resultsDiv.innerHTML = `
+                        <div class="stat-grid">
+                            <div class="stat-card">
+                                <div class="stat-value">${Math.round(metrics.overall_score)}</div>
+                                <div class="stat-label">Overall Score</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${Math.round(metrics.clarity_score)}</div>
+                                <div class="stat-label">Clarity</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${Math.round(metrics.specificity_score)}</div>
+                                <div class="stat-label">Specificity</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${Math.round(metrics.structure_score)}</div>
+                                <div class="stat-label">Structure</div>
+                            </div>
+                        </div>
+                        <div class="card" style="margin-top: 1.5rem;">
+                            <div class="card-header">Recommendations</div>
+                            <div class="improvements">
+                                ${data.recommendations && data.recommendations.length ? 
+                                    data.recommendations.map(r => `
+                                        <div class="improvement-item">
+                                            <span class="improvement-icon">💡</span>
+                                            <span>${escapeHtml(r)}</span>
+                                        </div>
+                                    `).join('') : 
+                                    '<div class="empty-state">No recommendations - prompt looks good!</div>'
+                                }
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `<div class="alert alert-error">Error: ${data.error || 'Unknown error'}</div>`;
+                }
             } catch (error) {
-                console.error('Analysis error:', error);
-                showAlert('Failed to analyze prompt', 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '📊 Analyze';
+                alert('Error analyzing prompt');
+                console.error(error);
             }
         }
-
-        function displayResults(data) {
-            console.log('Displaying results:', data);
-            
-            if (data.metadata) {
-                document.getElementById('category').textContent = data.metadata.category || '—';
-                document.getElementById('wordCount').textContent = Math.round(data.metadata.original_length / 5) || 0;
-                document.getElementById('clarityScore').textContent = Math.round(data.metadata.metrics.clarity_score) || '—';
-                document.getElementById('structureScore').textContent = Math.round(data.metadata.metrics.structure_score) || '—';
-            }
-
-            document.getElementById('enhancedOutput').textContent = data.optimized_prompt || 'No results';
-            document.getElementById('aiOutput').textContent = data.gemini_enhanced || data.optimized_prompt || 'No results';
-        }
-
-        function copyToClipboard(elementId) {
-            const text = document.getElementById(elementId).textContent;
-            navigator.clipboard.writeText(text).then(() => {
-                showAlert('✓ Copied to clipboard!', 'success');
-            }).catch(() => {
-                showAlert('Failed to copy', 'error');
-            });
-        }
-
-        async function addFavorite(type) {
-            if (!currentData) {
-                showAlert('No data to save', 'error');
+        
+        async function generateVariations() {
+            const input = document.getElementById('variationsInput').value.trim();
+            // OWASP: Client-side validation
+            if (!input) {
+                showToast('Please enter a prompt', 'error');
                 return;
             }
-
+            
+            // OWASP: Enforce 397 character limit
+            if (input.length > 397) {
+                showToast('Prompt exceeds 397 character limit. Please shorten your prompt.', 'error');
+                const variationsInput = document.getElementById('variationsInput');
+                variationsInput.value = input.substring(0, 397);
+                updateCharCounter('variationsInput', 'variationsCharCounter');
+                return;
+            }
+            
+            const numVariations = parseInt(document.getElementById('numVariations').value) || 3;
+            const resultsDiv = document.getElementById('variationsResults');
+            resultsDiv.innerHTML = '<div class="empty-state">Generating variations...</div>';
+            
             try {
-                const response = await fetch(`${API_BASE}/favorites`, {
+                const response = await fetch(`${API_BASE}/variations`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        user_id: userId,
-                        original: currentData.original_prompt,
-                        enhanced: currentData.optimized_prompt,
-                        gemini_enhanced: currentData.gemini_enhanced || ''
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        prompt: input,
+                        num_variations: numVariations
                     })
                 });
-
-                if (!response.ok) {
-                    throw new Error('Failed to save favorite');
+                
+                // OWASP: Handle rate limit (429) responses
+                if (response.status === 429) {
+                    const errorData = await response.json().catch(() => ({}));
+                    const retryAfter = errorData.retry_after || 'a few moments';
+                    showToast(`Rate limit exceeded. Please try again in ${retryAfter}.`, 'error');
+                    return;
                 }
-
-                const data = await response.json();
-                showAlert(data.message || '❤️ Added to favorites!', 'success');
-
-            } catch (error) {
-                console.error('Favorite error:', error);
-                showAlert('Failed to save favorite', 'error');
-            }
-        }
-
-        async function loadHistory() {
-            try {
-                const response = await fetch(`${API_BASE}/history/${userId}?limit=20`);
-                if (!response.ok) {
-                    throw new Error('Failed to load history');
+                
+                // OWASP: Handle validation errors (400)
+                if (response.status === 400) {
+                    const errorData = await response.json().catch(() => ({}));
+                    showToast(errorData.error || errorData.message || 'Invalid input', 'error');
+                    return;
                 }
                 
                 const data = await response.json();
-                if (data.history && data.history.length > 0) {
-                    showAlert(`Found ${data.history.length} items in history`, 'info');
-                    console.log('History:', data.history);
+                
+                if (data.success && data.variations) {
+                    resultsDiv.innerHTML = data.variations.map((v, idx) => `
+                        <div class="variation-item">
+                            <div class="variation-header">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <span class="variation-badge">${escapeHtml(v.variation_id)}</span>
+                                    <span class="variation-score">${Math.round(v.score)}</span>
+                                </div>
+                                <button class="copy-btn" onclick="copyVariation('${idx}', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">
+                                    <span>📋</span> <span>Copy</span>
+                                </button>
+                            </div>
+                            <div class="variation-text" id="variation-${idx}">${escapeHtml(v.prompt)}</div>
+                        </div>
+                    `).join('');
                 } else {
-                    showAlert('No history found', 'info');
+                    resultsDiv.innerHTML = `<div class="alert alert-error">Error: ${data.error || 'Unknown error'}</div>`;
                 }
             } catch (error) {
-                console.error('History error:', error);
-                showAlert('Failed to load history', 'error');
+                alert('Error generating variations');
+                console.error(error);
             }
         }
-
-        function showAlert(message, type = 'info') {
-            const container = document.getElementById('alertContainer');
-            const alert = document.createElement('div');
-            alert.className = `alert alert-${type}`;
-            alert.innerHTML = `<span>${message}</span>`;
-            container.appendChild(alert);
+        
+        async function loadInsights() {
+            const userId = document.getElementById('userIdInput').value.trim() || 'anonymous';
+            const contentDiv = document.getElementById('insightsContent');
+            contentDiv.innerHTML = '<div class="empty-state">Loading insights...</div>';
             
+            try {
+                const response = await fetch(`${API_BASE}/insights/${userId}`);
+                const data = await response.json();
+                
+                if (data.success && data.insights) {
+                    const insights = data.insights;
+                    const stats = insights.statistics || {};
+                    contentDiv.innerHTML = `
+                        <div class="stat-grid">
+                            <div class="stat-card">
+                                <div class="stat-value">${stats.total_optimizations || 0}</div>
+                                <div class="stat-label">Total Optimizations</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${Math.round(stats.avg_quality_score || 0)}</div>
+                                <div class="stat-label">Avg Quality Score</div>
+                            </div>
+                        </div>
+                        <div class="card" style="margin-top: 1.5rem;">
+                            <div class="card-header">Category Distribution</div>
+                            ${insights.category_distribution && insights.category_distribution.length ? 
+                                insights.category_distribution.map(cat => `
+                                    <div class="category-bar">
+                                        <div class="category-name">${escapeHtml(cat.category)}</div>
+                                        <div class="category-progress">
+                                            <div class="category-fill" style="width: ${(cat.count / (stats.total_optimizations || 1)) * 100}%"></div>
+                                        </div>
+                                        <div class="category-count">${cat.count}</div>
+                                    </div>
+                                `).join('') : 
+                                '<div class="empty-state">No data available</div>'
+                            }
+                        </div>
+                    `;
+                } else {
+                    contentDiv.innerHTML = `<div class="alert alert-error">Error: ${data.error || 'Unknown error'}</div>`;
+                }
+            } catch (error) {
+                alert('Error loading insights');
+                console.error(error);
+            }
+        }
+        
+        let batchStartTime = null;
+        let batchJobId = null;
+        
+        async function processBatch() {
+            const input = document.getElementById('batchInput').value.trim();
+            if (!input) {
+                showToast('Please enter prompts to process', 'error');
+                return;
+            }
+            
+            const prompts = input.split('\n').filter(p => p.trim());
+            if (prompts.length === 0) {
+                showToast('Please enter at least one prompt', 'error');
+                return;
+            }
+            
+            if (prompts.length > 50) {
+                showToast('Maximum 50 prompts per batch', 'error');
+                return;
+            }
+            
+            // OWASP: Validate each prompt is within 397 character limit
+            const invalidPrompts = prompts.filter(p => p.length > 397);
+            if (invalidPrompts.length > 0) {
+                showToast(`${invalidPrompts.length} prompt(s) exceed 397 character limit. Please shorten them.`, 'error');
+                return;
+            }
+            
+            const resultsDiv = document.getElementById('batchResults');
+            const resultsContainer = document.getElementById('batchResultsContainer');
+            const processBtn = document.getElementById('batchProcessBtn');
+            
+            // Disable button and show loading
+            processBtn.disabled = true;
+            processBtn.innerHTML = '<span class="spinning">⏳</span> Processing...';
+            resultsContainer.style.display = 'block';
+            resultsDiv.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div><div>Initializing batch processing...</div></div>';
+            
+            batchStartTime = Date.now();
+            
+            try {
+                const response = await fetch(`${API_BASE}/batch`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompts: prompts })
+                });
+                
+                // OWASP: Handle rate limit (429) responses
+                if (response.status === 429) {
+                    const errorData = await response.json().catch(() => ({}));
+                    const retryAfter = errorData.retry_after || 'a few moments';
+                    showToast(`Rate limit exceeded. Please try again in ${retryAfter}.`, 'error');
+                    processBtn.disabled = false;
+                    processBtn.innerHTML = 'Process Batch';
+                    return;
+                }
+                
+                // OWASP: Handle validation errors (400)
+                if (response.status === 400) {
+                    const errorData = await response.json().catch(() => ({}));
+                    showToast(errorData.error || errorData.message || 'Invalid input', 'error');
+                    processBtn.disabled = false;
+                    processBtn.innerHTML = 'Process Batch';
+                    return;
+                }
+                
+                // OWASP: Handle rate limit (429) responses
+                if (response.status === 429) {
+                    const errorData = await response.json().catch(() => ({}));
+                    const retryAfter = errorData.retry_after || 'a few moments';
+                    showToast(`Rate limit exceeded. Please try again in ${retryAfter}.`, 'error');
+                    return;
+                }
+                
+                // OWASP: Handle validation errors (400)
+                if (response.status === 400) {
+                    const errorData = await response.json().catch(() => ({}));
+                    showToast(errorData.error || errorData.message || 'Invalid input', 'error');
+                    return;
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    batchJobId = data.job_id;
+                    showToast(`Batch job created! Processing ${prompts.length} prompts...`, 'success');
+                    
+                    // Poll for results
+                    pollBatchStatus(data.job_id);
+                } else {
+                    resultsDiv.innerHTML = `<div class="alert alert-error">Error: ${data.error || 'Unknown error'}</div>`;
+                    processBtn.disabled = false;
+                    processBtn.innerHTML = '<span>🚀</span> Process Batch';
+                }
+            } catch (error) {
+                showToast('Error processing batch: ' + error.message, 'error');
+                resultsDiv.innerHTML = `<div class="alert alert-error">Error: ${error.message}</div>`;
+                processBtn.disabled = false;
+                processBtn.innerHTML = '<span>🚀</span> Process Batch';
+                console.error(error);
+            }
+        }
+        
+        async function pollBatchStatus(jobId) {
+            const resultsDiv = document.getElementById('batchResults');
+            const statsDiv = document.getElementById('batchStats');
+            const processBtn = document.getElementById('batchProcessBtn');
+            
+            try {
+                const response = await fetch(`${API_BASE}/batch/${jobId}`);
+                const data = await response.json();
+                
+                if (data.success && data.job) {
+                    const job = data.job;
+                    const completed = job.completed_items || 0;
+                    const total = job.total_items || 1;
+                    const progress = Math.min(100, (completed / total) * 100);
+                    const isCompleted = job.status === 'completed';
+                    const isFailed = job.status === 'failed';
+                    
+                    // Calculate elapsed time and estimate remaining
+                    let timeInfo = '';
+                    if (batchStartTime && !isCompleted && !isFailed) {
+                        const elapsed = Math.floor((Date.now() - batchStartTime) / 1000);
+                        const elapsedStr = formatTime(elapsed);
+                        
+                        if (completed > 0) {
+                            const avgTimePerItem = elapsed / completed;
+                            const remaining = Math.ceil((total - completed) * avgTimePerItem);
+                            timeInfo = `<div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                                Elapsed: ${elapsedStr} | Est. remaining: ${formatTime(remaining)}
+                            </div>`;
+                        } else {
+                            timeInfo = `<div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                                Elapsed: ${elapsedStr}
+                            </div>`;
+                        }
+                    }
+                    
+                    // Calculate stats and cache results
+                    let successCount = 0;
+                    let errorCount = 0;
+                    let avgScore = 0;
+                    if (job.results && Array.isArray(job.results)) {
+                        batchResultsCache = job.results; // Cache for copy function
+                        successCount = job.results.filter(r => r.success).length;
+                        errorCount = job.results.filter(r => !r.success).length;
+                        const scores = job.results.filter(r => r.success && r.score).map(r => r.score);
+                        if (scores.length > 0) {
+                            avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+                        }
+                    }
+                    
+                    // Update stats
+                    statsDiv.innerHTML = `
+                        <div class="stat-card">
+                            <div class="stat-value">${completed}/${total}</div>
+                            <div class="stat-label">Progress</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${successCount}</div>
+                            <div class="stat-label">Successful</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${errorCount}</div>
+                            <div class="stat-label">Errors</div>
+                        </div>
+                        ${avgScore > 0 ? `
+                        <div class="stat-card">
+                            <div class="stat-value">${Math.round(avgScore)}</div>
+                            <div class="stat-label">Avg Score</div>
+                        </div>
+                        ` : ''}
+                    `;
+                    
+                    // Update progress and results
+                    resultsDiv.innerHTML = `
+                        <div style="margin-bottom: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <div style="font-weight: 600; color: var(--text-primary);">
+                                    ${isCompleted ? '✅ Completed' : isFailed ? '❌ Failed' : '⏳ Processing...'}
+                                </div>
+                                <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                                    ${Math.round(progress)}%
+                                </div>
+                            </div>
+                            <div class="progress-container" style="height: 10px;">
+                                <div class="progress-bar" style="width: ${progress}%; background: ${isCompleted ? 'var(--success)' : isFailed ? 'var(--error)' : 'linear-gradient(90deg, var(--primary), var(--secondary))'};"></div>
+                            </div>
+                            ${timeInfo}
+                        </div>
+                        ${isCompleted && job.results && job.results.length > 0 ? `
+                            <div style="max-height: 500px; overflow-y: auto;">
+                                ${job.results.map(r => `
+                                    <div class="batch-item">
+                                        <div class="batch-header">
+                                            <span class="batch-index">#${r.index + 1}</span>
+                                            <span class="status-badge ${r.success ? 'status-success' : 'status-error'}">
+                                                ${r.success ? '✓ Success' : '✕ Error'}
+                                            </span>
+                                        </div>
+                                        ${r.success ? `
+                                            <div style="margin-top: 0.75rem;">
+                                                <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                                                    <strong>Score:</strong> ${Math.round(r.score || 0)}/100
+                                                </div>
+                                                <div style="font-size: 0.875rem; color: var(--text-primary); margin-bottom: 0.5rem;">
+                                                    <strong>Original:</strong>
+                                                </div>
+                                                <div class="batch-text" style="background: var(--bg-dark); padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.75rem;">
+                                                    ${escapeHtml(r.original || '').substring(0, 150)}${(r.original || '').length > 150 ? '...' : ''}
+                                                </div>
+                                                <div style="font-size: 0.875rem; color: var(--text-primary); margin-bottom: 0.5rem;">
+                                                    <strong>Optimized:</strong>
+                                                </div>
+                                                <div class="batch-text" style="background: var(--bg-dark); padding: 0.75rem; border-radius: 0.5rem; max-height: 200px; overflow-y: auto;">
+                                                    ${escapeHtml(r.optimized || '')}
+                                                </div>
+                                                <button class="copy-btn" onclick="copyBatchResult(${r.index}, this)" style="margin-top: 0.5rem; padding: 0.375rem 0.75rem; font-size: 0.75rem;">
+                                                    <span>📋</span> <span>Copy Optimized</span>
+                                                </button>
+                                            </div>
+                                        ` : `
+                                            <div class="batch-text" style="color: var(--error); margin-top: 0.75rem;">
+                                                ${escapeHtml(r.error || 'Unknown error')}
+                                            </div>
+                                        `}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : isCompleted ? `
+                            <div class="empty-state">
+                                <div class="empty-icon">📋</div>
+                                <div>No results available</div>
+                            </div>
+                        ` : ''}
+                    `;
+                    
+                    // Re-enable button if completed or failed
+                    if (isCompleted || isFailed) {
+                        processBtn.disabled = false;
+                        processBtn.innerHTML = '<span>🚀</span> Process Batch';
+                        if (isCompleted) {
+                            showToast(`Batch processing completed! ${successCount} successful, ${errorCount} errors`, 'success');
+                        }
+                    } else {
+                        // Continue polling
+                        setTimeout(() => pollBatchStatus(jobId), 2000);
+                    }
+                } else {
+                    resultsDiv.innerHTML = `<div class="alert alert-error">Error: ${data.error || 'Unknown error'}</div>`;
+                    processBtn.disabled = false;
+                    processBtn.innerHTML = '<span>🚀</span> Process Batch';
+                }
+            } catch (error) {
+                console.error('Error polling batch status:', error);
+                resultsDiv.innerHTML = `<div class="alert alert-error">Error fetching status: ${error.message}</div>`;
+                processBtn.disabled = false;
+                processBtn.innerHTML = '<span>🚀</span> Process Batch';
+            }
+        }
+        
+        function formatTime(seconds) {
+            if (seconds < 60) return `${seconds}s`;
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            if (minutes < 60) return `${minutes}m ${secs}s`;
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return `${hours}h ${mins}m`;
+        }
+        
+        let batchResultsCache = null;
+        
+        function copyBatchResult(index, buttonElement) {
+            // Try to get from cache first
+            if (batchResultsCache && batchResultsCache[index] && batchResultsCache[index].optimized) {
+                copyToClipboard(null, buttonElement, batchResultsCache[index].optimized);
+                return;
+            }
+            
+            // Fallback: get from DOM
+            const batchItems = document.querySelectorAll('.batch-item');
+            if (batchItems[index]) {
+                const textElements = batchItems[index].querySelectorAll('.batch-text');
+                if (textElements.length > 1) {
+                    // Second batch-text is the optimized one
+                    const optimizedText = textElements[1].textContent || '';
+                    if (optimizedText) {
+                        copyToClipboard(null, buttonElement, optimizedText);
+                    }
+                }
+            }
+        }
+        
+        async function showTemplates() {
+            try {
+                const response = await fetch(`${API_BASE}/templates`);
+                const data = await response.json();
+                
+                const modal = document.getElementById('templatesModal');
+                const content = document.getElementById('templatesContent');
+                
+                if (data.success && data.templates) {
+                    content.innerHTML = data.templates.map(t => `
+                        <div class="template-item" onclick="applyTemplate(\`${escapeHtml(t.template_text).replace(/`/g, '\\`')}\`)">
+                            <div class="template-name">${escapeHtml(t.name)}</div>
+                            <div class="template-category">${escapeHtml(t.category)}</div>
+                            <div class="template-desc">${escapeHtml(t.description)}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    content.innerHTML = '<div class="empty-state">No templates available</div>';
+                }
+                
+                modal.classList.add('active');
+            } catch (error) {
+                alert('Error loading templates');
+                console.error(error);
+            }
+        }
+        
+        function applyTemplate(text) {
+            document.getElementById('promptInput').value = text;
+            updateWordCount();
+            closeModal();
+        }
+        
+        function closeModal() {
+            document.getElementById('templatesModal').classList.remove('active');
+        }
+        
+        function exportPrompt() {
+            const original = document.getElementById('promptInput').value;
+            const enhanced = currentEnhanced || 'Not yet enhanced';
+            
+            const content = `InkWell AI Export
+================
+
+Original Prompt:
+${original}
+
+${'='.repeat(50)}
+
+Enhanced Prompt:
+${enhanced}
+
+Exported: ${new Date().toLocaleString()}`;
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `inkwell-export-${Date.now()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        async function copyToClipboard(elementId, buttonElement, directText = null) {
+            let textToCopy = '';
+            
+            if (directText) {
+                textToCopy = directText;
+            } else {
+                const element = document.getElementById(elementId);
+                if (!element) return;
+                textToCopy = element.textContent || element.innerText;
+            }
+            
+            // Remove empty prompt message if present
+            if (textToCopy.includes('No prompt enhanced yet')) {
+                showToast('Nothing to copy yet', 'info');
+                return;
+            }
+            
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                
+                // Visual feedback
+                if (buttonElement) {
+                    const originalText = buttonElement.querySelector('.copy-text')?.textContent || buttonElement.textContent;
+                    buttonElement.classList.add('copied');
+                    if (buttonElement.querySelector('.copy-text')) {
+                        buttonElement.querySelector('.copy-text').textContent = 'Copied!';
+                    } else {
+                        buttonElement.innerHTML = '<span>✓</span> <span>Copied!</span>';
+                    }
+                    
+                    setTimeout(() => {
+                        buttonElement.classList.remove('copied');
+                        if (buttonElement.querySelector('.copy-text')) {
+                            buttonElement.querySelector('.copy-text').textContent = originalText;
+                        } else {
+                            buttonElement.innerHTML = '<span>📋</span> <span>Copy</span>';
+                        }
+                    }, 2000);
+                }
+                
+                showToast('Copied to clipboard!', 'success');
+            } catch (err) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = textToCopy;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('Copied to clipboard!', 'success');
+                } catch (e) {
+                    showToast('Failed to copy', 'error');
+                }
+                document.body.removeChild(textArea);
+            }
+        }
+        
+        function copyVariation(index, buttonElement) {
+            const variationText = document.getElementById(`variation-${index}`);
+            if (variationText) {
+                copyToClipboard(`variation-${index}`, buttonElement);
+            }
+        }
+        
+        function showToast(message, type = 'success') {
+            // Remove existing toasts
+            const existingToasts = document.querySelectorAll('.toast');
+            existingToasts.forEach(toast => toast.remove());
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+            toast.innerHTML = `
+                <span class="toast-icon">${icon}</span>
+                <span class="toast-message">${message}</span>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            // Remove after 3 seconds
             setTimeout(() => {
-                alert.style.opacity = '0';
-                alert.style.transition = 'opacity 0.3s ease';
-                setTimeout(() => alert.remove(), 300);
-            }, 4000);
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
-
-        function clearAlerts() {
-            document.getElementById('alertContainer').innerHTML = '';
-        }
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                document.getElementById('enhanceBtn').click();
+        
+        // Close modal on background click
+        document.getElementById('templatesModal').addEventListener('click', (e) => {
+            if (e.target.id === 'templatesModal') {
+                closeModal();
             }
         });
-
-        // Initialize
-        window.addEventListener('load', () => {
-            showAlert('✓ InkWell AI ready! Enter a prompt to get started.', 'info');
-            console.log('✓ Application loaded successfully');
-        });
-
-        // Check backend connectivity
-        fetch(`${API_BASE}/health`)
-            .then(res => res.json())
-            .then(data => {
-                console.log('✓ Backend connected:', data);
-                const geminiStatus = data.gemini_available ? '(Gemini Available)' : '(Rule-based only)';
-                showAlert(`Backend connected ${geminiStatus}`, 'success');
-            })
-            .catch(err => {
-                console.error('❌ Backend connection failed:', err);
-                showAlert('⚠️ Backend not connected. Please start the Flask server.', 'error');
-            });
     </script>
 </body>
 </html>

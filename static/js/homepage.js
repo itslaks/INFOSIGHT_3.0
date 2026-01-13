@@ -348,7 +348,8 @@ if (window.location.hostname === 'localhost') {
     
     if (currentTime >= lastTime + 1000) {
       const fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
-      console.log(`FPS: ${fps}`);
+      // FPS logging removed for production (uncomment for debugging)
+      // console.log(`FPS: ${fps}`);
       frameCount = 0;
       lastTime = currentTime;
     }

@@ -945,6 +945,11 @@ function displayExecutiveSummary(data) {
     const summary = data.executive_summary || {};
     
     document.getElementById('summaryText').textContent = summary.executive_summary || 'Analysis complete.';
+    
+    // Show notification if local model was used
+    if (data.model_used === 'local') {
+        showNotification('⚠️ Some analysis generated using local model (Ollama)', 'info');
+    }
 
     const websiteDesc = document.getElementById('websiteDescription');
     if (summary.website_description) {
