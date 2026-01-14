@@ -63,6 +63,44 @@ if errorlevel 1 (
     echo.
 )
 
+REM Check for waitress (required for production server)
+echo [INFO] Checking for waitress (production server)...
+pip show waitress >nul 2>&1
+if errorlevel 1 (
+    echo [WARNING] Waitress not found! Installing...
+    pip install waitress
+    if errorlevel 1 (
+        echo [ERROR] Failed to install waitress
+        echo [ERROR] Server may not start correctly
+        pause
+        exit /b 1
+    )
+    echo [SUCCESS] Waitress installed
+    echo.
+) else (
+    echo [SUCCESS] Waitress is installed
+    echo.
+)
+
+REM Check for python-dotenv (required for config module)
+echo [INFO] Checking for python-dotenv (config module)...
+pip show python-dotenv >nul 2>&1
+if errorlevel 1 (
+    echo [WARNING] python-dotenv not found! Installing...
+    pip install python-dotenv
+    if errorlevel 1 (
+        echo [ERROR] Failed to install python-dotenv
+        echo [ERROR] Config module may not work correctly
+        pause
+        exit /b 1
+    )
+    echo [SUCCESS] python-dotenv installed
+    echo.
+) else (
+    echo [SUCCESS] python-dotenv is installed
+    echo.
+)
+
 REM Check for .env file
 if not exist ".env" (
     echo [WARNING] .env file not found!
@@ -75,7 +113,9 @@ echo ============================================
 echo    Starting INFOSIGHT 3.0 Server...
 echo ============================================
 echo.
-echo [INFO] Server will start on http://127.0.0.1:5000
+echo [INFO] Server will start using Waitress (production server)
+echo [INFO] Default address: http://127.0.0.1:5000
+echo [INFO] Server will automatically check and start Ollama/Llama server if needed
 echo [INFO] Press Ctrl+C to stop the server
 echo.
 

@@ -1022,26 +1022,45 @@
                             const transcriptResponse = await fetch(`${API_BASE}/get_transcript`);
                             const transcriptData = await transcriptResponse.json();
                             
-                            if (transcriptData.status === 'transcript' && transcriptData.transcript) {
+                            console.log('Transcript poll:', transcriptData);
+                            
+                            if (transcriptData.status === 'transcript' && transcriptData.is_final && transcriptData.transcript) {
                                 transcriptReceived = true;
                                 document.getElementById('emptyState').classList.add('hidden');
                                 addMessage(transcriptData.transcript, 'user');
                                 showTypingIndicator();
+                                console.log('Transcript added:', transcriptData.transcript);
                             }
                         }
                         
                         const response = await fetch(`${API_BASE}/get_response`);
                         const data = await response.json();
+
+                        console.log('Response poll:', data);
                         
-                        if (data.status === 'success') {
+                        if (data.status === 'no_speech') {
                             isListening = false;
                             voiceBtn.classList.remove('listening');
                             document.getElementById('visualizerOverlay').classList.remove('active');
                             clearInterval(responsePollInterval);
+                            responsePollInterval = null;
+                            updateStatus('connected');
+                            showToast('🔇 No speech detected', 'error');
+                            return;
+                        }
+                        
+                        if (data.status === 'success') {
+                            console.log('Success response received:', data);
+                            isListening = false;
+                            voiceBtn.classList.remove('listening');
+                            document.getElementById('visualizerOverlay').classList.remove('active');
+                            clearInterval(responsePollInterval);
+                            responsePollInterval = null;
                             hideTypingIndicator();
                             updateStatus('connected');
                             
                             if (!transcriptReceived && data.transcript) {
+                                document.getElementById('emptyState').classList.add('hidden');
                                 addMessage(data.transcript, 'user');
                             }
                             
@@ -1059,7 +1078,7 @@
                     } catch (error) {
                         console.error('Poll error:', error);
                     }
-                }, 500);
+                }, 300);
             } catch (error) {
                 isListening = false;
                 voiceBtn.classList.remove('listening');

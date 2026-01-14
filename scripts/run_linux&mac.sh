@@ -64,6 +64,40 @@ if ! pip show flask &> /dev/null; then
     echo ""
 fi
 
+# Check for waitress (required for production server)
+echo -e "${BLUE}[INFO]${NC} Checking for waitress (production server)..."
+if ! pip show waitress &> /dev/null; then
+    echo -e "${YELLOW}[WARNING]${NC} Waitress not found! Installing..."
+    pip install waitress
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}[ERROR]${NC} Failed to install waitress"
+        echo -e "${RED}[ERROR]${NC} Server may not start correctly"
+        exit 1
+    fi
+    echo -e "${GREEN}[SUCCESS]${NC} Waitress installed"
+    echo ""
+else
+    echo -e "${GREEN}[SUCCESS]${NC} Waitress is installed"
+    echo ""
+fi
+
+# Check for python-dotenv (required for config module)
+echo -e "${BLUE}[INFO]${NC} Checking for python-dotenv (config module)..."
+if ! pip show python-dotenv &> /dev/null; then
+    echo -e "${YELLOW}[WARNING]${NC} python-dotenv not found! Installing..."
+    pip install python-dotenv
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}[ERROR]${NC} Failed to install python-dotenv"
+        echo -e "${RED}[ERROR]${NC} Config module may not work correctly"
+        exit 1
+    fi
+    echo -e "${GREEN}[SUCCESS]${NC} python-dotenv installed"
+    echo ""
+else
+    echo -e "${GREEN}[SUCCESS]${NC} python-dotenv is installed"
+    echo ""
+fi
+
 # Check for .env file
 if [ ! -f ".env" ]; then
     echo -e "${YELLOW}[WARNING]${NC} .env file not found!"
@@ -83,7 +117,9 @@ echo "============================================"
 echo "   Starting INFOSIGHT 3.0 Server..."
 echo "============================================"
 echo ""
-echo -e "${BLUE}[INFO]${NC} Server will start on http://127.0.0.1:5000"
+echo -e "${BLUE}[INFO]${NC} Server will start using Waitress (production server)"
+echo -e "${BLUE}[INFO]${NC} Default address: http://127.0.0.1:5000"
+echo -e "${BLUE}[INFO]${NC} Server will automatically check and start Ollama/Llama server if needed"
 echo -e "${BLUE}[INFO]${NC} Press Ctrl+C to stop the server"
 echo ""
 
