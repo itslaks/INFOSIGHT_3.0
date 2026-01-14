@@ -12,7 +12,7 @@
 
 *A comprehensive security platform featuring 13 specialized tools for threat detection, data protection, and AI-powered intelligence.*
 
-[Features](#-features) • [Installation](#-installation) • [Tools](#️-tools) • [Usage](#-usage) • [Configuration](#️-configuration)
+[Features](#-features) • [Installation](#-installation) • [Tools](#️-tools) • [Usage](#-usage) • [Configuration](#️-configuration) • [Quick Setup](QUICK_SETUP.md)
 
 </div>
 
@@ -27,6 +27,7 @@
 - [Tools](#️-tools)
 - [Usage](#-usage)
 - [Configuration](#️-configuration)
+- [Files Not Included in Git](#files-not-included-in-git-repository)
 - [Project Structure](#-project-structure)
 - [Troubleshooting](#-troubleshooting)
 - [Support](#-support)
@@ -560,6 +561,117 @@ To change port, edit `server.py`:
 ```python
 serve(app, host='127.0.0.1', port=YOUR_PORT)
 ```
+
+### Files Not Included in Git Repository
+
+The following files and directories are **excluded from Git** for security, privacy, and size reasons. You'll need to set them up manually:
+
+#### **1. Environment Variables (.env)**
+- **File:** `.env` (root directory)
+- **Why Excluded:** Contains sensitive API keys and credentials
+- **How to Setup:**
+  1. Create a `.env` file in the root directory
+  2. Add your API keys (see [API Keys Setup](#api-keys-setup) section above):
+     ```env
+     VIRUSTOTAL_API_KEY=your_key
+     GROQ_API_KEY=your_key
+     IPINFO_API_KEY=your_key
+     ABUSEIPDB_API_KEY=your_key
+     HUGGINGFACE_API_KEY=your_key
+     NEWS_API_KEY=your_key
+     OPENWEATHER_API_KEY=your_key
+     SERPAPI_API_KEY=your_key
+     OLLAMA_MODEL=qwen2.5-coder:3b-instruct  # Optional: for local LLM
+     ```
+  3. **Note:** The `.env` file is auto-generated on first run if missing, but API keys must be added manually
+
+#### **2. Database Files (*.db)**
+- **Files:** 
+  - `infosight_ai.db`
+  - `cybersentry_ai.db`
+  - `inkwell_ultimate.db`
+  - `prompt_optimizer.db`
+  - `lana_ai.db`
+  - `data/lana_ai.db`
+- **Why Excluded:** Auto-generated at runtime, contains user data and conversation history
+- **How to Setup:** 
+  - **No action required** - These files are automatically created when you first run the application
+  - Each tool creates its own database on first use
+
+#### **3. Machine Learning Model Files**
+- **Files:**
+  - `models/best_model9.pth` - ResNet-18 model for TRUESHOT AI (deepfake detection) ✅ **NOW INCLUDED IN GIT**
+  - `yolov8n.pt` - YOLO model (auto-downloaded by YOLO library)
+- **Status:** 
+  - ✅ `best_model9.pth` is **included in Git** (42.71 MB - under GitHub's 100MB limit)
+  - ✅ No manual setup needed - model is included in repository
+  - **YOLO Model (`yolov8n.pt`):**
+    - Automatically downloaded by YOLO library on first use
+    - No manual download needed
+
+#### **4. Local LLM Files (llama/)**
+- **Directory:** `llama/` (entire directory)
+- **Files:** 
+  - `llama/models/*.gguf` - Local LLM model files (e.g., Qwen2.5-Coder-3B-Instruct)
+  - `llama/*.exe`, `llama/*.dll` - Llama executables and libraries
+- **Why Excluded:** Very large files (1GB+), platform-specific binaries
+- **How to Setup:**
+  - **Option 1: Use Ollama (Recommended)**
+    - Install [Ollama](https://ollama.ai/)
+    - Pull model: `ollama pull qwen2.5-coder:3b-instruct`
+    - Set `OLLAMA_MODEL=qwen2.5-coder:3b-instruct` in `.env`
+  - **Option 2: Manual Setup (Advanced)**
+    - Download Llama binaries from [Llama.cpp releases](https://github.com/ggerganov/llama.cpp/releases)
+    - Download `.gguf` model file
+    - Place in `llama/` directory
+    - **Note:** Local LLM is optional - cloud APIs (Groq) work without it
+
+#### **5. Runtime-Generated Files**
+- **Directories/Files:**
+  - `audio/` - TTS audio cache files
+  - `audio/cache/` - Cached audio responses
+  - `static/generated_images/` - AI-generated images
+  - `*.log` - Log files (e.g., `infosight_ai.log`, `webseeker.log`)
+  - `__pycache__/` - Python bytecode cache
+  - `temp/` - Temporary files
+  - `runs/` - YOLO training/inference outputs
+- **Why Excluded:** Generated at runtime, user-specific, can be regenerated
+- **How to Setup:**
+  - **No action required** - These are automatically created when needed
+  - Directories are created on first use
+
+#### **6. Auto-Generated Data Files**
+- **Files:**
+  - `data/lana_memory.json` - LANA AI conversation memory
+  - `data/encryption_metadata.json` - File encryption metadata
+- **Why Excluded:** Contains user-specific data and encryption keys
+- **How to Setup:**
+  - **No action required** - Created automatically on first use
+  - **Note:** `data/data.json` and `data/responses.json` ARE included in Git (required for OSINT and CyberSentry AI)
+
+#### **7. Virtual Environment (venv/)**
+- **Directory:** `venv/` or `env/`
+- **Why Excluded:** Platform-specific, can be regenerated
+- **How to Setup:**
+  ```bash
+  # Windows
+  python -m venv venv
+  venv\Scripts\activate
+  
+  # Linux/macOS
+  python3 -m venv venv
+  source venv/bin/activate
+  ```
+
+#### **Quick Checklist After Cloning:**
+- [ ] Create `.env` file with API keys
+- [ ] Install Python dependencies: `pip install -r requirements.txt`
+- [ ] ✅ `models/best_model9.pth` is already included - no download needed!
+- [ ] (Optional) Install Ollama and pull model for local LLM fallback
+- [ ] Install Nmap and Npcap (for PortScanner/WebSeeker)
+- [ ] Run the application - databases and runtime files will auto-generate
+
+**For a quick setup guide, see [QUICK_SETUP.md](QUICK_SETUP.md)**
 
 ---
 
