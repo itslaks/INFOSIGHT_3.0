@@ -96,7 +96,11 @@ coverage.xml
 *.pkl
 *.model
 *.weights
-models/
+# models/ directory - exclude everything, then allow specific files
+models/*
+!models/
+!models/best_model9.pth
+!models/*.pt
 data/
 datasets/
 
@@ -224,9 +228,11 @@ config/__pycache__/
 utils/__pycache__/
 tests/__pycache__/
 
-# Model files (already covered by models/ but explicit)
+# Model files - Allow specific models to be tracked
 *.pth
+!models/best_model9.pth
 *.pt
+!yolov8n.pt
 *.h5
 *.pkl
 *.onnx
