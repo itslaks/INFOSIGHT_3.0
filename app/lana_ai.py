@@ -60,6 +60,24 @@ except ImportError:
             clean = os.path.basename(str(value))
             clean = re.sub(r'[^\w\-\.]', '', clean)
             return clean
+        
+        @staticmethod
+        def validate_integer(value, name, min_value=None, max_value=None, required=False):
+            if value is None:
+                if required:
+                    raise ValueError(f"{name} is required")
+                return None
+            try:
+                val = int(value)
+                if min_value is not None and val < min_value:
+                    val = min_value
+                if max_value is not None and val > max_value:
+                    val = max_value
+                return val
+            except (ValueError, TypeError):
+                if required:
+                    raise ValueError(f"{name} must be an integer")
+                return None
 
 # Groq and Local LLM setup
 GROQ_AVAILABLE = False
@@ -146,8 +164,8 @@ RESPONSES_JSON_PATH = "data/responses.json"
 # Knowledge base
 responses_knowledge_base = []
 
-# Thread pool
-executor = concurrent.futures.ThreadPoolExecutor(max_workers=12)
+# Thread pool - Increased workers for better concurrency
+executor = concurrent.futures.ThreadPoolExecutor(max_workers=16)
 
 # Conversation state
 conversation_history = []
@@ -337,6 +355,152 @@ def search_responses_knowledge_base(query: str) -> Optional[str]:
 
 load_responses_knowledge_base()
 
+# ==================== IMPROVED SPEECH RECOGNITION ====================
+
+class ImprovedSpeechRecognizer:
+    """Enhanced speech recognition with multiple fallback strategies"""
+    
+    def __init__(self):
+        self.recognizer = sr.Recognizer()
+        
+        # Optimized settings for better accuracy
+        self.recognizer.energy_threshold = 2500  # Slightly lower for better sensitivity
+        self.recognizer.dynamic_energy_threshold = True
+        self.recognizer.dynamic_energy_adjustment_damping = 0.15
+        self.recognizer.dynamic_energy_ratio = 1.5
+        self.recognizer.pause_threshold = 0.7  # Slightly longer pause for better phrase capture
+        self.recognizer.phrase_threshold = 0.3
+        self.recognizer.non_speaking_duration = 0.5
+        
+    def recognize_with_groq_whisper(self, audio_data) -> Optional[str]:
+        """Use Groq's Whisper API for transcription - Most accurate"""
+        if not GROQ_AVAILABLE or not groq_client:
+            return None
+        
+        try:
+            # Convert audio to WAV format for Groq
+            wav_data = audio_data.get_wav_data()
+            
+            # Create a temporary file for the audio
+            import tempfile
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_audio:
+                temp_audio.write(wav_data)
+                temp_audio_path = temp_audio.name
+            
+            try:
+                # Use Groq Whisper for transcription
+                with open(temp_audio_path, 'rb') as audio_file:
+                    transcription = groq_client.audio.transcriptions.create(
+                        file=audio_file,
+                        model="whisper-large-v3-turbo",  # Fast and accurate
+                        language="en",
+                        temperature=0.0,  # More deterministic
+                        response_format="text"
+                    )
+                
+                text = transcription.strip() if isinstance(transcription, str) else transcription.text.strip()
+                
+                if text:
+                    logger.info(f"✓ Groq Whisper transcription: '{text}'")
+                    return text
+            finally:
+                # Clean up temp file
+                try:
+                    os.unlink(temp_audio_path)
+                except:
+                    pass
+                    
+        except Exception as e:
+            logger.warning(f"⚠ Groq Whisper error: {e}")
+        
+        return None
+    
+    def recognize_with_google(self, audio_data, language='en-IN') -> Optional[str]:
+        """Fallback to Google Speech Recognition"""
+        try:
+            text = self.recognizer.recognize_google(audio_data, language=language)
+            if text:
+                logger.info(f"✓ Google transcription: '{text}'")
+                return text.strip()
+        except sr.UnknownValueError:
+            logger.debug("Google could not understand audio")
+        except sr.RequestError as e:
+            logger.warning(f"⚠ Google API error: {e}")
+        except Exception as e:
+            logger.warning(f"⚠ Google recognition error: {e}")
+        
+        return None
+    
+    def recognize_with_sphinx(self, audio_data) -> Optional[str]:
+        """Last resort: Offline Sphinx recognition"""
+        try:
+            text = self.recognizer.recognize_sphinx(audio_data)
+            if text:
+                logger.info(f"✓ Sphinx transcription: '{text}'")
+                return text.strip()
+        except Exception as e:
+            logger.debug(f"Sphinx recognition failed: {e}")
+        
+        return None
+    
+    def transcribe(self, timeout=10, phrase_time_limit=15) -> str:
+        """
+        Main transcription method with multiple fallback strategies
+        Priority: Groq Whisper > Google > Sphinx
+        """
+        try:
+            with sr.Microphone(sample_rate=16000, chunk_size=1024) as source:
+                logger.info("🎤 Listening... (Speak clearly)")
+                
+                # Quick ambient noise adjustment
+                self.recognizer.adjust_for_ambient_noise(source, duration=0.3)
+                
+                # Listen with optimized parameters
+                audio = self.recognizer.listen(
+                    source, 
+                    timeout=timeout, 
+                    phrase_time_limit=phrase_time_limit
+                )
+                
+                logger.info("🔄 Processing audio...")
+                
+                # Strategy 1: Try Groq Whisper (Most accurate, fastest)
+                text = self.recognize_with_groq_whisper(audio)
+                if text:
+                    return text
+                
+                # Strategy 2: Try Google (Good accuracy, reliable)
+                text = self.recognize_with_google(audio, language='en-IN')
+                if text:
+                    return text
+                
+                # Try Google with US English as fallback
+                text = self.recognize_with_google(audio, language='en-US')
+                if text:
+                    return text
+                
+                # Strategy 3: Try Sphinx (Offline, last resort)
+                text = self.recognize_with_sphinx(audio)
+                if text:
+                    return text
+                
+                logger.info("🔇 No speech detected or couldn't understand")
+                return ""
+                
+        except sr.WaitTimeoutError:
+            logger.info("⏱️ No speech detected (timeout)")
+            return ""
+        except Exception as e:
+            logger.error(f"✗ Transcription error: {e}")
+            return ""
+
+# Global recognizer instance
+speech_recognizer = ImprovedSpeechRecognizer()
+
+def transcribe_audio_optimized() -> str:
+    """Wrapper for improved speech recognition"""
+    return speech_recognizer.transcribe(timeout=10, phrase_time_limit=15)
+
 # ==================== AI RESPONSE GENERATION ====================
 def generate_ai_response(query: str, context_data=None, user_id="default") -> Tuple[str, str]:
     """
@@ -349,13 +513,13 @@ def generate_ai_response(query: str, context_data=None, user_id="default") -> Tu
     if context_data and context_data[1]:
         context_parts.append(f"Context: {context_data[1]}")
     
-    # Add conversation history
+    # Add conversation history (limited for speed)
     try:
-        recent = get_conversation_history(user_id=user_id, page=1, per_page=3)
+        recent = get_conversation_history(user_id=user_id, page=1, per_page=2)
         if recent['conversations']:
             history_text = "\n".join([
                 f"User: {c['user']}\nLana: {c['assistant']}"
-                for c in reversed(recent['conversations'][:3])
+                for c in reversed(recent['conversations'][:2])
             ])
             context_parts.append(f"Recent:\n{history_text}")
     except:
@@ -367,13 +531,6 @@ def generate_ai_response(query: str, context_data=None, user_id="default") -> Tu
 Respond naturally and concisely in 1-3 sentences unless asked for more detail.
 Be empathetic, engaging, and proactive."""
     
-    full_prompt = f"""{system_prompt}
-
-{context_text}
-
-User: {query}
-Lana:"""
-    
     # Try Groq first
     if GROQ_AVAILABLE and groq_client:
         try:
@@ -384,11 +541,12 @@ Lana:"""
                 model="llama-3.3-70b-versatile",
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"{context_text}\n\n{query}"}
+                    {"role": "user", "content": f"{context_text}\n\n{query}" if context_text else query}
                 ],
-                temperature=0.8,
-                max_tokens=400,
-                top_p=0.9
+                temperature=0.7,  # Slightly lower for more consistent responses
+                max_tokens=300,  # Reduced for faster responses
+                top_p=0.9,
+                stream=False  # Disable streaming for faster completion
             )
             
             response = completion.choices[0].message.content.strip()
@@ -404,7 +562,7 @@ Lana:"""
                 "resource exhausted", "quota", "rate limit", "429", 
                 "503", "500", "timeout", "unavailable", "error", "api key"
             ]):
-                logger.warning(f"⚠️ Groq error detected: {e}, falling back to local LLM...")
+                logger.warning(f"⚠️ Groq error: {e}, falling back to local LLM...")
             else:
                 logger.error(f"✗ Groq error: {e}, falling back to local...")
     
@@ -511,38 +669,6 @@ def generate_audio_fast(text: str) -> Optional[str]:
         logger.error(f"Audio generation error: {e}")
         return None
 
-# ==================== SPEECH RECOGNITION ====================
-def transcribe_audio_optimized() -> str:
-    try:
-        recognizer = sr.Recognizer()
-    except Exception as e:
-        logger.error(f"✗ Could not initialize recognizer: {e}")
-        return ""
-    
-    recognizer.energy_threshold = 3000
-    recognizer.dynamic_energy_threshold = True
-    recognizer.pause_threshold = 0.6
-    
-    try:
-        with sr.Microphone() as source:
-            logger.info("🎤 Listening...")
-            recognizer.adjust_for_ambient_noise(source, duration=0.3)
-            audio = recognizer.listen(source, timeout=8, phrase_time_limit=15)
-            
-            logger.info("🔄 Recognizing...")
-            text = recognizer.recognize_google(audio, language='en-IN')
-            logger.info(f"✓ Transcribed: '{text}'")
-            return text.strip()
-    except sr.WaitTimeoutError:
-        logger.info("⏱️ No speech detected")
-        return ""
-    except sr.UnknownValueError:
-        logger.info("🔇 Could not understand audio")
-        return ""
-    except Exception as e:
-        logger.error(f"✗ Recognition error: {e}")
-        return ""
-
 # ==================== MAIN PROCESSING ====================
 def process_query(query: str, user_id: str = "default") -> Tuple[str, str, Optional[str]]:
     start_time = time.time()
@@ -585,24 +711,27 @@ def audio_worker():
                 if request_type == "listen":
                     start_time = time.time()
                     
-                    # Transcribe
+                    # Transcribe with improved recognition
                     transcript = transcribe_audio_optimized()
                     
                     if transcript:
-                        # Send transcript immediately
+                        # Clear old transcripts
                         while not transcript_queue.empty():
                             try:
                                 transcript_queue.get_nowait()
                             except:
                                 break
                         
+                        # Send transcript immediately
                         transcript_queue.put({
                             "status": "transcript",
                             "transcript": transcript,
                             "is_final": True
                         })
                         
-                        # Process query
+                        logger.info(f"📤 Transcript queued: '{transcript}'")
+                        
+                        # Process query in parallel with audio generation
                         try:
                             ai_response, model_used, intent = process_query(transcript, user_id="voice_user")
                             
@@ -626,24 +755,29 @@ def audio_worker():
                         
                         elapsed = time.time() - start_time
                         
-                        # Save to DB
-                        try:
-                            save_conversation(
-                                user_id="voice_user",
-                                user_message=transcript,
-                                assistant_message=ai_response,
-                                model_used=model_used,
-                                audio_file=audio_filename,
-                                response_time=elapsed,
-                                intent=intent
-                            )
-                        except Exception as e:
-                            logger.error(f"DB save error: {e}")
+                        # Save to DB asynchronously
+                        executor.submit(
+                            save_conversation,
+                            user_id="voice_user",
+                            user_message=transcript,
+                            assistant_message=ai_response,
+                            model_used=model_used,
+                            audio_file=audio_filename,
+                            response_time=elapsed,
+                            intent=intent
+                        )
                         
                         logger.info(f"✅ Total time: {elapsed:.2f}s")
                         
+                        # Clear old responses first
+                        while not response_queue.empty():
+                            try:
+                                response_queue.get_nowait()
+                            except:
+                                break
+                        
                         # Send response
-                        response_queue.put({
+                        response_data = {
                             "status": "success",
                             "transcript": transcript,
                             "response": ai_response,
@@ -651,11 +785,14 @@ def audio_worker():
                             "response_time": elapsed,
                             "model_used": model_used,
                             "intent": intent
-                        })
+                        }
+                        response_queue.put(response_data)
+                        logger.info(f"📤 Response queued: {ai_response[:50]}...")
+                        
                     else:
                         response_queue.put({
                             "status": "no_speech",
-                            "message": "I didn't catch that."
+                            "message": "I didn't catch that. Could you please repeat?"
                         })
             
             time.sleep(0.01)
@@ -663,7 +800,7 @@ def audio_worker():
             logger.error(f"✗ Worker error: {e}")
             response_queue.put({
                 "status": "error",
-                "message": "Something went wrong."
+                "message": "Something went wrong. Please try again."
             })
 
 worker_thread = threading.Thread(target=audio_worker, daemon=True)
@@ -675,39 +812,43 @@ def index():
     return render_template('lana.html')
 
 @lana_ai.route('/listen', methods=['POST'])
-@rate_limit_api(requests_per_minute=30, requests_per_hour=300)  # OWASP: Rate limit voice input
+@rate_limit_api(requests_per_minute=30, requests_per_hour=300)
 def listen():
-    """OWASP: Rate limited voice input endpoint"""
+    """Rate limited voice input endpoint"""
     audio_queue.put("listen")
     return jsonify({"status": "listening"})
 
 @lana_ai.route('/get_response', methods=['GET'])
-@rate_limit_api(requests_per_minute=60, requests_per_hour=600)  # OWASP: Rate limit polling endpoint
+@rate_limit_api(requests_per_minute=60, requests_per_hour=600)
 def get_response():
-    """OWASP: Rate limited response polling endpoint"""
+    """Rate limited response polling endpoint"""
     if not response_queue.empty():
         return jsonify(response_queue.get())
     return jsonify({"status": "processing"})
 
 @lana_ai.route('/get_transcript', methods=['GET'])
-@rate_limit_api(requests_per_minute=60, requests_per_hour=600)  # OWASP: Rate limit transcript polling
+@rate_limit_api(requests_per_minute=60, requests_per_hour=600)
 def get_transcript():
-    """OWASP: Rate limited transcript polling endpoint"""
-    if not transcript_queue.empty():
-        return jsonify(transcript_queue.get())
-    return jsonify({"status": "listening"})
+    """Rate limited transcript polling endpoint"""
+    try:
+        if not transcript_queue.empty():
+            return jsonify(transcript_queue.get())
+        return jsonify({"status": "listening"})
+    except Exception as e:
+        logger.error(f"Transcript endpoint error: {e}")
+        return jsonify({"status": "error", "message": str(e)})
 
 @lana_ai.route('/text_input', methods=['POST'])
-@rate_limit_api(requests_per_minute=20, requests_per_hour=200)  # OWASP: Rate limit text input
-@validate_request({  # OWASP: Input validation with schema
-    "text": {"type": "string", "required": True, "max_length": 397},  # OWASP: Max 397 chars as specified
+@rate_limit_api(requests_per_minute=20, requests_per_hour=200)
+@validate_request({
+    "text": {"type": "string", "required": True, "max_length": 397},
     "user_id": {"type": "string", "required": False, "max_length": 100}
 })
 def text_input():
-    """OWASP: Validated and rate-limited text input endpoint"""
+    """Validated and rate-limited text input endpoint"""
     try:
-        # Use validated data from request context (set by validate_request decorator)
-        data = g.validated_data
+        # Use validated data from request context
+        data = g.validated_data if hasattr(g, 'validated_data') else request.get_json()
         text = data.get('text')
         user_id = data.get('user_id', 'web_user')
         
@@ -724,8 +865,9 @@ def text_input():
         
         elapsed = time.time() - start_time
         
-        # Save to DB
-        save_conversation(
+        # Save to DB asynchronously for faster response
+        executor.submit(
+            save_conversation,
             user_id=user_id,
             user_message=text,
             assistant_message=ai_response,
@@ -748,11 +890,11 @@ def text_input():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @lana_ai.route('/audio/<path:filename>')
-@rate_limit_api(requests_per_minute=100, requests_per_hour=1000)  # OWASP: Rate limit audio serving
+@rate_limit_api(requests_per_minute=100, requests_per_hour=1000)
 def serve_audio(filename):
-    """OWASP: Rate limited and validated audio file serving"""
+    """Rate limited and validated audio file serving"""
     try:
-        # OWASP: Validate and sanitize filename to prevent path traversal
+        # Validate and sanitize filename to prevent path traversal
         safe_filename = InputValidator.validate_filename(filename, 'filename', required=True)
         
         audio_path = Path(AUDIO_DIR) / safe_filename
@@ -777,9 +919,9 @@ def serve_audio(filename):
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @lana_ai.route('/health', methods=['GET'])
-@rate_limit_api(requests_per_minute=60, requests_per_hour=600)  # OWASP: Rate limit health checks
+@rate_limit_api(requests_per_minute=60, requests_per_hour=600)
 def health():
-    """OWASP: Rate limited health check endpoint"""
+    """Rate limited health check endpoint"""
     groq_status = "available" if GROQ_AVAILABLE else "unavailable"
     local_status = "unavailable"
     
@@ -795,11 +937,12 @@ def health():
     return jsonify({
         "status": "healthy",
         "timestamp": time.time(),
-        "version": "3.0.0",
+        "version": "3.1.0",
         "models": {
             "groq": {
                 "available": GROQ_AVAILABLE,
                 "status": groq_status,
+                "model": "llama-3.3-70b-versatile",
                 "priority": 1
             },
             "local": {
@@ -812,16 +955,23 @@ def health():
         "features": {
             "voice_input": True,
             "text_input": True,
-            "audio_output": tts_engine is not None
+            "audio_output": tts_engine is not None,
+            "groq_whisper": GROQ_AVAILABLE,
+            "google_speech": True,
+            "sphinx_offline": True
+        },
+        "speech_recognition": {
+            "primary": "groq-whisper-v3-turbo" if GROQ_AVAILABLE else "google",
+            "fallbacks": ["google", "sphinx"]
         }
     })
 
 @lana_ai.route('/get_history', methods=['GET'])
-@rate_limit_api(requests_per_minute=30, requests_per_hour=300)  # OWASP: Rate limit history retrieval
+@rate_limit_api(requests_per_minute=30, requests_per_hour=300)
 def get_history():
-    """OWASP: Rate limited and validated history retrieval"""
+    """Rate limited and validated history retrieval"""
     try:
-        # OWASP: Validate and sanitize query parameters
+        # Validate and sanitize query parameters
         user_id = InputValidator.validate_string(
             request.args.get('user_id', 'default'), 
             'user_id', 
@@ -875,4 +1025,4 @@ def cleanup():
 import atexit
 atexit.register(cleanup)
 
-logger.info("✓ Lana AI Backend loaded")
+logger.info("✓ Lana AI Backend loaded with improved speech recognition")
