@@ -7,6 +7,20 @@ import queue
 import time
 import os
 import requests
+import tempfile
+import pygame
+from gtts import gTTS
+try:
+    import whisper
+    WHISPER_AVAILABLE = True
+except (ImportError, TypeError, OSError) as e:
+    whisper = None
+    WHISPER_AVAILABLE = False
+    # Logger not yet defined, will log later
+import librosa
+import soundfile as sf
+import langdetect
+import numpy as np
 from pathlib import Path
 from datetime import datetime, timedelta
 import json
@@ -154,12 +168,52 @@ def init_tts():
     return tts_engine
 
 # Constants
+
 AUDIO_DIR = "audio"
 CACHE_DURATION = 300
 MAX_HISTORY = 100
 API_TIMEOUT = 8
 DB_PATH = "data/lana_ai.db"
 RESPONSES_JSON_PATH = "data/responses.json"
+
+TEMP_AUDIO_DIR = "audio/temp"
+os.makedirs(TEMP_AUDIO_DIR, exist_ok=True)
+
+# Language mapping for TTS and detection
+LANGUAGE_MAPPING = {
+    "en-US": "en",
+    "ta-IN": "ta",
+    "hi-IN": "hi",
+    "ml-IN": "ml",
+    "te-IN": "te",
+    "kn-IN": "kn",
+    "fr-FR": "fr",
+    "de-DE": "de",
+    "ko-KR": "ko",
+    "ja-JP": "ja"
+}
+
+REVERSE_LANGUAGE_MAPPING = {
+    "en": "en-US",
+    "ta": "ta-IN",
+    "hi": "hi-IN",
+    "ml": "ml-IN",
+    "te": "te-IN",
+    "kn": "kn-IN",
+    "fr": "fr-FR",
+    "de": "de-DE",
+    "ko": "ko-KR",
+    "ja": "ja-JP"
+}
+
+FALLBACK_LANGUAGES = {
+    "ta-IN": ["en-IN", "en-US"],
+    "ml-IN": ["en-IN", "en-US"],
+    "te-IN": ["en-IN", "en-US"],
+    "kn-IN": ["en-IN", "en-US"],
+    "ko-KR": ["en-US"],
+    "ja-JP": ["en-US"]
+}
 
 # Knowledge base
 responses_knowledge_base = []
@@ -181,6 +235,13 @@ audio_queue = queue.Queue()
 response_queue = queue.Queue()
 transcript_queue = queue.Queue()
 
+is_audio_playing = False
+pygame_initialized = False
+current_language = "en-US"
+audio_data = np.array([])
+whisper_enabled = False
+whisper_model = None
+
 # Rate limiting
 rate_limit_store = defaultdict(lambda: {
     'minute_count': 0,
@@ -193,6 +254,37 @@ rate_limit_store = defaultdict(lambda: {
 Path(AUDIO_DIR).mkdir(exist_ok=True)
 Path(AUDIO_DIR, "cache").mkdir(exist_ok=True)
 Path("data").mkdir(exist_ok=True)
+
+# Initialize WhisperASR
+whisper_model = None
+whisper_enabled = False
+if WHISPER_AVAILABLE and whisper is not None:
+    try:
+        whisper_model = whisper.load_model("base")
+        whisper_enabled = True
+        logger.info("✓ WhisperASR model loaded successfully")
+    except Exception as e:
+        whisper_enabled = False
+        logger.warning(f"⚠ WhisperASR not available: {e}")
+else:
+    if not WHISPER_AVAILABLE:
+        logger.warning("⚠ WhisperASR not available - whisper module import failed")
+
+def initialize_pygame():
+    """Initialize pygame mixer safely"""
+    global pygame_initialized
+    
+    if not pygame_initialized:
+        try:
+            pygame.mixer.quit()
+            pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=4096)
+            pygame_initialized = True
+            logger.info("✓ Pygame mixer initialized")
+        except Exception as e:
+            logger.error(f"✗ Failed to initialize pygame: {e}")
+            pygame_initialized = False
+
+initialize_pygame()
 
 # ==================== SQLITE DATABASE ====================
 def get_data_path(filename):
@@ -358,148 +450,192 @@ load_responses_knowledge_base()
 # ==================== IMPROVED SPEECH RECOGNITION ====================
 
 class ImprovedSpeechRecognizer:
-    """Enhanced speech recognition with multiple fallback strategies"""
+    """Enhanced speech recognition with Whisper, multi-language, and audio visualization"""
     
     def __init__(self):
         self.recognizer = sr.Recognizer()
-        
-        # Optimized settings for better accuracy
-        self.recognizer.energy_threshold = 2500  # Slightly lower for better sensitivity
+        self.recognizer.energy_threshold = 2500
         self.recognizer.dynamic_energy_threshold = True
         self.recognizer.dynamic_energy_adjustment_damping = 0.15
         self.recognizer.dynamic_energy_ratio = 1.5
-        self.recognizer.pause_threshold = 0.7  # Slightly longer pause for better phrase capture
+        self.recognizer.pause_threshold = 0.7
         self.recognizer.phrase_threshold = 0.3
         self.recognizer.non_speaking_duration = 0.5
-        
-    def recognize_with_groq_whisper(self, audio_data) -> Optional[str]:
-        """Use Groq's Whisper API for transcription - Most accurate"""
-        if not GROQ_AVAILABLE or not groq_client:
+    
+    def transcribe_with_whisper(self, audio_data) -> Optional[str]:
+        """Use Whisper model for transcription"""
+        if not whisper_enabled or not whisper_model:
             return None
         
         try:
-            # Convert audio to WAV format for Groq
             wav_data = audio_data.get_wav_data()
-            
-            # Create a temporary file for the audio
             import tempfile
             with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_audio:
                 temp_audio.write(wav_data)
                 temp_audio_path = temp_audio.name
             
             try:
-                # Use Groq Whisper for transcription
+                audio, _ = librosa.load(temp_audio_path, sr=16000)
+                result = whisper_model.transcribe(audio)
+                
+                if result and "text" in result:
+                    text = result["text"].strip()
+                    logger.info(f"✓ Whisper transcription: '{text}'")
+                    return text
+            finally:
+                try:
+                    os.unlink(temp_audio_path)
+                except:
+                    pass
+        except Exception as e:
+            logger.warning(f"⚠ Whisper error: {e}")
+        
+        return None
+    
+    def recognize_with_groq_whisper(self, audio_data) -> Optional[str]:
+        """Use Groq's Whisper API for transcription"""
+        if not GROQ_AVAILABLE or not groq_client:
+            return None
+        
+        try:
+            wav_data = audio_data.get_wav_data()
+            import tempfile
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_audio:
+                temp_audio.write(wav_data)
+                temp_audio_path = temp_audio.name
+            
+            try:
                 with open(temp_audio_path, 'rb') as audio_file:
                     transcription = groq_client.audio.transcriptions.create(
                         file=audio_file,
-                        model="whisper-large-v3-turbo",  # Fast and accurate
+                        model="whisper-large-v3-turbo",
                         language="en",
-                        temperature=0.0,  # More deterministic
+                        temperature=0.0,
                         response_format="text"
                     )
                 
                 text = transcription.strip() if isinstance(transcription, str) else transcription.text.strip()
                 
                 if text:
-                    logger.info(f"✓ Groq Whisper transcription: '{text}'")
+                    logger.info(f"✓ Groq Whisper: '{text}'")
                     return text
             finally:
-                # Clean up temp file
                 try:
                     os.unlink(temp_audio_path)
                 except:
                     pass
-                    
         except Exception as e:
             logger.warning(f"⚠ Groq Whisper error: {e}")
         
         return None
     
     def recognize_with_google(self, audio_data, language='en-IN') -> Optional[str]:
-        """Fallback to Google Speech Recognition"""
+        """Google Speech Recognition with language support"""
         try:
             text = self.recognizer.recognize_google(audio_data, language=language)
             if text:
-                logger.info(f"✓ Google transcription: '{text}'")
+                logger.info(f"✓ Google ({language}): '{text}'")
                 return text.strip()
         except sr.UnknownValueError:
-            logger.debug("Google could not understand audio")
+            logger.debug(f"Google couldn't understand ({language})")
         except sr.RequestError as e:
             logger.warning(f"⚠ Google API error: {e}")
         except Exception as e:
-            logger.warning(f"⚠ Google recognition error: {e}")
+            logger.warning(f"⚠ Google error: {e}")
         
         return None
     
-    def recognize_with_sphinx(self, audio_data) -> Optional[str]:
-        """Last resort: Offline Sphinx recognition"""
-        try:
-            text = self.recognizer.recognize_sphinx(audio_data)
-            if text:
-                logger.info(f"✓ Sphinx transcription: '{text}'")
-                return text.strip()
-        except Exception as e:
-            logger.debug(f"Sphinx recognition failed: {e}")
+    def transcribe(self, timeout=10, phrase_time_limit=15, language="en-US") -> Tuple[str, np.ndarray]:
+        """
+        Enhanced transcription with audio data return
+        Returns: (text, audio_data_array)
+        """
+        global current_language
+        audio_array = np.array([])
         
-        return None
-    
-    def transcribe(self, timeout=10, phrase_time_limit=15) -> str:
-        """
-        Main transcription method with multiple fallback strategies
-        Priority: Groq Whisper > Google > Sphinx
-        """
+        # Adjust parameters based on language
+        if language in ["ja-JP", "ko-KR", "zh-CN"]:
+            self.recognizer.energy_threshold = 280
+            self.recognizer.pause_threshold = 1.0
+        elif language in ["ta-IN", "ml-IN", "te-IN", "kn-IN", "hi-IN"]:
+            self.recognizer.energy_threshold = 270
+            self.recognizer.pause_threshold = 0.9
+        else:
+            self.recognizer.energy_threshold = 2500
+            self.recognizer.pause_threshold = 0.7
+        
         try:
             with sr.Microphone(sample_rate=16000, chunk_size=1024) as source:
-                logger.info("🎤 Listening... (Speak clearly)")
+                logger.info(f"🎤 Listening in {language}...")
                 
-                # Quick ambient noise adjustment
                 self.recognizer.adjust_for_ambient_noise(source, duration=0.3)
                 
-                # Listen with optimized parameters
                 audio = self.recognizer.listen(
                     source, 
                     timeout=timeout, 
                     phrase_time_limit=phrase_time_limit
                 )
                 
+                # Get audio data for visualization
+                audio_array = np.frombuffer(audio.get_raw_data(), dtype=np.int16)
+                
                 logger.info("🔄 Processing audio...")
                 
-                # Strategy 1: Try Groq Whisper (Most accurate, fastest)
+                # Strategy 1: Groq Whisper (fastest, most accurate)
                 text = self.recognize_with_groq_whisper(audio)
                 if text:
-                    return text
+                    return text, audio_array
                 
-                # Strategy 2: Try Google (Good accuracy, reliable)
-                text = self.recognize_with_google(audio, language='en-IN')
+                # Strategy 2: Try primary language with Google
+                text = self.recognize_with_google(audio, language=language)
                 if text:
-                    return text
+                    return text, audio_array
                 
-                # Try Google with US English as fallback
-                text = self.recognize_with_google(audio, language='en-US')
-                if text:
-                    return text
+                # Strategy 3: Try local Whisper for difficult languages
+                if language in ["ta-IN", "ml-IN", "te-IN", "kn-IN", "hi-IN", "ko-KR", "ja-JP"]:
+                    text = self.transcribe_with_whisper(audio)
+                    if text:
+                        return text, audio_array
                 
-                # Strategy 3: Try Sphinx (Offline, last resort)
-                text = self.recognize_with_sphinx(audio)
-                if text:
-                    return text
+                # Strategy 4: Try fallback languages
+                if language in FALLBACK_LANGUAGES:
+                    for fallback_lang in FALLBACK_LANGUAGES[language]:
+                        text = self.recognize_with_google(audio, language=fallback_lang)
+                        if text:
+                            return text, audio_array
                 
-                logger.info("🔇 No speech detected or couldn't understand")
-                return ""
+                # Strategy 5: Try English as last resort
+                if language != "en-US":
+                    text = self.recognize_with_google(audio, language="en-US")
+                    if text:
+                        return text, audio_array
+                
+                logger.info("🔇 No speech detected")
+                return "", audio_array
                 
         except sr.WaitTimeoutError:
             logger.info("⏱️ No speech detected (timeout)")
-            return ""
+            return "", audio_array
         except Exception as e:
             logger.error(f"✗ Transcription error: {e}")
-            return ""
+            return "", audio_array
 
 # Global recognizer instance
 speech_recognizer = ImprovedSpeechRecognizer()
 
-def transcribe_audio_optimized() -> str:
-    """Wrapper for improved speech recognition"""
-    return speech_recognizer.transcribe(timeout=10, phrase_time_limit=15)
+def transcribe_audio_optimized(language="en-US") -> Tuple[str, np.ndarray]:
+    """Wrapper for improved speech recognition with audio data"""
+    return speech_recognizer.transcribe(timeout=10, phrase_time_limit=15, language=language)
+
+def detect_language(text: str) -> str:
+    """Detect language from text"""
+    try:
+        detected = langdetect.detect(text)
+        if detected in REVERSE_LANGUAGE_MAPPING:
+            return REVERSE_LANGUAGE_MAPPING[detected]
+        return "en-US"
+    except:
+        return "en-US"
 
 # ==================== AI RESPONSE GENERATION ====================
 def generate_ai_response(query: str, context_data=None, user_id="default") -> Tuple[str, str]:
@@ -648,26 +784,131 @@ def get_instant_response(query: str) -> Optional[str]:
 TTS_CACHE_DIR = Path(AUDIO_DIR) / "cache"
 TTS_CACHE_DIR.mkdir(exist_ok=True)
 
-def generate_audio_fast(text: str) -> Optional[str]:
+def generate_audio_with_gtts(text: str, lang_code: str = "en") -> Optional[str]:
+    """Generate audio with gTTS with error handling"""
     try:
-        text_hash = hashlib.md5(text[:100].encode()).hexdigest()[:12]
-        cache_file = TTS_CACHE_DIR / f"tts_{text_hash}.mp3"
+        temp_file = os.path.join(TEMP_AUDIO_DIR, f"gtts_{int(time.time() * 1000)}.mp3")
         
-        if cache_file.exists() and (time.time() - cache_file.stat().st_mtime < 3600):
-            return f"cache/tts_{text_hash}.mp3"
+        logger.info(f"🔊 Generating audio with gTTS ({lang_code})")
+        tts = gTTS(text=text, lang=lang_code, slow=False)
+        tts.save(temp_file)
         
-        engine = init_tts()
-        if engine is None:
+        if os.path.exists(temp_file) and os.path.getsize(temp_file) > 1000:
+            logger.info(f"✓ gTTS audio saved: {temp_file}")
+            return temp_file
+        else:
+            logger.warning("⚠ gTTS created empty/small file")
             return None
-        
-        with tts_lock:
-            engine.save_to_file(text, str(cache_file))
-            engine.runAndWait()
-        
-        return f"cache/tts_{text_hash}.mp3"
+            
     except Exception as e:
-        logger.error(f"Audio generation error: {e}")
+        logger.error(f"✗ gTTS error: {e}")
         return None
+
+def play_audio_file(file_path: str) -> bool:
+    """Play audio file with pygame"""
+    global is_audio_playing, pygame_initialized
+    
+    if not pygame_initialized:
+        initialize_pygame()
+        
+    if not pygame_initialized:
+        logger.error("Cannot play audio - pygame not initialized")
+        return False
+        
+    try:
+        pygame.mixer.stop()
+        
+        is_audio_playing = True
+        sound = pygame.mixer.Sound(file_path)
+        sound.play()
+        
+        duration = sound.get_length()
+        time.sleep(duration + 0.5)
+        
+        pygame.mixer.stop()
+        is_audio_playing = False
+        return True
+        
+    except Exception as e:
+        logger.error(f"✗ Audio playback error: {e}")
+        is_audio_playing = False
+        initialize_pygame()
+        return False
+
+def get_tts_with_fallback(text: str, lang_code: str = "en") -> Optional[str]:
+    """Generate TTS with reliable fallback mechanisms"""
+    # Try primary language
+    audio_file = generate_audio_with_gtts(text, lang_code)
+    if audio_file and os.path.exists(audio_file) and os.path.getsize(audio_file) > 1000:
+        return audio_file
+    
+    logger.warning(f"⚠ Primary TTS for {lang_code} failed, trying English")
+    
+    # For Indian languages, try English
+    if lang_code in ["ta", "hi", "ml", "te", "kn"]:
+        audio_file = generate_audio_with_gtts(text, "en")
+        if audio_file and os.path.exists(audio_file) and os.path.getsize(audio_file) > 1000:
+            return audio_file
+    
+    # Final fallback
+    try:
+        if lang_code not in ["en", "fr", "de"]:
+            fallback_text = "I'm having trouble speaking in this language. Let me try English."
+            audio_file = generate_audio_with_gtts(fallback_text, "en")
+        else:
+            audio_file = generate_audio_with_gtts(text, "en")
+            
+        if audio_file:
+            return audio_file
+    except Exception as e:
+        logger.error(f"✗ Final fallback TTS error: {e}")
+    
+    return None
+
+def generate_audio_fast(text: str, language: str = "en-US") -> Optional[str]:
+    """
+    Enhanced audio generation with language support
+    Uses gTTS instead of pyttsx3 for better multi-language support
+    """
+    try:
+        # Detect language if needed
+        if not language or language == "en-US":
+            detected_lang = detect_language(text)
+            lang_code = LANGUAGE_MAPPING.get(detected_lang, "en")
+        else:
+            lang_code = LANGUAGE_MAPPING.get(language, "en")
+        
+        # Generate and play audio
+        audio_file = get_tts_with_fallback(text, lang_code)
+        
+        if audio_file:
+            # Play the audio
+            play_audio_file(audio_file)
+            
+            # Return path relative to AUDIO_DIR for client access
+            # audio_file is in TEMP_AUDIO_DIR (audio/temp/gtts_xxx.mp3)
+            # Return as "temp/gtts_xxx.mp3" so client can access via /audio/temp/gtts_xxx.mp3
+            return f"temp/{os.path.basename(audio_file)}"
+        
+        return None
+        
+    except Exception as e:
+        logger.error(f"✗ Audio generation error: {e}")
+        return None
+
+def cleanup_temp_files():
+    """Clean up temporary audio files"""
+    try:
+        for file in os.listdir(TEMP_AUDIO_DIR):
+            if file.endswith(".wav") or file.endswith(".mp3"):
+                try:
+                    file_path = os.path.join(TEMP_AUDIO_DIR, file)
+                    if time.time() - os.path.getmtime(file_path) > 3600:  # 1 hour old
+                        os.remove(file_path)
+                except Exception as e:
+                    logger.debug(f"Error deleting temp file {file}: {e}")
+    except Exception as e:
+        logger.error(f"Error cleaning temp files: {e}")
 
 # ==================== MAIN PROCESSING ====================
 def process_query(query: str, user_id: str = "default") -> Tuple[str, str, Optional[str]]:
@@ -711,8 +952,8 @@ def audio_worker():
                 if request_type == "listen":
                     start_time = time.time()
                     
-                    # Transcribe with improved recognition
-                    transcript = transcribe_audio_optimized()
+                    # Transcribe with improved recognition (includes audio data)
+                    transcript, audio_array = transcribe_audio_optimized(language=current_language)
                     
                     if transcript:
                         # Clear old transcripts
@@ -744,8 +985,9 @@ def audio_worker():
                             model_used = "error"
                             intent = "error"
                         
-                        # Generate audio (voice input = audio + text output)
-                        audio_future = executor.submit(generate_audio_fast, ai_response)
+                        # Generate audio with language detection
+                        detected_lang = detect_language(ai_response)
+                        audio_future = executor.submit(generate_audio_fast, ai_response, detected_lang)
                         
                         audio_filename = None
                         try:
@@ -784,7 +1026,9 @@ def audio_worker():
                             "audio_file": audio_filename,
                             "response_time": elapsed,
                             "model_used": model_used,
-                            "intent": intent
+                            "intent": intent,
+                            "audio_data": audio_array.tolist() if len(audio_array) > 0 else [],
+                            "language": current_language
                         }
                         response_queue.put(response_data)
                         logger.info(f"📤 Response queued: {ai_response[:50]}...")
@@ -803,13 +1047,22 @@ def audio_worker():
                 "message": "Something went wrong. Please try again."
             })
 
+# Initialize worker thread
+worker_thread = None
+
 worker_thread = threading.Thread(target=audio_worker, daemon=True)
 worker_thread.start()
 
 # ==================== FLASK ROUTES ====================
 @lana_ai.route('/')
+@lana_ai.route('')
 def index():
-    return render_template('lana.html')
+    """Main route for Lana AI interface"""
+    try:
+        return render_template('lana.html')
+    except Exception as e:
+        logger.error(f"Error rendering lana.html: {e}")
+        return f"Error loading template: {str(e)}", 500
 
 @lana_ai.route('/listen', methods=['POST'])
 @rate_limit_api(requests_per_minute=30, requests_per_hour=300)
@@ -897,13 +1150,21 @@ def serve_audio(filename):
         # Validate and sanitize filename to prevent path traversal
         safe_filename = InputValidator.validate_filename(filename, 'filename', required=True)
         
-        audio_path = Path(AUDIO_DIR) / safe_filename
+        # Check if it's a temp file (starts with 'temp/')
+        if filename.startswith('temp/'):
+            # Extract just the filename part after 'temp/'
+            temp_file = filename.replace('temp/', '')
+            audio_path = Path(TEMP_AUDIO_DIR) / temp_file
+        else:
+            audio_path = Path(AUDIO_DIR) / safe_filename
         
+        # Fallback to cache directory
         if not audio_path.exists():
             if safe_filename.startswith('cache/'):
                 cache_file = safe_filename.replace('cache/', '')
                 audio_path = Path(AUDIO_DIR) / 'cache' / cache_file
         
+        # Try adding .mp3 extension if not exists
         if not audio_path.exists() and not safe_filename.endswith('.mp3'):
             audio_path = Path(AUDIO_DIR) / 'cache' / f"{safe_filename}.mp3"
         
@@ -955,16 +1216,104 @@ def health():
         "features": {
             "voice_input": True,
             "text_input": True,
-            "audio_output": tts_engine is not None,
+            "audio_output": pygame_initialized,
+            "multi_language": True,
+            "whisper_local": whisper_enabled,
             "groq_whisper": GROQ_AVAILABLE,
             "google_speech": True,
             "sphinx_offline": True
         },
         "speech_recognition": {
             "primary": "groq-whisper-v3-turbo" if GROQ_AVAILABLE else "google",
-            "fallbacks": ["google", "sphinx"]
-        }
+            "fallbacks": ["google", "whisper-local", "language-fallbacks"],
+            "supported_languages": list(LANGUAGE_MAPPING.keys())
+        },
+        "current_language": current_language,
+        "tts_engine": "gtts",
+        "audio_playback": "pygame"
     })
+
+@lana_ai.route('/available_languages', methods=['GET'])
+@rate_limit_api(requests_per_minute=60, requests_per_hour=600)
+def available_languages():
+    """Return list of available languages"""
+    languages = [
+        {"code": "en-US", "name": "English (US)"},
+        {"code": "ta-IN", "name": "Tamil"},
+        {"code": "hi-IN", "name": "Hindi"},
+        {"code": "ml-IN", "name": "Malayalam"},
+        {"code": "te-IN", "name": "Telugu"},
+        {"code": "kn-IN", "name": "Kannada"},
+        {"code": "fr-FR", "name": "French"},
+        {"code": "de-DE", "name": "German"},
+        {"code": "ko-KR", "name": "Korean"},
+        {"code": "ja-JP", "name": "Japanese"}
+    ]
+    return jsonify({"status": "success", "languages": languages})
+
+@lana_ai.route('/set_language', methods=['POST'])
+@rate_limit_api(requests_per_minute=30, requests_per_hour=300)
+@validate_request({
+    "language": {"type": "string", "required": True, "max_length": 10}
+})
+def set_language():
+    """Set current language for speech recognition"""
+    global current_language
+    
+    try:
+        data = g.validated_data if hasattr(g, 'validated_data') else request.get_json()
+        language = data.get('language', 'en-US')
+        
+        if language in LANGUAGE_MAPPING or language in REVERSE_LANGUAGE_MAPPING:
+            current_language = language
+            logger.info(f"🌍 Language set to: {current_language}")
+            return jsonify({
+                "status": "success",
+                "language": current_language,
+                "message": f"Language changed to {current_language}"
+            })
+        else:
+            return jsonify({
+                "status": "error",
+                "message": f"Unsupported language: {language}"
+            }), 400
+            
+    except Exception as e:
+        logger.exception("Set language error")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@lana_ai.route('/test_tts', methods=['POST'])
+@rate_limit_api(requests_per_minute=10, requests_per_hour=100)
+@validate_request({
+    "text": {"type": "string", "required": True, "max_length": 500},
+    "language": {"type": "string", "required": False, "max_length": 10}
+})
+def test_tts():
+    """Test TTS for a specific language"""
+    try:
+        data = g.validated_data if hasattr(g, 'validated_data') else request.get_json()
+        text = data.get('text', 'Hello, this is a test')
+        language = data.get('language', 'en-US')
+        
+        lang_code = LANGUAGE_MAPPING.get(language, "en")
+        
+        audio_file = get_tts_with_fallback(text, lang_code)
+        
+        if audio_file:
+            return jsonify({
+                "status": "success",
+                "message": f"TTS for {language} is working",
+                "audio_file": os.path.basename(audio_file)
+            })
+        else:
+            return jsonify({
+                "status": "error",
+                "message": f"TTS for {language} failed"
+            }), 500
+            
+    except Exception as e:
+        logger.exception("Test TTS error")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @lana_ai.route('/get_history', methods=['GET'])
 @rate_limit_api(requests_per_minute=30, requests_per_hour=300)
@@ -1011,10 +1360,33 @@ def get_history():
 
 # Cleanup
 def cleanup():
+    global is_audio_playing
+    
     stop_event.set()
+    
+    # Stop audio playback
+    if is_audio_playing and pygame_initialized:
+        try:
+            pygame.mixer.stop()
+            is_audio_playing = False
+        except:
+            pass
+    
     if worker_thread.is_alive():
         worker_thread.join(timeout=2)
+    
     executor.shutdown(wait=False)
+    
+    # Clean up temp files
+    cleanup_temp_files()
+    
+    # Quit pygame
+    if pygame_initialized:
+        try:
+            pygame.mixer.quit()
+        except:
+            pass
+    
     if tts_engine is not None:
         try:
             tts_engine.stop()

@@ -253,12 +253,212 @@
         }
         
         .empty-icon {
-            font-size: 4rem;
+            width: 120px;
+            height: 120px;
             margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .robot-face {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .robot-glow-ring {
+            position: absolute;
+            width: 140%;
+            height: 140%;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                var(--primary),
+                var(--secondary),
+                var(--accent),
+                var(--primary)
+            );
+            opacity: 0.2;
+            animation: ringRotate 4s linear infinite;
+            filter: blur(20px);
+        }
+        
+        @keyframes ringRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .robot-core {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 153, 255, 0.1));
+            border-radius: 24px;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                inset 0 0 30px rgba(0, 255, 136, 0.1),
+                0 0 40px rgba(0, 255, 136, 0.2);
+            animation: coreGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes coreGlow {
+            0%, 100% { 
+                box-shadow: 
+                    inset 0 0 30px rgba(0, 255, 136, 0.1),
+                    0 0 40px rgba(0, 255, 136, 0.2);
+            }
+            50% { 
+                box-shadow: 
+                    inset 0 0 40px rgba(0, 153, 255, 0.2),
+                    0 0 60px rgba(0, 153, 255, 0.3);
+            }
+        }
+        
+        .robot-visor {
+            width: 70%;
+            height: 20px;
+            background: linear-gradient(90deg, 
+                transparent,
+                var(--primary),
+                var(--secondary),
+                transparent
+            );
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px var(--primary);
+        }
+        
+        .robot-eye-scanner {
+            width: 30px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, #fff, transparent);
+            position: absolute;
+            animation: scanEye 2s ease-in-out infinite;
+            filter: blur(2px);
+        }
+        
+        @keyframes scanEye {
+            0%, 100% { left: -30px; }
+            50% { left: calc(100% + 30px); }
+        }
+        
+        .robot-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+        
+        .robot-particles span {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--primary);
+            animation: particleFloat 3s ease-in-out infinite;
+        }
+        
+        .robot-particles span:nth-child(1) {
+            top: 20%;
+            left: 15%;
+            animation-delay: 0s;
+        }
+        
+        .robot-particles span:nth-child(2) {
+            top: 70%;
+            left: 25%;
+            animation-delay: 0.5s;
+        }
+        
+        .robot-particles span:nth-child(3) {
+            top: 40%;
+            right: 15%;
+            animation-delay: 1s;
+        }
+        
+        .robot-particles span:nth-child(4) {
+            top: 80%;
+            right: 20%;
+            animation-delay: 1.5s;
+        }
+        
+        .robot-particles span:nth-child(5) {
+            top: 30%;
+            left: 50%;
+            animation-delay: 2s;
+        }
+        
+        .robot-particles span:nth-child(6) {
+            bottom: 20%;
+            left: 40%;
+            animation-delay: 2.5s;
+        }
+        
+        @keyframes particleFloat {
+            0%, 100% { 
+                transform: translateY(0) scale(1);
+                opacity: 0.3;
+            }
+            50% { 
+                transform: translateY(-15px) scale(1.5);
+                opacity: 1;
+            }
+        }
+        
+        .robot-signal {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 8px;
+        }
+        
+        .robot-signal::before,
+        .robot-signal::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            animation: signalPulse 2s ease-out infinite;
+        }
+        
+        .robot-signal::before {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .robot-signal::after {
+            width: 35px;
+            height: 35px;
+            animation-delay: 0.5s;
+        }
+        
+        @keyframes signalPulse {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(2);
+            }
         }
         
         .empty-title {
@@ -460,6 +660,36 @@
             font-size: 1.5rem;
             transition: var(--transition);
             box-shadow: var(--glow-primary);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .voice-visualizer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .voice-btn.listening .voice-visualizer {
+            opacity: 1;
+        }
+        
+        .voice-icon {
+            position: relative;
+            z-index: 2;
+            transition: var(--transition);
+        }
+        
+        .voice-btn.listening {
+            background: linear-gradient(135deg, var(--accent), #ff4466);
+        }
+        
+        .voice-btn.listening .voice-icon {
+            animation: micPulse 0.5s ease-in-out infinite;
         }
         
         .voice-btn:hover {
@@ -470,14 +700,9 @@
             transform: scale(0.95);
         }
         
-        .voice-btn.listening {
-            animation: voicePulse 1s ease-in-out infinite;
-            background: linear-gradient(135deg, var(--accent), #ff4466);
-        }
-        
-        @keyframes voicePulse {
+        @keyframes micPulse {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.15); }
+            50% { transform: scale(1.2); }
         }
         
         .send-btn {
@@ -504,51 +729,6 @@
         .send-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-        }
-        
-        /* Visualizer */
-        .visualizer-overlay {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
-            max-width: 600px;
-            height: 300px;
-            background: rgba(21, 27, 46, 0.95);
-            backdrop-filter: blur(20px);
-            border: 2px solid var(--border);
-            border-radius: 24px;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        }
-        
-        .visualizer-overlay.active {
-            display: flex;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-        
-        .visualizer-canvas {
-            width: 100%;
-            height: 240px;
-        }
-        
-        .visualizer-label {
-            margin-top: 1rem;
-            font-size: 0.875rem;
-            font-weight: 700;
-            letter-spacing: 3px;
-            color: var(--primary);
-            animation: labelPulse 2s ease-in-out infinite;
-        }
-        
-        @keyframes labelPulse {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
         }
         
         /* Toast */
@@ -702,6 +882,24 @@
             .quick-actions {
                 grid-template-columns: 1fr;
             }
+            
+            .visualizer-overlay {
+                width: 280px;
+                height: 180px;
+            }
+            
+            .visualizer-canvas {
+                height: 120px;
+            }
+            
+            .empty-icon {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .robot-core {
+                border-radius: 20px;
+            }
         }
     </style>
 </head>
@@ -730,7 +928,21 @@
         <!-- Chat Container -->
         <div class="chat-container" id="chatContainer">
             <div class="empty-state" id="emptyState">
-                <div class="empty-icon">🤖</div>
+                <div class="empty-icon">
+                    <div class="robot-face">
+                        <div class="robot-glow-ring"></div>
+                        <div class="robot-core">
+                            <div class="robot-visor">
+                                <div class="robot-eye-scanner"></div>
+                            </div>
+                            <div class="robot-particles">
+                                <span></span><span></span><span></span>
+                                <span></span><span></span><span></span>
+                            </div>
+                        </div>
+                        <div class="robot-signal"></div>
+                    </div>
+                </div>
                 <h1 class="empty-title">Hello! I'm Lana</h1>
                 <p class="empty-subtitle">Your ultimate AI voice assistant. I can help with weather, news, conversations, and much more. Ask me anything!</p>
                 <div class="quick-actions">
@@ -762,21 +974,19 @@
                     class="input-field" 
                     id="textInput" 
                     maxlength="397" 
-                    placeholder="Type your message (max 397 characters)..." 
                     placeholder="Type your message or use voice..."
                     autocomplete="off"
                 >
-                <button class="voice-btn" id="voiceBtn" title="Voice Input">🎤</button>
+                <button class="voice-btn" id="voiceBtn" title="Voice Input">
+                    <canvas class="voice-visualizer" id="voiceVisualizer"></canvas>
+                    <span class="voice-icon">🎤</span>
+                </button>
                 <button class="send-btn" id="sendBtn" title="Send">➤</button>
             </div>
         </div>
     </div>
     
-    <!-- Visualizer -->
-    <div class="visualizer-overlay" id="visualizerOverlay">
-        <canvas class="visualizer-canvas" id="visualizerCanvas"></canvas>
-        <div class="visualizer-label">LISTENING</div>
-    </div>
+    
     
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
@@ -977,12 +1187,15 @@
             if (isListening) {
                 isListening = false;
                 voiceBtn.classList.remove('listening');
-                document.getElementById('visualizerOverlay').classList.remove('active');
                 updateStatus('connected');
                 
                 if (responsePollInterval) {
                     clearInterval(responsePollInterval);
                     responsePollInterval = null;
+                }
+                if (visualizerAnimationId) {
+                    cancelAnimationFrame(visualizerAnimationId);
+                    visualizerAnimationId = null;
                 }
                 return;
             }
@@ -993,9 +1206,11 @@
                 
                 isListening = true;
                 voiceBtn.classList.add('listening');
-                document.getElementById('visualizerOverlay').classList.add('active');
                 updateStatus('listening');
-                initVisualizer();
+                initVoiceVisualizer();
+                
+                // Hide empty state immediately
+                document.getElementById('emptyState').classList.add('hidden');
                 
                 const listenResponse = await fetch(`${API_BASE}/listen`, { method: 'POST' });
                 
@@ -1003,21 +1218,28 @@
                 
                 let pollCount = 0;
                 let transcriptReceived = false;
+                let transcriptText = '';
                 
                 responsePollInterval = setInterval(async () => {
                     pollCount++;
                     
-                    if (pollCount > 60) {
+                    // Timeout after 30 seconds (100 polls * 300ms)
+                    if (pollCount > 100) {
                         isListening = false;
                         voiceBtn.classList.remove('listening');
-                        document.getElementById('visualizerOverlay').classList.remove('active');
+                        if (visualizerAnimationId) {
+                            cancelAnimationFrame(visualizerAnimationId);
+                            visualizerAnimationId = null;
+                        }
                         clearInterval(responsePollInterval);
+                        responsePollInterval = null;
                         updateStatus('connected');
                         showToast('⏱️ Timeout', 'error');
                         return;
                     }
                     
                     try {
+                        // First, check for transcript
                         if (!transcriptReceived) {
                             const transcriptResponse = await fetch(`${API_BASE}/get_transcript`);
                             const transcriptData = await transcriptResponse.json();
@@ -1026,54 +1248,78 @@
                             
                             if (transcriptData.status === 'transcript' && transcriptData.is_final && transcriptData.transcript) {
                                 transcriptReceived = true;
-                                document.getElementById('emptyState').classList.add('hidden');
-                                addMessage(transcriptData.transcript, 'user');
-                                showTypingIndicator();
-                                console.log('Transcript added:', transcriptData.transcript);
+                                transcriptText = transcriptData.transcript;
+                                
+                                // Stop listening animation
+                                isListening = false;
+                                voiceBtn.classList.remove('listening');
+                                if (visualizerAnimationId) {
+                                    cancelAnimationFrame(visualizerAnimationId);
+                                    visualizerAnimationId = null;
+                                }
+                                updateStatus('connected');
+                                
+                                // Add user message with typing effect
+                                userMessageDiv = addMessageWithTyping(transcriptText, 'user');
+                                showToast('✓ Speech recognized', 'success');
                             }
                         }
                         
-                        const response = await fetch(`${API_BASE}/get_response`);
-                        const data = await response.json();
+                        // Then check for response (only after transcript is received or if no speech)
+                        if (transcriptReceived || pollCount > 10) {
+                            const response = await fetch(`${API_BASE}/get_response`);
+                            const data = await response.json();
 
-                        console.log('Response poll:', data);
-                        
-                        if (data.status === 'no_speech') {
-                            isListening = false;
-                            voiceBtn.classList.remove('listening');
-                            document.getElementById('visualizerOverlay').classList.remove('active');
-                            clearInterval(responsePollInterval);
-                            responsePollInterval = null;
-                            updateStatus('connected');
-                            showToast('🔇 No speech detected', 'error');
-                            return;
-                        }
-                        
-                        if (data.status === 'success') {
-                            console.log('Success response received:', data);
-                            isListening = false;
-                            voiceBtn.classList.remove('listening');
-                            document.getElementById('visualizerOverlay').classList.remove('active');
-                            clearInterval(responsePollInterval);
-                            responsePollInterval = null;
-                            hideTypingIndicator();
-                            updateStatus('connected');
+                            console.log('Response poll:', data);
                             
-                            if (!transcriptReceived && data.transcript) {
-                                document.getElementById('emptyState').classList.add('hidden');
-                                addMessage(data.transcript, 'user');
+                            if (data.status === 'no_speech') {
+                                isListening = false;
+                                voiceBtn.classList.remove('listening');
+                                if (visualizerAnimationId) {
+                                    cancelAnimationFrame(visualizerAnimationId);
+                                    visualizerAnimationId = null;
+                                }
+                                clearInterval(responsePollInterval);
+                                responsePollInterval = null;
+                                updateStatus('connected');
+                                showToast('🔇 No speech detected', 'error');
+                                return;
                             }
                             
-                            addMessage(data.response, 'ai', {
-                                model: data.model_used,
-                                responseTime: data.response_time
-                            });
-                            
-                            if (data.audio_file) {
-                                playAudio(data.audio_file);
+                            if (data.status === 'success') {
+                                clearInterval(responsePollInterval);
+                                responsePollInterval = null;
+                                
+                                if (!transcriptReceived && data.transcript) {
+                                    transcriptText = data.transcript;
+                                    userMessageDiv = addMessageWithTyping(transcriptText, 'user');
+                                }
+                                
+                                // Add AI response with typing effect
+                                addMessageWithTyping(data.response, 'ai', {
+                                    model: data.model_used,
+                                    responseTime: data.response_time
+                                });
+                                
+                                if (data.audio_file) {
+                                    playAudio(data.audio_file);
+                                }
+                                
+                                showToast('✓ Voice response received', 'success');
                             }
                             
-                            showToast('✓ Voice response', 'success');
+                            if (data.status === 'error') {
+                                isListening = false;
+                                voiceBtn.classList.remove('listening');
+                                if (visualizerAnimationId) {
+                                    cancelAnimationFrame(visualizerAnimationId);
+                                    visualizerAnimationId = null;
+                                }
+                                clearInterval(responsePollInterval);
+                                responsePollInterval = null;
+                                updateStatus('connected');
+                                showToast('✗ ' + (data.message || 'Error occurred'), 'error');
+                            }
                         }
                     } catch (error) {
                         console.error('Poll error:', error);
@@ -1082,7 +1328,10 @@
             } catch (error) {
                 isListening = false;
                 voiceBtn.classList.remove('listening');
-                document.getElementById('visualizerOverlay').classList.remove('active');
+                if (visualizerAnimationId) {
+                    cancelAnimationFrame(visualizerAnimationId);
+                    visualizerAnimationId = null;
+                }
                 updateStatus('connected');
                 
                 let errorMsg = '⚠️ ';
@@ -1094,6 +1343,70 @@
                 
                 showToast(errorMsg, 'error');
             }
+        }
+        
+        function addMessageWithTyping(text, type, meta = {}) {
+            const chatContainer = document.getElementById('chatContainer');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (emptyState && !emptyState.classList.contains('hidden')) {
+                emptyState.classList.add('hidden');
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = type === 'user' ? '👤' : '🤖';
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            
+            const textDiv = document.createElement('div');
+            textDiv.className = 'message-text';
+            
+            content.appendChild(textDiv);
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(content);
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // Typing effect
+            let index = 0;
+            const typingSpeed = type === 'user' ? 20 : 30; // User faster, AI slightly slower
+            
+            function typeChar() {
+                if (index < text.length) {
+                    textDiv.textContent += text.charAt(index);
+                    index++;
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    setTimeout(typeChar, typingSpeed);
+                } else {
+                    // Add meta after typing complete
+                    if (meta.model || meta.responseTime) {
+                        const metaDiv = document.createElement('div');
+                        metaDiv.className = 'message-meta';
+                        
+                        if (meta.model) {
+                            const modelSpan = document.createElement('span');
+                            modelSpan.textContent = `🧠 ${meta.model}`;
+                            metaDiv.appendChild(modelSpan);
+                        }
+                        
+                        if (meta.responseTime) {
+                            const timeSpan = document.createElement('span');
+                            timeSpan.textContent = `⏱️ ${(meta.responseTime * 1000).toFixed(0)}ms`;
+                            metaDiv.appendChild(timeSpan);
+                        }
+                        
+                        content.appendChild(metaDiv);
+                    }
+                }
+            }
+            
+            typeChar();
+            return messageDiv;
         }
         
         function addMessage(text, type, meta = {}) {
@@ -1202,48 +1515,60 @@
             });
         }
         
-        function initVisualizer() {
-            const canvas = document.getElementById('visualizerCanvas');
+        function initVoiceVisualizer() {
+            const canvas = document.getElementById('voiceVisualizer');
             if (!canvas) return;
             
             const ctx = canvas.getContext('2d');
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
+            canvas.width = 60;
+            canvas.height = 60;
             
             function draw() {
-                if (!isListening) return;
-                
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                const centerX = canvas.width / 2;
-                const centerY = canvas.height / 2;
-                const time = Date.now() * 0.001;
-                
-                for (let i = 0; i < 5; i++) {
-                    const radius = 30 + Math.sin(time * 2 + i) * 20;
-                    const alpha = 0.5 - i * 0.1;
-                    
-                    ctx.beginPath();
-                    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-                    ctx.strokeStyle = `rgba(0, 255, 136, ${alpha})`;
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
+                if (!isListening) {
+                    if (visualizerAnimationId) {
+                        cancelAnimationFrame(visualizerAnimationId);
+                        visualizerAnimationId = null;
+                    }
+                    return;
                 }
                 
-                const barCount = 20;
-                const barWidth = canvas.width / (barCount * 2);
+                ctx.clearRect(0, 0, 60, 60);
                 
-                for (let i = 0; i < barCount; i++) {
-                    const barHeight = 20 + Math.sin(time * 3 + i * 0.5) * 40;
-                    const x = (canvas.width / barCount) * i + barWidth;
+                const centerX = 30;
+                const centerY = 30;
+                const time = Date.now() * 0.003;
+                
+                // Draw circular waveform
+                const bars = 16;
+                const radius = 20;
+                
+                for (let i = 0; i < bars; i++) {
+                    const angle = (Math.PI * 2 * i) / bars;
+                    const barHeight = 5 + Math.sin(time * 3 + i * 0.5) * 8;
                     
-                    ctx.fillStyle = `rgba(0, 255, 136, ${0.6 + Math.sin(time + i) * 0.4})`;
-                    ctx.fillRect(x, centerY - barHeight / 2, barWidth, barHeight);
+                    const x1 = centerX + Math.cos(angle) * radius;
+                    const y1 = centerY + Math.sin(angle) * radius;
+                    const x2 = centerX + Math.cos(angle) * (radius + barHeight);
+                    const y2 = centerY + Math.sin(angle) * (radius + barHeight);
+                    
+                    const alpha = 0.6 + Math.sin(time * 2 + i * 0.3) * 0.4;
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+                    ctx.lineWidth = 2;
+                    ctx.lineCap = 'round';
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
                 }
                 
                 if (isListening) {
                     visualizerAnimationId = requestAnimationFrame(draw);
                 }
+            }
+            
+            if (visualizerAnimationId) {
+                cancelAnimationFrame(visualizerAnimationId);
             }
             
             draw();

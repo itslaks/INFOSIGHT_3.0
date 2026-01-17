@@ -103,7 +103,7 @@ _blip_processor = None
 _blip_device = None
 
 def _load_blip_model():
-    """Lazy load BLIP model for local captioning"""
+    """Lazy load BLIP model for local captioning with retry logic"""
     global _blip_model, _blip_processor, _blip_device
     
     if _blip_model is not None:
@@ -112,14 +112,47 @@ def _load_blip_model():
     try:
         import torch
         from transformers import BlipForConditionalGeneration, BlipProcessor
+        import time
         
         _blip_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        _blip_processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
-        _blip_model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base").to(_blip_device)
-        _blip_model.eval()
         
-        logger.info(f"✓ BLIP model loaded on {_blip_device}")
-        return _blip_model, _blip_processor, _blip_device
+        # Retry logic for Hugging Face model loading with exponential backoff
+        max_retries = 3
+        retry_delay = 2
+        
+        for attempt in range(max_retries):
+            try:
+                # Increase timeout for model loading
+                import os
+                os.environ['HF_HUB_DOWNLOAD_TIMEOUT'] = '60'
+                
+                _blip_processor = BlipProcessor.from_pretrained(
+                    "Salesforce/blip-image-captioning-base",
+                    local_files_only=False,
+                    timeout=30
+                )
+                _blip_model = BlipForConditionalGeneration.from_pretrained(
+                    "Salesforce/blip-image-captioning-base",
+                    local_files_only=False,
+                    timeout=30
+                ).to(_blip_device)
+                _blip_model.eval()
+                
+                logger.info(f"✓ BLIP model loaded on {_blip_device}")
+                return _blip_model, _blip_processor, _blip_device
+            except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+                if attempt < max_retries - 1:
+                    wait_time = retry_delay * (2 ** attempt)  # Exponential backoff
+                    logger.warning(f"⚠️ Hugging Face connection timeout (attempt {attempt + 1}/{max_retries}), retrying in {wait_time}s...")
+                    time.sleep(wait_time)
+                else:
+                    logger.error(f"✗ Failed to load BLIP model after {max_retries} attempts: {e}")
+                    return None, None, None
+            except Exception as e:
+                # For non-network errors, don't retry
+                logger.error(f"✗ Failed to load BLIP model: {e}")
+                return None, None, None
+                
     except ImportError:
         logger.warning("⚠️ transformers not available, BLIP fallback disabled")
         return None, None, None
@@ -209,12 +242,39 @@ def detect_objects(image_path: str) -> List[str]:
         if isinstance(image_path, str):
             results = model(image_path, verbose=False)
         else:
-            # PIL Image object - save temporarily
+            # PIL Image object - save temporarily with proper file handling
             import tempfile
-            with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp:
-                image_path.save(tmp.name, 'JPEG')
-                results = model(tmp.name, verbose=False)
-                os.unlink(tmp.name)
+            import time
+            tmp_path = None
+            try:
+                # Create temporary file and ensure it's closed before YOLOv8 uses it
+                with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp:
+                    image_path.save(tmp.name, 'JPEG', quality=95)
+                    tmp_path = tmp.name
+                
+                # Ensure file is fully written and closed before YOLOv8 accesses it
+                time.sleep(0.1)  # Small delay to ensure file is released
+                
+                # Run YOLOv8 detection
+                results = model(tmp_path, verbose=False)
+                
+                # Ensure results are processed before deleting file
+                if results:
+                    _ = list(results)  # Force evaluation
+                
+            finally:
+                # Clean up temporary file with retry logic for Windows file locking
+                if tmp_path and os.path.exists(tmp_path):
+                    max_cleanup_retries = 5
+                    for retry in range(max_cleanup_retries):
+                        try:
+                            os.unlink(tmp_path)
+                            break
+                        except (OSError, PermissionError) as e:
+                            if retry < max_cleanup_retries - 1:
+                                time.sleep(0.2 * (retry + 1))  # Increasing delay
+                            else:
+                                logger.warning(f"⚠️ Could not delete temp file {tmp_path}: {e}")
         
         if results and len(results) > 0:
             detected_classes = set()
