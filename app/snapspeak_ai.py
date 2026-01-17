@@ -847,26 +847,49 @@ def enhanced_face_detection(image):
         # Try DeepFace first if available
         if DEEPFACE_AVAILABLE:
             try:
-                faces = DeepFace.extract_faces(
-                    np_image,
-                    detector_backend='retinaface',
-                    enforce_detection=False,
-                    align=True
-                )
+                # DeepFace works better with file paths to avoid KerasTensor issues
+                import tempfile
+                with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp_file:
+                    # Convert numpy array to PIL Image and save
+                    pil_image = Image.fromarray(np_image)
+                    pil_image.save(tmp_file.name, 'JPEG', quality=95)
+                    tmp_path = tmp_file.name
+                
+                try:
+                    # Use file path instead of numpy array to avoid KerasTensor issues
+                    faces = DeepFace.extract_faces(
+                        tmp_path,
+                        detector_backend='retinaface',
+                        enforce_detection=False,
+                        align=True
+                    )
 
-                for face in faces:
-                    confidence = face.get('confidence', 0)
-                    if confidence > FACE_DETECTION_CONFIDENCE_THRESHOLD:
-                        facial_area = face['facial_area']
-                        face_locations.append({
-                            'x': int(facial_area['x']),
-                            'y': int(facial_area['y']),
-                            'width': int(facial_area['w']),
-                            'height': int(facial_area['h']),
-                            'confidence': float(confidence),
-                            'detector': 'retinaface'
-                        })
-                logger.info(f"  DeepFace detected {len(face_locations)} faces")
+                    for face in faces:
+                        # Handle both dict and array return types
+                        if isinstance(face, dict):
+                            confidence = face.get('confidence', 0.9)
+                            facial_area = face.get('facial_area', {})
+                        else:
+                            # If face is just an array, use default values
+                            confidence = 0.9
+                            facial_area = {'x': 0, 'y': 0, 'w': 0, 'h': 0}
+                        
+                        if confidence > FACE_DETECTION_CONFIDENCE_THRESHOLD and facial_area:
+                            face_locations.append({
+                                'x': int(facial_area.get('x', 0)),
+                                'y': int(facial_area.get('y', 0)),
+                                'width': int(facial_area.get('w', 0)),
+                                'height': int(facial_area.get('h', 0)),
+                                'confidence': float(confidence),
+                                'detector': 'retinaface'
+                            })
+                    logger.info(f"  DeepFace detected {len(face_locations)} faces")
+                finally:
+                    # Clean up temporary file
+                    try:
+                        os.unlink(tmp_path)
+                    except Exception:
+                        pass
             except Exception as e:
                 logger.warning(f"  DeepFace detection failed: {str(e)}")
 
