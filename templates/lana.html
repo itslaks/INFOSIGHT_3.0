@@ -254,8 +254,8 @@
         }
         
         .empty-icon {
-            width: 140px;
-            height: 140px;
+            width: 160px;
+            height: 160px;
             margin-bottom: 1.5rem;
             position: relative;
             display: flex;
@@ -263,236 +263,178 @@
             justify-content: center;
         }
         
-        .robot-face {
+        .robot-container {
             width: 100%;
             height: 100%;
             position: relative;
+        }
+        
+        .robot-hexagon {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1a2332 0%, #0d1321 100%);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 0 60px rgba(0, 255, 136, 0.3);
         }
         
-        .robot-outer-ring {
-            position: absolute;
-            width: 160%;
-            height: 160%;
-            border-radius: 50%;
-            border: 2px dashed rgba(0, 255, 136, 0.3);
-            animation: ringRotate 15s linear infinite;
-        }
-        
-        .robot-outer-ring::before {
+        .robot-hexagon::before {
             content: '';
             position: absolute;
+            inset: 3px;
+            background: linear-gradient(135deg, #1a2332 0%, #0d1321 100%);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+        
+        .robot-glow-ring {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid transparent;
+            border-top-color: var(--primary);
+            border-bottom-color: var(--secondary);
+            border-radius: 50%;
+            animation: glowRingSpin 4s linear infinite;
+        }
+        
+        .robot-glow-ring::before {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            border-radius: 50%;
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 20px var(--primary), 0 0 40px var(--primary);
+        }
+        
+        @keyframes glowRingSpin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        .robot-inner {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .robot-visor {
+            width: 80px;
+            height: 25px;
+            background: linear-gradient(90deg, transparent 5%, rgba(0, 255, 136, 0.1) 20%, rgba(0, 255, 136, 0.3) 50%, rgba(0, 255, 136, 0.1) 80%, transparent 95%);
+            border-radius: 25px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+        
+        .robot-visor::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+            animation: visorSweep 2s ease-in-out infinite;
+        }
+        
+        @keyframes visorSweep {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .robot-eye-row {
+            display: flex;
+            gap: 25px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .robot-eye {
             width: 12px;
             height: 12px;
             background: var(--primary);
             border-radius: 50%;
-            top: -6px;
-            left: 50%;
-            transform: translateX(-50%);
-            box-shadow: 0 0 20px var(--primary);
+            box-shadow: 0 0 15px var(--primary), 0 0 30px var(--primary);
+            animation: eyePulse 2s ease-in-out infinite;
         }
         
-        @keyframes ringRotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .robot-eye:nth-child(2) {
+            animation-delay: 0.3s;
         }
         
-        .robot-core {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(145deg, #1a2332 0%, #0d1321 100%);
-            border-radius: 50%;
-            border: 3px solid transparent;
-            background-clip: padding-box;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            box-shadow: 
-                0 0 60px rgba(0, 255, 136, 0.2),
-                inset 0 0 40px rgba(0, 0, 0, 0.5);
+        @keyframes eyePulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(0.8); opacity: 0.7; }
         }
         
-        .robot-core::before {
-            content: '';
-            position: absolute;
-            inset: -3px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
-            z-index: -1;
-            animation: borderGlow 3s ease-in-out infinite;
-        }
-        
-        @keyframes borderGlow {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; }
-        }
-        
-        .robot-face-inner {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            position: relative;
-            z-index: 5;
-        }
-        
-        .robot-eyes {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .robot-eye {
-            width: 24px;
-            height: 24px;
-            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
-            border-radius: 50%;
-            position: relative;
-            animation: eyeBlink 4s ease-in-out infinite;
-            border: 2px solid rgba(0, 255, 136, 0.3);
-        }
-        
-        .robot-eye::before {
-            content: '';
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background: #fff;
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 10px #fff;
-        }
-        
-        .robot-eye::after {
-            content: '';
-            position: absolute;
-            width: 4px;
+        .robot-mouth-bar {
+            width: 40px;
             height: 4px;
-            background: var(--secondary);
-            border-radius: 50%;
-            top: 4px;
-            right: 4px;
-            box-shadow: 0 0 5px var(--secondary);
-        }
-        
-        @keyframes eyeBlink {
-            0%, 45%, 55%, 100% { transform: scaleY(1); }
-            50% { transform: scaleY(0.1); }
-        }
-        
-        .robot-mouth {
-            width: 50px;
-            height: 8px;
-            background: rgba(0, 255, 136, 0.1);
-            border-radius: 10px;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(0, 255, 136, 0.2);
-        }
-        
-        .robot-mouth::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, var(--primary), transparent);
-            left: -100%;
-            animation: mouthScan 2s ease-in-out infinite;
-        }
-        
-        @keyframes mouthScan {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-        
-        .robot-scanner {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, transparent, rgba(0, 255, 136, 0.1), transparent);
-            animation: vScan 3s linear infinite;
-            pointer-events: none;
-        }
-        
-        @keyframes vScan {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100%); }
-        }
-        
-        .robot-antenna {
-            position: absolute;
-            top: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 4px;
-            height: 25px;
-            background: linear-gradient(to top, var(--bg-elevated), var(--primary));
+            background: linear-gradient(90deg, var(--secondary), var(--primary), var(--secondary));
             border-radius: 2px;
+            position: relative;
+            overflow: hidden;
         }
         
-        .robot-antenna::before {
+        .robot-mouth-bar::after {
             content: '';
             position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 14px;
-            height: 14px;
-            background: var(--primary);
-            border-radius: 50%;
-            box-shadow: 0 0 20px var(--primary);
-            animation: antennaPulse 1.5s ease-in-out infinite;
+            width: 10px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            animation: mouthPulse 1.5s ease-in-out infinite;
         }
         
-        @keyframes antennaPulse {
-            0%, 100% { box-shadow: 0 0 20px var(--primary); }
-            50% { box-shadow: 0 0 40px var(--primary), 0 0 60px var(--secondary); }
+        @keyframes mouthPulse {
+            0%, 100% { left: -10px; }
+            50% { left: 40px; }
         }
         
-        .robot-particles {
+        .robot-data-lines {
             position: absolute;
             width: 100%;
             height: 100%;
             top: 0;
             left: 0;
             pointer-events: none;
+            overflow: hidden;
         }
         
-        .robot-particles span {
+        .data-line {
             position: absolute;
-            width: 4px;
-            height: 4px;
-            background: var(--primary);
-            border-radius: 50%;
-            box-shadow: 0 0 10px var(--primary);
-            animation: particleOrbit 4s linear infinite;
+            width: 2px;
+            height: 20px;
+            background: linear-gradient(to bottom, transparent, var(--primary), transparent);
+            animation: dataFall 2s linear infinite;
         }
         
-        .robot-particles span:nth-child(1) { animation-delay: 0s; }
-        .robot-particles span:nth-child(2) { animation-delay: 0.8s; }
-        .robot-particles span:nth-child(3) { animation-delay: 1.6s; }
-        .robot-particles span:nth-child(4) { animation-delay: 2.4s; }
-        .robot-particles span:nth-child(5) { animation-delay: 3.2s; }
+        .data-line:nth-child(1) { left: 20%; animation-delay: 0s; }
+        .data-line:nth-child(2) { left: 40%; animation-delay: 0.4s; }
+        .data-line:nth-child(3) { left: 60%; animation-delay: 0.8s; }
+        .data-line:nth-child(4) { left: 80%; animation-delay: 1.2s; }
         
-        @keyframes particleOrbit {
-            0% {
-                transform: rotate(0deg) translateX(80px) rotate(0deg);
-                opacity: 0;
-            }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% {
-                transform: rotate(360deg) translateX(80px) rotate(-360deg);
-                opacity: 0;
-            }
+        @keyframes dataFall {
+            0% { top: -20px; opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
         }
         
         .empty-title {
@@ -606,6 +548,7 @@
         .message-text {
             line-height: 1.6;
             word-wrap: break-word;
+            white-space: pre-wrap;
         }
         
         .message-text .typing-cursor {
@@ -729,20 +672,14 @@
         }
         
         @keyframes voiceRipple {
-            0% {
-                transform: scale(1);
-                opacity: 0.6;
-            }
-            100% {
-                transform: scale(2);
-                opacity: 0;
-            }
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(2); opacity: 0; }
         }
         
-        .voice-visualizer-container {
+        .voice-visualizer {
             position: absolute;
-            width: 120px;
-            height: 120px;
+            width: 130px;
+            height: 130px;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
@@ -751,73 +688,75 @@
             transition: opacity 0.3s;
         }
         
-        .voice-btn.listening .voice-visualizer-container {
+        .voice-btn.listening .voice-visualizer {
             opacity: 1;
         }
         
-        .voice-wave-bars {
+        .viz-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 3px solid transparent;
+            border-radius: 50%;
+            animation: vizRingSpin 2s linear infinite;
+        }
+        
+        .viz-ring:nth-child(1) {
+            border-top-color: var(--accent);
+            border-right-color: var(--accent);
+        }
+        
+        .viz-ring:nth-child(2) {
+            width: 85%;
+            height: 85%;
+            top: 7.5%;
+            left: 7.5%;
+            border-bottom-color: var(--primary);
+            border-left-color: var(--primary);
+            animation-direction: reverse;
+            animation-duration: 1.5s;
+        }
+        
+        .viz-ring:nth-child(3) {
+            width: 70%;
+            height: 70%;
+            top: 15%;
+            left: 15%;
+            border-top-color: var(--secondary);
+            animation-duration: 1s;
+        }
+        
+        @keyframes vizRingSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .viz-bars {
             position: absolute;
             width: 100%;
             height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 3px;
+            gap: 4px;
         }
         
-        .wave-bar {
-            width: 4px;
-            height: 20px;
-            background: linear-gradient(to top, var(--accent), #ff4466);
-            border-radius: 2px;
-            animation: waveBar 0.8s ease-in-out infinite;
+        .viz-bar {
+            width: 5px;
+            background: linear-gradient(to top, var(--accent), #ff6699);
+            border-radius: 3px;
+            animation: vizBarPulse 0.6s ease-in-out infinite;
         }
         
-        .wave-bar:nth-child(1) { animation-delay: 0s; height: 15px; }
-        .wave-bar:nth-child(2) { animation-delay: 0.1s; height: 25px; }
-        .wave-bar:nth-child(3) { animation-delay: 0.2s; height: 35px; }
-        .wave-bar:nth-child(4) { animation-delay: 0.3s; height: 45px; }
-        .wave-bar:nth-child(5) { animation-delay: 0.2s; height: 35px; }
-        .wave-bar:nth-child(6) { animation-delay: 0.1s; height: 25px; }
-        .wave-bar:nth-child(7) { animation-delay: 0s; height: 15px; }
+        .viz-bar:nth-child(1) { height: 20px; animation-delay: 0s; }
+        .viz-bar:nth-child(2) { height: 30px; animation-delay: 0.1s; }
+        .viz-bar:nth-child(3) { height: 45px; animation-delay: 0.2s; }
+        .viz-bar:nth-child(4) { height: 35px; animation-delay: 0.3s; }
+        .viz-bar:nth-child(5) { height: 25px; animation-delay: 0.4s; }
         
-        @keyframes waveBar {
-            0%, 100% { transform: scaleY(0.3); }
-            50% { transform: scaleY(1); }
-        }
-        
-        .voice-orbit {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border: 2px solid transparent;
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: orbitSpin 1s linear infinite;
-        }
-        
-        .voice-orbit:nth-child(2) {
-            width: 90%;
-            height: 90%;
-            top: 5%;
-            left: 5%;
-            border-top-color: var(--primary);
-            animation-duration: 1.5s;
-            animation-direction: reverse;
-        }
-        
-        .voice-orbit:nth-child(3) {
-            width: 80%;
-            height: 80%;
-            top: 10%;
-            left: 10%;
-            border-top-color: var(--secondary);
-            animation-duration: 2s;
-        }
-        
-        @keyframes orbitSpin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes vizBarPulse {
+            0%, 100% { transform: scaleY(0.4); opacity: 0.6; }
+            50% { transform: scaleY(1); opacity: 1; }
         }
         
         .voice-icon {
@@ -905,22 +844,10 @@
             to { transform: translateX(0); opacity: 1; }
         }
         
-        .toast.success {
-            border-color: var(--primary);
-        }
-        
-        .toast.error {
-            border-color: var(--accent);
-        }
-        
-        .toast-icon {
-            font-size: 1.25rem;
-        }
-        
-        .toast-message {
-            flex: 1;
-            font-size: 0.875rem;
-        }
+        .toast.success { border-color: var(--primary); }
+        .toast.error { border-color: var(--accent); }
+        .toast-icon { font-size: 1.25rem; }
+        .toast-message { flex: 1; font-size: 0.875rem; }
         
         .modal-overlay {
             position: fixed;
@@ -1001,35 +928,14 @@
             line-height: 1.7;
         }
         
-        .hidden {
-            display: none !important;
-        }
+        .hidden { display: none !important; }
         
         @media (max-width: 768px) {
-            .header {
-                padding: 1rem;
-            }
-            
-            .logo-text {
-                font-size: 1.25rem;
-            }
-            
-            .message {
-                max-width: 90%;
-            }
-            
-            .input-wrapper {
-                flex-direction: row;
-            }
-            
-            .quick-actions {
-                grid-template-columns: 1fr;
-            }
-            
-            .empty-icon {
-                width: 100px;
-                height: 100px;
-            }
+            .header { padding: 1rem; }
+            .logo-text { font-size: 1.25rem; }
+            .message { max-width: 90%; }
+            .quick-actions { grid-template-columns: 1fr; }
+            .empty-icon { width: 120px; height: 120px; }
         }
     </style>
 </head>
@@ -1057,22 +963,24 @@
         <div class="chat-container" id="chatContainer">
             <div class="empty-state" id="emptyState">
                 <div class="empty-icon">
-                    <div class="robot-face">
-                        <div class="robot-outer-ring"></div>
-                        <div class="robot-core">
-                            <div class="robot-antenna"></div>
-                                <div class="robot-face-inner">
-                                    <div class="robot-eyes">
+                    <div class="robot-container">
+                        <div class="robot-glow-ring"></div>
+                        <div class="robot-hexagon">
+                            <div class="robot-inner">
+                                <div class="robot-visor">
+                                    <div class="robot-eye-row">
                                         <div class="robot-eye"></div>
                                         <div class="robot-eye"></div>
                                     </div>
-                                    <div class="robot-mouth"></div>
                                 </div>
-                                <div class="robot-scanner"></div>
+                                <div class="robot-mouth-bar"></div>
                             </div>
-                        <div class="robot-particles">
-                            <span></span><span></span><span></span>
-                            <span></span><span></span>
+                        </div>
+                        <div class="robot-data-lines">
+                            <div class="data-line"></div>
+                            <div class="data-line"></div>
+                            <div class="data-line"></div>
+                            <div class="data-line"></div>
                         </div>
                     </div>
                 </div>
@@ -1101,27 +1009,18 @@
         
         <div class="input-area">
             <div class="input-wrapper">
-                <input 
-                    type="text" 
-                    class="input-field" 
-                    id="textInput" 
-                    maxlength="397" 
-                    placeholder="Type your message or use voice..."
-                    autocomplete="off"
-                >
+                <input type="text" class="input-field" id="textInput" maxlength="397" placeholder="Type your message or use voice..." autocomplete="off">
                 <button class="voice-btn" id="voiceBtn" title="Voice Input">
-                    <div class="voice-visualizer-container">
-                        <div class="voice-orbit"></div>
-                        <div class="voice-orbit"></div>
-                        <div class="voice-orbit"></div>
-                        <div class="voice-wave-bars">
-                            <div class="wave-bar"></div>
-                            <div class="wave-bar"></div>
-                            <div class="wave-bar"></div>
-                            <div class="wave-bar"></div>
-                            <div class="wave-bar"></div>
-                            <div class="wave-bar"></div>
-                            <div class="wave-bar"></div>
+                    <div class="voice-visualizer">
+                        <div class="viz-ring"></div>
+                        <div class="viz-ring"></div>
+                        <div class="viz-ring"></div>
+                        <div class="viz-bars">
+                            <div class="viz-bar"></div>
+                            <div class="viz-bar"></div>
+                            <div class="viz-bar"></div>
+                            <div class="viz-bar"></div>
+                            <div class="viz-bar"></div>
                         </div>
                     </div>
                     <span class="voice-icon">🎤</span>
@@ -1160,47 +1059,21 @@
     <script>
         const API_BASE = window.location.origin + '/lana_ai';
         const USER_ID = 'web_user_' + Math.random().toString(36).substr(2, 9);
+        
         let isListening = false;
         let welcomeShown = false;
         let responsePollInterval = null;
-        let transcriptPollInterval = null;
         let currentAudio = null;
-        let isFirstMessage = true;
+        let messageCount = 0;
         
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Lana AI Initialized');
+            console.log('Lana AI Initialized');
             initializeEventListeners();
             checkHealth();
-            loadHistory();
         });
         
         function initializeEventListeners() {
-            const textInput = document.getElementById('textInput');
-            
-            const charCounter = document.createElement('div');
-            charCounter.id = 'charCounter';
-            charCounter.style.cssText = 'position: absolute; bottom: -22px; right: 20px; font-size: 0.75rem; color: var(--text-muted); z-index: 10;';
-            charCounter.textContent = '0/397';
-            
-            const inputWrapper = textInput.closest('.input-wrapper');
-            if (inputWrapper) {
-                inputWrapper.style.position = 'relative';
-                inputWrapper.appendChild(charCounter);
-            }
-            
-            textInput.addEventListener('input', () => {
-                const length = textInput.value.length;
-                charCounter.textContent = `${length}/397 characters`;
-                if (length > 397) {
-                    charCounter.style.color = 'var(--accent)';
-                } else if (length > 350) {
-                    charCounter.style.color = 'var(--accent)';
-                } else {
-                    charCounter.style.color = 'var(--text-muted)';
-                }
-            });
-            
-            textInput.addEventListener('keypress', (e) => {
+            document.getElementById('textInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     sendTextMessage();
@@ -1223,22 +1096,20 @@
             try {
                 const response = await fetch(`${API_BASE}/health`);
                 const data = await response.json();
-                
                 if (data.status === 'healthy') {
                     updateStatus('connected');
-                    showToast('✓ Connected', 'success');
+                    showToast('Connected to Lana AI', 'success');
                 }
             } catch (error) {
                 console.error('Health check failed:', error);
                 updateStatus('disconnected');
-                showToast('⚠️ Connection failed', 'error');
+                showToast('Connection failed', 'error');
             }
         }
         
         function updateStatus(status) {
             const statusBadge = document.getElementById('statusBadge');
             const statusText = document.getElementById('statusText');
-            
             statusBadge.className = 'status-badge';
             
             switch(status) {
@@ -1250,20 +1121,12 @@
                     statusBadge.classList.add('listening');
                     statusText.textContent = 'Listening...';
                     break;
-                case 'transcribing':
-                    statusBadge.classList.add('transcribing');
-                    statusText.textContent = 'Transcribing...';
-                    break;
                 case 'processing':
                     statusBadge.classList.add('transcribing');
                     statusText.textContent = 'Processing...';
                     break;
-                case 'responding':
-                    statusBadge.classList.add('connected');
-                    statusText.textContent = 'Responding...';
-                    break;
                 default:
-                    statusText.textContent = 'Not Connected';
+                    statusText.textContent = 'Disconnected';
             }
         }
         
@@ -1272,21 +1135,14 @@
             const message = textInput.value.trim();
             
             if (!message) {
-                showToast('⚠️ Please enter a message', 'error');
-                return;
-            }
-            
-            if (message.length > 397) {
-                showToast('⚠️ Message exceeds 397 character limit.', 'error');
-                textInput.value = message.substring(0, 397);
+                showToast('Please enter a message', 'error');
                 return;
             }
             
             textInput.value = '';
             document.getElementById('emptyState').classList.add('hidden');
             
-            addMessage(message, 'user', false);
-            isFirstMessage = false;
+            addMessage(message, 'user');
             showTypingIndicator();
             
             try {
@@ -1296,25 +1152,6 @@
                     body: JSON.stringify({ text: message, user_id: USER_ID })
                 });
                 
-                if (response.status === 429) {
-                    const errorData = await response.json().catch(() => ({}));
-                    hideTypingIndicator();
-                    showToast(`⏱️ Rate limit exceeded. Try again later.`, 'error');
-                    addMessage('Rate limit exceeded. Please wait.', 'ai', true);
-                    return;
-                }
-                
-                if (response.status === 400) {
-                    const errorData = await response.json().catch(() => ({}));
-                    hideTypingIndicator();
-                    showToast(`⚠️ ${errorData.error || 'Invalid input'}`, 'error');
-                    return;
-                }
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
                 const data = await response.json();
                 hideTypingIndicator();
                 
@@ -1323,15 +1160,14 @@
                         model: data.model_used,
                         responseTime: data.response_time
                     });
-                    showToast('✓ Response received', 'success');
                 } else {
-                    addMessage('Error: ' + (data.message || 'Unknown error'), 'ai', true);
-                    showToast('✗ Request failed', 'error');
+                    addMessage('Error: ' + (data.message || 'Unknown error'), 'ai');
+                    showToast('Request failed', 'error');
                 }
             } catch (error) {
                 hideTypingIndicator();
-                addMessage('Error: ' + error.message, 'ai', true);
-                showToast('✗ Connection error', 'error');
+                addMessage('Connection error: ' + error.message, 'ai');
+                showToast('Connection error', 'error');
             }
         }
         
@@ -1350,11 +1186,7 @@
                 isListening = true;
                 voiceBtn.classList.add('listening');
                 updateStatus('listening');
-                
-                const emptyState = document.getElementById('emptyState');
-                if (emptyState && !emptyState.classList.contains('hidden')) {
-                    emptyState.classList.add('hidden');
-                }
+                document.getElementById('emptyState').classList.add('hidden');
                 
                 if (!welcomeShown) {
                     showWelcomeMessage();
@@ -1366,61 +1198,19 @@
                     throw new Error('Failed to start listening');
                 }
                 
-                console.log('🎤 Started listening...');
+                console.log('Started listening...');
                 
-                let transcriptReceived = false;
-                let responseReceived = false;
                 let pollCount = 0;
-                const MAX_POLLS = 150;
-                
-                transcriptPollInterval = setInterval(async () => {
-                    if (transcriptReceived || responseReceived || !isListening) {
-                        clearInterval(transcriptPollInterval);
-                        transcriptPollInterval = null;
-                        return;
-                    }
-                    
-                    try {
-                        const transcriptResponse = await fetch(`${API_BASE}/get_transcript`);
-                        const transcriptData = await transcriptResponse.json();
-                        
-                        console.log('[Transcript Poll]', transcriptData);
-                        
-                        if (transcriptData.status === 'transcript' && transcriptData.transcript && transcriptData.is_final) {
-                            const transcript = transcriptData.transcript.trim();
-                            
-                            if (transcript && transcript !== '.' && transcript.length > 1) {
-                                transcriptReceived = true;
-                                console.log('✅ Transcript received:', transcript);
-                                
-                                // AUTO-STOP MIC when speech is detected and transcribed
-                                stopListening();
-                                
-                                if (isFirstMessage) {
-                                    // FIRST transcription is "just load" (instant)
-                                    addMessage(transcript, 'user', false);
-                                    isFirstMessage = false;
-                                } else {
-                                    // SUBSEQUENT transcriptions are "chatgpt style" (typing)
-                                    addMessageWithTyping(transcript, 'user', {}, true);
-                                }
-                                
-                                showToast('✓ Heard: ' + transcript.substring(0, 50), 'success');
-                                updateStatus('processing');
-                            }
-                        }
-                    } catch (error) {
-                        console.error('Transcript poll error:', error);
-                    }
-                }, 150);
+                const MAX_POLLS = 200;
                 
                 responsePollInterval = setInterval(async () => {
                     pollCount++;
                     
                     if (pollCount > MAX_POLLS) {
-                        console.log('⏱️ Polling timeout');
+                        console.log('Polling timeout');
                         stopListening();
-                        showToast('⏱️ Timeout - no response received', 'error');
+                        showToast('Timeout - please try again', 'error');
+                        clearInterval(responsePollInterval);
                         return;
                     }
                     
@@ -1428,34 +1218,34 @@
                         const responseCheck = await fetch(`${API_BASE}/get_response`);
                         const responseData = await responseCheck.json();
                         
-                        console.log(`[Poll ${pollCount}] Response status:`, responseData.status);
+                        console.log(`[Poll ${pollCount}]`, responseData.status);
                         
                         if (responseData.status === 'no_speech') {
-                            console.log('🔇 No speech detected');
                             stopListening();
-                            showToast('🔇 No speech detected', 'error');
+                            showToast('No speech detected', 'error');
+                            clearInterval(responsePollInterval);
                             return;
                         }
                         
                         if (responseData.status === 'success') {
-                            responseReceived = true;
-                            console.log('✅ Response received');
-                            
-                            updateStatus('responding');
+                            console.log('Response received!');
                             stopListening();
+                            clearInterval(responsePollInterval);
                             
-                            if (!transcriptReceived && responseData.transcript) {
+                            if (responseData.transcript) {
                                 const transcript = responseData.transcript.trim();
-                                if (transcript && transcript !== '.' && transcript.length > 1) {
-                                    if (isFirstMessage) {
-                                        addMessage(transcript, 'user', false);
-                                        isFirstMessage = false;
+                                if (transcript && transcript.length > 1) {
+                                    if (messageCount === 0) {
+                                        addMessage(transcript, 'user');
                                     } else {
-                                        addMessageWithTyping(transcript, 'user', {}, true);
+                                        addMessageWithTyping(transcript, 'user');
                                     }
-                                    transcriptReceived = true;
+                                    messageCount++;
+                                    showToast('Heard: ' + transcript.substring(0, 40) + '...', 'success');
                                 }
                             }
+                            
+                            updateStatus('processing');
                             
                             setTimeout(() => {
                                 addMessageWithTyping(responseData.response, 'ai', {
@@ -1467,62 +1257,45 @@
                                     playAudio(responseData.audio_file);
                                 }
                                 
-                                showToast('✓ Response received', 'success');
-                            }, transcriptReceived ? 300 : 0);
+                                updateStatus('connected');
+                            }, 500);
                             
                             return;
                         }
                         
                         if (responseData.status === 'error') {
-                            console.error('❌ Response error:', responseData.message);
                             stopListening();
-                            showToast('✗ ' + (responseData.message || 'Error occurred'), 'error');
+                            showToast(responseData.message || 'Error occurred', 'error');
+                            clearInterval(responsePollInterval);
                             return;
                         }
                         
                     } catch (error) {
-                        console.error('❌ Poll error:', error);
+                        console.error('Poll error:', error);
                     }
-                }, 250);
+                }, 200);
                 
             } catch (error) {
-                console.error('❌ Voice input error:', error);
+                console.error('Voice input error:', error);
                 stopListening();
-                
-                let errorMsg = '⚠️ ';
-                if (error.name === 'NotAllowedError') {
-                    errorMsg += 'Microphone permission denied.';
-                } else {
-                    errorMsg += 'Error: ' + error.message;
-                }
-                
-                showToast(errorMsg, 'error');
+                showToast(error.name === 'NotAllowedError' ? 'Microphone permission denied' : 'Error: ' + error.message, 'error');
             }
         }
         
         function stopListening() {
             isListening = false;
-            const voiceBtn = document.getElementById('voiceBtn');
-            voiceBtn.classList.remove('listening');
+            document.getElementById('voiceBtn').classList.remove('listening');
             updateStatus('connected');
             
             if (responsePollInterval) {
                 clearInterval(responsePollInterval);
                 responsePollInterval = null;
             }
-            if (transcriptPollInterval) {
-                clearInterval(transcriptPollInterval);
-                transcriptPollInterval = null;
-            }
         }
         
-        function addMessageWithTyping(text, type, meta = {}, isUserTranscript = false) {
+        function addMessageWithTyping(text, type, meta = {}) {
             const chatContainer = document.getElementById('chatContainer');
-            const emptyState = document.getElementById('emptyState');
-            
-            if (emptyState) {
-                emptyState.classList.add('hidden');
-            }
+            document.getElementById('emptyState')?.classList.add('hidden');
             
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type}`;
@@ -1536,7 +1309,6 @@
             
             const textDiv = document.createElement('div');
             textDiv.className = 'message-text';
-            textDiv.style.whiteSpace = 'pre-line';
             
             const cursor = document.createElement('span');
             cursor.className = 'typing-cursor';
@@ -1546,48 +1318,39 @@
             messageDiv.appendChild(avatar);
             messageDiv.appendChild(content);
             chatContainer.appendChild(messageDiv);
-            
             chatContainer.scrollTop = chatContainer.scrollHeight;
             
             let index = 0;
-            const typingSpeed = type === 'user' ? 15 : 25;
+            const speed = type === 'user' ? 12 : 20;
             
             function typeChar() {
                 if (index < text.length) {
-                    const char = text.charAt(index);
-                    
                     cursor.remove();
-                    
+                    const char = text.charAt(index);
                     if (char === '\n') {
                         textDiv.appendChild(document.createElement('br'));
                     } else {
                         textDiv.appendChild(document.createTextNode(char));
                     }
-                    
                     textDiv.appendChild(cursor);
-                    
                     index++;
                     chatContainer.scrollTop = chatContainer.scrollHeight;
-                    setTimeout(typeChar, typingSpeed);
+                    setTimeout(typeChar, speed);
                 } else {
                     cursor.remove();
-                    
                     if ((meta.model || meta.responseTime) && type === 'ai') {
                         const metaDiv = document.createElement('div');
                         metaDiv.className = 'message-meta';
-                        
                         if (meta.model) {
                             const modelSpan = document.createElement('span');
                             modelSpan.textContent = `🧠 ${meta.model}`;
                             metaDiv.appendChild(modelSpan);
                         }
-                        
                         if (meta.responseTime) {
                             const timeSpan = document.createElement('span');
                             timeSpan.textContent = `⏱️ ${(meta.responseTime * 1000).toFixed(0)}ms`;
                             metaDiv.appendChild(timeSpan);
                         }
-                        
                         content.appendChild(metaDiv);
                     }
                 }
@@ -1597,17 +1360,9 @@
             return messageDiv;
         }
         
-        function addMessage(text, type, withTyping = false, meta = {}) {
-            if (withTyping) {
-                return addMessageWithTyping(text, type, meta);
-            }
-            
+        function addMessage(text, type, meta = {}) {
             const chatContainer = document.getElementById('chatContainer');
-            const emptyState = document.getElementById('emptyState');
-            
-            if (emptyState && !emptyState.classList.contains('hidden')) {
-                emptyState.classList.add('hidden');
-            }
+            document.getElementById('emptyState')?.classList.add('hidden');
             
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type}`;
@@ -1628,19 +1383,16 @@
             if (meta.model || meta.responseTime) {
                 const metaDiv = document.createElement('div');
                 metaDiv.className = 'message-meta';
-                
                 if (meta.model) {
                     const modelSpan = document.createElement('span');
                     modelSpan.textContent = `🧠 ${meta.model}`;
                     metaDiv.appendChild(modelSpan);
                 }
-                
                 if (meta.responseTime) {
                     const timeSpan = document.createElement('span');
                     timeSpan.textContent = `⏱️ ${(meta.responseTime * 1000).toFixed(0)}ms`;
                     metaDiv.appendChild(timeSpan);
                 }
-                
                 content.appendChild(metaDiv);
             }
             
@@ -1654,7 +1406,6 @@
         
         function showTypingIndicator() {
             hideTypingIndicator();
-            
             const chatContainer = document.getElementById('chatContainer');
             const typingDiv = document.createElement('div');
             typingDiv.className = 'message ai';
@@ -1686,7 +1437,6 @@
         
         function playAudio(audioFile) {
             if (!audioFile) return;
-            
             if (currentAudio) {
                 currentAudio.pause();
                 currentAudio = null;
@@ -1696,14 +1446,8 @@
             const audio = new Audio(audioUrl);
             currentAudio = audio;
             
-            audio.addEventListener('error', (e) => {
-                console.error('Audio playback error:', e);
-                currentAudio = null;
-            });
-            
-            audio.addEventListener('ended', () => {
-                currentAudio = null;
-            });
+            audio.addEventListener('ended', () => { currentAudio = null; });
+            audio.addEventListener('error', () => { currentAudio = null; });
             
             audio.play().catch(error => {
                 console.error('Audio play error:', error);
@@ -1713,21 +1457,17 @@
         
         function showWelcomeMessage() {
             const welcomeText = `Hi! I'm Lana. How can I help you today?
-            
+
 🎯 My Features:
 • Voice & Text Communication
 • Weather & News Updates
 • Cybersecurity Tools (CyberSentry, NMAP, OSINT)
 • Document Analysis
 • Smart Conversations
-• System Commands
 
 Just speak naturally, and I'll assist you!`;
             
-            addMessageWithTyping(welcomeText, 'ai', {
-                model: 'lana-welcome',
-                responseTime: 0
-            });
+            addMessageWithTyping(welcomeText, 'ai', { model: 'lana-welcome' });
         }
         
         function showToast(message, type = 'success') {
@@ -1754,14 +1494,12 @@ Just speak naturally, and I'll assist you!`;
         }
         
         function openModal(id, callback) {
-            const modal = document.getElementById(id);
-            modal.classList.add('active');
+            document.getElementById(id).classList.add('active');
             if (callback) callback();
         }
         
         function closeModal(id) {
-            const modal = document.getElementById(id);
-            modal.classList.remove('active');
+            document.getElementById(id).classList.remove('active');
         }
         
         async function loadHistoryContent() {
@@ -1774,7 +1512,6 @@ Just speak naturally, and I'll assist you!`;
                 
                 if (data.conversations && data.conversations.length > 0) {
                     let html = '<div style="display: flex; flex-direction: column; gap: 1rem;">';
-                    
                     data.conversations.slice(0, 20).forEach(conv => {
                         const date = new Date(conv.timestamp * 1000).toLocaleString();
                         html += `
@@ -1787,7 +1524,6 @@ Just speak naturally, and I'll assist you!`;
                             </div>
                         `;
                     });
-                    
                     html += '</div>';
                     content.innerHTML = html;
                 } else {
@@ -1799,8 +1535,7 @@ Just speak naturally, and I'll assist you!`;
         }
         
         function loadSettingsContent() {
-            const content = document.getElementById('settingsContent');
-            content.innerHTML = `
+            document.getElementById('settingsContent').innerHTML = `
                 <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                     <div>
                         <h3 style="color: var(--primary); margin-bottom: 0.5rem;">Voice Settings</h3>
@@ -1818,19 +1553,8 @@ Just speak naturally, and I'll assist you!`;
             `;
         }
         
-        async function loadHistory() {
-            try {
-                const response = await fetch(`${API_BASE}/history?user_id=${USER_ID}&per_page=5`);
-                const data = await response.json();
-                console.log('History loaded:', data.total, 'conversations');
-            } catch (error) {
-                console.error('Failed to load history:', error);
-            }
-        }
-        
         function sendQuickQuery(query) {
-            const textInput = document.getElementById('textInput');
-            textInput.value = query;
+            document.getElementById('textInput').value = query;
             sendTextMessage();
         }
         
