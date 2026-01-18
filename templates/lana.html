@@ -337,6 +337,8 @@
             flex-direction: column;
             align-items: center;
             gap: 12px;
+            position: relative;
+            z-index: 5;
         }
         
         .robot-eyes {
@@ -351,6 +353,7 @@
             border-radius: 50%;
             position: relative;
             animation: eyeBlink 4s ease-in-out infinite;
+            border: 2px solid rgba(0, 255, 136, 0.3);
         }
         
         .robot-eye::before {
@@ -375,6 +378,7 @@
             border-radius: 50%;
             top: 4px;
             right: 4px;
+            box-shadow: 0 0 5px var(--secondary);
         }
         
         @keyframes eyeBlink {
@@ -384,45 +388,64 @@
         
         .robot-mouth {
             width: 50px;
-            height: 6px;
-            background: linear-gradient(90deg, transparent, var(--secondary), var(--primary), var(--secondary), transparent);
-            border-radius: 3px;
+            height: 8px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 10px;
             position: relative;
             overflow: hidden;
+            border: 1px solid rgba(0, 255, 136, 0.2);
         }
         
         .robot-mouth::after {
             content: '';
             position: absolute;
-            width: 20px;
+            width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, #fff, transparent);
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            left: -100%;
             animation: mouthScan 2s ease-in-out infinite;
         }
         
         @keyframes mouthScan {
-            0% { left: -20px; }
-            100% { left: 70px; }
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .robot-scanner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, rgba(0, 255, 136, 0.1), transparent);
+            animation: vScan 3s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes vScan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
         }
         
         .robot-antenna {
             position: absolute;
-            top: -20px;
+            top: -25px;
             left: 50%;
             transform: translateX(-50%);
             width: 4px;
-            height: 20px;
+            height: 25px;
             background: linear-gradient(to top, var(--bg-elevated), var(--primary));
+            border-radius: 2px;
         }
         
         .robot-antenna::before {
             content: '';
             position: absolute;
-            top: -8px;
+            top: -10px;
             left: 50%;
             transform: translateX(-50%);
-            width: 12px;
-            height: 12px;
+            width: 14px;
+            height: 14px;
             background: var(--primary);
             border-radius: 50%;
             box-shadow: 0 0 20px var(--primary);
@@ -1038,14 +1061,15 @@
                         <div class="robot-outer-ring"></div>
                         <div class="robot-core">
                             <div class="robot-antenna"></div>
-                            <div class="robot-face-inner">
-                                <div class="robot-eyes">
-                                    <div class="robot-eye"></div>
-                                    <div class="robot-eye"></div>
+                                <div class="robot-face-inner">
+                                    <div class="robot-eyes">
+                                        <div class="robot-eye"></div>
+                                        <div class="robot-eye"></div>
+                                    </div>
+                                    <div class="robot-mouth"></div>
                                 </div>
-                                <div class="robot-mouth"></div>
+                                <div class="robot-scanner"></div>
                             </div>
-                        </div>
                         <div class="robot-particles">
                             <span></span><span></span><span></span>
                             <span></span><span></span>
@@ -1369,20 +1393,20 @@
                                 transcriptReceived = true;
                                 console.log('✅ Transcript received:', transcript);
                                 
+                                // AUTO-STOP MIC when speech is detected and transcribed
                                 stopListening();
                                 
                                 if (isFirstMessage) {
+                                    // FIRST transcription is "just load" (instant)
                                     addMessage(transcript, 'user', false);
                                     isFirstMessage = false;
                                 } else {
+                                    // SUBSEQUENT transcriptions are "chatgpt style" (typing)
                                     addMessageWithTyping(transcript, 'user', {}, true);
                                 }
                                 
                                 showToast('✓ Heard: ' + transcript.substring(0, 50), 'success');
                                 updateStatus('processing');
-                                
-                                clearInterval(transcriptPollInterval);
-                                transcriptPollInterval = null;
                             }
                         }
                     } catch (error) {
@@ -1689,13 +1713,14 @@
         
         function showWelcomeMessage() {
             const welcomeText = `Hi! I'm Lana. How can I help you today?
-
+            
 🎯 My Features:
 • Voice & Text Communication
 • Weather & News Updates
 • Cybersecurity Tools (CyberSentry, NMAP, OSINT)
 • Document Analysis
 • Smart Conversations
+• System Commands
 
 Just speak naturally, and I'll assist you!`;
             
