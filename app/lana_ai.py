@@ -920,12 +920,7 @@ def generate_audio_fast(text: str, language: str = "en-US") -> Optional[str]:
         audio_file = get_tts_with_fallback(text, lang_code)
         
         if audio_file:
-            # Play the audio
-            play_audio_file(audio_file)
-            
             # Return path relative to AUDIO_DIR for client access
-            # audio_file is in TEMP_AUDIO_DIR (audio/temp/gtts_xxx.mp3)
-            # Return as "temp/gtts_xxx.mp3" so client can access via /audio/temp/gtts_xxx.mp3
             return f"temp/{os.path.basename(audio_file)}"
         
         return None
@@ -1047,7 +1042,8 @@ def audio_worker():
                         
                         audio_filename = None
                         try:
-                            audio_filename = audio_future.result(timeout=3)
+                            # Increase timeout to 30s to allow for longer responses and network latency
+                            audio_filename = audio_future.result(timeout=30)
                         except Exception as e:
                             logger.error(f"Audio generation timeout: {e}")
                         
