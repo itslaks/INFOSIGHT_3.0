@@ -234,6 +234,8 @@ db_lock = threading.Lock()
 audio_queue = queue.Queue()
 response_queue = queue.Queue()
 transcript_queue = queue.Queue()
+# Store last transcript so it can be polled multiple times
+last_transcript = None
 
 is_audio_playing = False
 pygame_initialized = False
@@ -417,6 +419,42 @@ def search_responses_knowledge_base(query: str) -> Optional[str]:
     query_lower = query.lower().strip()
     if not query_lower:
         return None
+    
+    # Define trigger keywords that should activate JSON knowledge base search
+    # Only search responses.json for CYBERSECURITY and TOOLS queries
+    KB_TRIGGER_KEYWORDS = [
+        # Core tools
+        'sentry', 'cybersentry', 'nmap', 'port scanner', 'portscanner',
+        'osint', 'infosight', 'donna', 'webseeker', 'filescanner',
+        'inkwell', 'trueshot', 'snapspeak', 'enscan', 'infocrypt',
+        
+        # Cybersecurity terms
+        'cybersecurity', 'cyber security', 'cyber', 'security', 'hack', 'hacking',
+        'penetration', 'pentest', 'vulnerability', 'exploit', 'malware',
+        'firewall', 'intrusion', 'threat', 'attack', 'breach',
+        
+        # Commands and tools
+        'command', 'commands', 'tool', 'tools', 'scan', 'scanning',
+        'nmap commands', 'sentry commands', 'cybersentry commands',
+        'security tools', 'hacking tools', 'cyber tools',
+        
+        # Action phrases
+        'how to use', 'show me', 'teach me', 'find commands', 'get commands',
+        'from sentry', 'from cybersentry', 'using sentry', 'with sentry',
+        'explain sentry', 'what is sentry', 'sentry features'
+    ]
+    
+    # Check if query contains any trigger keywords
+    # Only search JSON if trigger keywords are present
+    matched_keywords = [kw for kw in KB_TRIGGER_KEYWORDS if kw in query_lower]
+    should_search_kb = len(matched_keywords) > 0
+    
+    if not should_search_kb:
+        logger.info(f"📚 Skipping knowledge base - no cybersecurity/tool keywords detected")
+        logger.info(f"📚 Query: '{query_lower[:100]}'")
+        return None
+    
+    logger.info(f"📚 Searching knowledge base - matched keywords: {matched_keywords[:3]}")
     
     best_score = 0
     best_answer = None
@@ -943,6 +981,7 @@ def process_query(query: str, user_id: str = "default") -> Tuple[str, str, Optio
 # ==================== BACKGROUND WORKER ====================
 def audio_worker():
     global conversation_history
+    global last_transcript
     
     while not stop_event.is_set():
         try:
@@ -952,8 +991,19 @@ def audio_worker():
                 if request_type == "listen":
                     start_time = time.time()
                     
+                    # Clear old transcript queue and last_transcript
+                    last_transcript = None
+                    while not transcript_queue.empty():
+                        try:
+                            transcript_queue.get_nowait()
+                        except:
+                            break
+                    
                     # Transcribe with improved recognition (includes audio data)
                     transcript, audio_array = transcribe_audio_optimized(language=current_language)
+                    
+                    # Immediately signal that listening has stopped (auto-stop)
+                    logger.info("🎤 Listening stopped automatically (speech detected)")
                     
                     if transcript:
                         # Clear old transcripts
@@ -964,13 +1014,19 @@ def audio_worker():
                                 break
                         
                         # Send transcript immediately
-                        transcript_queue.put({
+                        transcript_data = {
                             "status": "transcript",
                             "transcript": transcript,
-                            "is_final": True
-                        })
+                            "is_final": True,
+                            "timestamp": time.time()
+                        }
+                        transcript_queue.put(transcript_data)
                         
-                        logger.info(f"📤 Transcript queued: '{transcript}'")
+                        # Store last transcript for multiple polls
+                        last_transcript = transcript_data
+                        
+                        logger.info(f"📤 Transcript queued: '{transcript}' (queue size: {transcript_queue.qsize()})")
+                        logger.info(f"📤 Transcript data: {transcript_data}")
                         
                         # Process query in parallel with audio generation
                         try:
@@ -1068,6 +1124,8 @@ def index():
 @rate_limit_api(requests_per_minute=30, requests_per_hour=300)
 def listen():
     """Rate limited voice input endpoint"""
+    global last_transcript
+    last_transcript = None  # Reset last transcript on new listen
     audio_queue.put("listen")
     return jsonify({"status": "listening"})
 
@@ -1082,10 +1140,20 @@ def get_response():
 @lana_ai.route('/get_transcript', methods=['GET'])
 @rate_limit_api(requests_per_minute=60, requests_per_hour=600)
 def get_transcript():
-    """Rate limited transcript polling endpoint"""
+    """Rate limited transcript polling endpoint - returns last transcript until new one arrives"""
+    global last_transcript
     try:
+        # Check queue first (new transcript)
         if not transcript_queue.empty():
-            return jsonify(transcript_queue.get())
+            last_transcript = transcript_queue.get()
+            logger.info(f"📤 Returning new transcript: '{last_transcript.get('transcript', '')[:50]}...'")
+            return jsonify(last_transcript)
+        
+        # Return last transcript if available (allows multiple polls)
+        if last_transcript:
+            logger.debug(f"📤 Returning cached transcript: '{last_transcript.get('transcript', '')[:50]}...'")
+            return jsonify(last_transcript)
+        
         return jsonify({"status": "listening"})
     except Exception as e:
         logger.error(f"Transcript endpoint error: {e}")

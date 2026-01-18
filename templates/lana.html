@@ -13,7 +13,7 @@
         * {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            box-sizing: border-box;  
         }
         
         :root {
@@ -166,6 +166,12 @@
         .status-badge.listening {
             border-color: var(--accent);
             color: var(--accent);
+            animation: statusPulse 1s ease-in-out infinite;
+        }
+
+        .status-badge.transcribing {
+            border-color: var(--secondary);
+            color: var(--secondary);
             animation: statusPulse 1s ease-in-out infinite;
         }
         
@@ -517,6 +523,8 @@
             gap: 1rem;
             max-width: 75%;
             animation: slideIn 0.4s ease-out;
+            animation-fill-mode: forwards;
+            opacity: 1;
         }
         
         @keyframes slideIn {
@@ -610,7 +618,7 @@
         
         /* Input Area */
         .input-area {
-            padding: 1.5rem 2rem;
+            padding: 1.5rem 2rem 2.5rem 2rem;
             background: rgba(21, 27, 46, 0.8);
             backdrop-filter: blur(20px);
             border-top: 1px solid var(--border);
@@ -751,8 +759,10 @@
             align-items: center;
             gap: 0.75rem;
             min-width: 300px;
+            max-width: 400px;
             animation: slideInRight 0.3s ease-out;
             box-shadow: var(--shadow);
+            word-wrap: break-word;
         }
         
         @keyframes slideInRight {
@@ -1021,11 +1031,13 @@
         const API_BASE = window.location.origin + '/lana_ai';
         const USER_ID = 'web_user_' + Math.random().toString(36).substr(2, 9);
         let isListening = false;
+        let welcomeShown = false;  // Track if welcome message was shown
         let responsePollInterval = null;
+        let transcriptPollInterval = null;
         let currentAudio = null;
         let visualizerAnimationId = null;
         
-        // Initialize
+        // Initialize   q
         document.addEventListener('DOMContentLoaded', () => {
             console.log('🚀 Lana AI Initialized');
             initializeEventListeners();
@@ -1036,12 +1048,17 @@
         function initializeEventListeners() {
             const textInput = document.getElementById('textInput');
             
-            // OWASP: Add character counter for input validation feedback
             const charCounter = document.createElement('div');
             charCounter.id = 'charCounter';
-            charCounter.style.cssText = 'text-align: right; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;';
-            charCounter.textContent = '0/397 characters';
-            textInput.parentElement.appendChild(charCounter);
+            charCounter.style.cssText = 'position: absolute; bottom: -22px; right: 20px; font-size: 0.75rem; color: var(--text-muted); z-index: 10;';
+            charCounter.textContent = '0/397';
+            
+            // Make input wrapper relative for absolute positioning
+            const inputWrapper = textInput.closest('.input-wrapper');
+            if (inputWrapper) {
+                inputWrapper.style.position = 'relative';
+                inputWrapper.appendChild(charCounter);
+            }
             
             // Update character counter on input
             textInput.addEventListener('input', () => {
@@ -1101,6 +1118,15 @@
             } else if (status === 'listening') {
                 statusBadge.className = 'status-badge listening';
                 statusText.textContent = 'Listening';
+            } else if (status === 'transcribing') {
+                statusBadge.className = 'status-badge transcribing';
+                statusText.textContent = 'Transcribing...';
+            } else if (status === 'processing') {
+                statusBadge.className = 'status-badge transcribing';
+                statusText.textContent = 'Processing...';
+            } else if (status === 'responding') {
+                statusBadge.className = 'status-badge connected';
+                statusText.textContent = 'Responding...';
             } else {
                 statusBadge.className = 'status-badge';
                 statusText.textContent = 'Not Connected';
@@ -1184,14 +1210,20 @@
         async function toggleVoiceInput() {
             const voiceBtn = document.getElementById('voiceBtn');
             
+            // Stop listening if already listening
             if (isListening) {
                 isListening = false;
                 voiceBtn.classList.remove('listening');
                 updateStatus('connected');
+                console.log('🛑 User manually stopped listening');
                 
                 if (responsePollInterval) {
                     clearInterval(responsePollInterval);
                     responsePollInterval = null;
+                }
+                if (transcriptPollInterval) {
+                    clearInterval(transcriptPollInterval);
+                    transcriptPollInterval = null;
                 }
                 if (visualizerAnimationId) {
                     cancelAnimationFrame(visualizerAnimationId);
@@ -1201,144 +1233,207 @@
             }
             
             try {
+                // Request microphone permission
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 stream.getTracks().forEach(track => track.stop());
                 
+                // Start listening
                 isListening = true;
                 voiceBtn.classList.add('listening');
                 updateStatus('listening');
                 initVoiceVisualizer();
                 
-                // Hide empty state immediately
-                document.getElementById('emptyState').classList.add('hidden');
+                // Hide empty state
+                const emptyState = document.getElementById('emptyState');
+                if (emptyState) {
+                    emptyState.classList.add('hidden');
+                }
                 
+                // Show welcome message only on first use
+                if (!welcomeShown) {
+                    showWelcomeMessage();
+                    welcomeShown = true;
+                }
+                
+                // Start backend listening
                 const listenResponse = await fetch(`${API_BASE}/listen`, { method: 'POST' });
+                if (!listenResponse.ok) {
+                    throw new Error('Failed to start listening');
+                }
                 
-                if (!listenResponse.ok) throw new Error('Failed to start listening');
+                console.log('🎤 Started listening...');
                 
-                let pollCount = 0;
+                // State tracking
                 let transcriptReceived = false;
-                let transcriptText = '';
+                let responseReceived = false;
+                let userMessageDiv = null;
+                let pollCount = 0;
+                const MAX_POLLS = 150; // 30 seconds at 200ms intervals
                 
-                responsePollInterval = setInterval(async () => {
-                    pollCount++;
-                    
-                    // Timeout after 30 seconds (100 polls * 300ms)
-                    if (pollCount > 100) {
-                        isListening = false;
-                        voiceBtn.classList.remove('listening');
-                        if (visualizerAnimationId) {
-                            cancelAnimationFrame(visualizerAnimationId);
-                            visualizerAnimationId = null;
-                        }
-                        clearInterval(responsePollInterval);
-                        responsePollInterval = null;
-                        updateStatus('connected');
-                        showToast('⏱️ Timeout', 'error');
+                // Separate transcript polling (faster, dedicated)
+                transcriptPollInterval = setInterval(async () => {
+                    if (transcriptReceived || responseReceived) {
+                        clearInterval(transcriptPollInterval);
+                        transcriptPollInterval = null;
                         return;
                     }
                     
                     try {
-                        // First, check for transcript
-                        if (!transcriptReceived) {
-                            const transcriptResponse = await fetch(`${API_BASE}/get_transcript`);
-                            const transcriptData = await transcriptResponse.json();
-                            
-                            console.log('Transcript poll:', transcriptData);
-                            
-                            if (transcriptData.status === 'transcript' && transcriptData.is_final && transcriptData.transcript) {
-                                transcriptReceived = true;
-                                transcriptText = transcriptData.transcript;
-                                
-                                // Stop listening animation
-                                isListening = false;
-                                voiceBtn.classList.remove('listening');
-                                if (visualizerAnimationId) {
-                                    cancelAnimationFrame(visualizerAnimationId);
-                                    visualizerAnimationId = null;
-                                }
-                                updateStatus('connected');
-                                
-                                // Add user message with typing effect
-                                userMessageDiv = addMessageWithTyping(transcriptText, 'user');
-                                showToast('✓ Speech recognized', 'success');
-                            }
-                        }
+                        const transcriptResponse = await fetch(`${API_BASE}/get_transcript`);
+                        const transcriptData = await transcriptResponse.json();
                         
-                        // Then check for response (only after transcript is received or if no speech)
-                        if (transcriptReceived || pollCount > 10) {
-                            const response = await fetch(`${API_BASE}/get_response`);
-                            const data = await response.json();
-
-                            console.log('Response poll:', data);
+                        console.log('[Transcript Poll]', transcriptData);  // Debug log
+                        
+                        if (transcriptData.status === 'transcript' && transcriptData.transcript && transcriptData.is_final) {
+                            const transcript = transcriptData.transcript.trim();
                             
-                            if (data.status === 'no_speech') {
+                            if (transcript && transcript !== '.' && transcript.length > 0) {
+                                transcriptReceived = true;
+                                console.log('✅ Transcript received:', transcript);
+                                
+                                // Force hide empty state
+                                const emptyState = document.getElementById('emptyState');
+                                if (emptyState) {
+                                    emptyState.classList.add('hidden');
+                                }
+                                
+                                // Display transcript immediately with typing effect
+                                userMessageDiv = addMessageWithTyping(transcript, 'user');
+                                showToast('✓ Heard: ' + transcript.substring(0, 50), 'success');
+                                
+                                // Auto-stop listening visual (mic button)
                                 isListening = false;
                                 voiceBtn.classList.remove('listening');
+                                console.log('🔴 Mic auto-stopped');
                                 if (visualizerAnimationId) {
                                     cancelAnimationFrame(visualizerAnimationId);
                                     visualizerAnimationId = null;
                                 }
-                                clearInterval(responsePollInterval);
-                                responsePollInterval = null;
-                                updateStatus('connected');
-                                showToast('🔇 No speech detected', 'error');
-                                return;
-                            }
-                            
-                            if (data.status === 'success') {
-                                clearInterval(responsePollInterval);
-                                responsePollInterval = null;
+                                updateStatus('transcribing');
                                 
-                                if (!transcriptReceived && data.transcript) {
-                                    transcriptText = data.transcript;
-                                    userMessageDiv = addMessageWithTyping(transcriptText, 'user');
-                                }
+                                // Wait a bit before showing processing
+                                setTimeout(() => updateStatus('processing'), 500);
                                 
-                                // Add AI response with typing effect
-                                addMessageWithTyping(data.response, 'ai', {
-                                    model: data.model_used,
-                                    responseTime: data.response_time
-                                });
-                                
-                                if (data.audio_file) {
-                                    playAudio(data.audio_file);
-                                }
-                                
-                                showToast('✓ Voice response received', 'success');
-                            }
-                            
-                            if (data.status === 'error') {
-                                isListening = false;
-                                voiceBtn.classList.remove('listening');
-                                if (visualizerAnimationId) {
-                                    cancelAnimationFrame(visualizerAnimationId);
-                                    visualizerAnimationId = null;
-                                }
-                                clearInterval(responsePollInterval);
-                                responsePollInterval = null;
-                                updateStatus('connected');
-                                showToast('✗ ' + (data.message || 'Error occurred'), 'error');
+                                // Stop transcript polling
+                                clearInterval(transcriptPollInterval);
+                                transcriptPollInterval = null;
                             }
                         }
                     } catch (error) {
-                        console.error('Poll error:', error);
+                        console.error('Transcript poll error:', error);
                     }
-                }, 300);
+                }, 150); // Fast transcript polling
+                
+                // Main response polling (slower, checks for final response)
+                responsePollInterval = setInterval(async () => {
+                    pollCount++;
+                    
+                    // Timeout check
+                    if (pollCount > MAX_POLLS) {
+                        console.log('⏱️ Polling timeout');
+                        cleanup();
+                        showToast('⏱️ Timeout - no response received', 'error');
+                        return;
+                    }
+                    
+                    try {
+                        const responseCheck = await fetch(`${API_BASE}/get_response`);
+                        const responseData = await responseCheck.json();
+                        
+                        console.log(`[Poll ${pollCount}] Response status:`, responseData.status);
+                        
+                        // Handle different response statuses
+                        if (responseData.status === 'no_speech') {
+                            console.log('🔇 No speech detected');
+                            cleanup();
+                            showToast('🔇 No speech detected', 'error');
+                            return;
+                        }
+                        
+                        if (responseData.status === 'success') {
+                            responseReceived = true;
+                            console.log('✅ Response received');
+                            
+                            updateStatus('responding');
+                            cleanup();   
+                            // Show transcript if not already shown
+                            if (!transcriptReceived && responseData.transcript) {
+                                const transcript = responseData.transcript.trim();
+                                if (transcript && transcript !== '.' && transcript.length > 0) {
+                                    userMessageDiv = addMessageWithTyping(transcript, 'user');
+                                    transcriptReceived = true;
+                                }
+                            }
+                            
+                            // Show AI response
+                            setTimeout(() => {
+                                addMessageWithTyping(responseData.response, 'ai', {
+                                    model: responseData.model_used,
+                                    responseTime: responseData.response_time
+                                });
+                                
+                                if (responseData.audio_file) {
+                                    playAudio(responseData.audio_file);
+                                }
+                                
+                                showToast('✓ Response received', 'success');
+                            }, transcriptReceived ? 300 : 0);
+                            
+                            return;
+                        }
+                        
+                        if (responseData.status === 'error') {
+                            console.error('❌ Response error:', responseData.message);
+                            cleanup();
+                            showToast('✗ ' + (responseData.message || 'Error occurred'), 'error');
+                            return;
+                        }
+                        
+                        // Status: "processing" - continue polling
+                        
+                    } catch (error) {
+                        console.error('❌ Poll error:', error);
+                        // Don't stop on network errors, keep trying
+                    }
+                }, 250); // Response polling interval
+                
+                // Cleanup function
+                function cleanup() {
+                    isListening = false;
+                    voiceBtn.classList.remove('listening');
+                    updateStatus('connected');
+                    
+                    if (responsePollInterval) {
+                        clearInterval(responsePollInterval);
+                        responsePollInterval = null;
+                    }
+                    if (transcriptPollInterval) {
+                        clearInterval(transcriptPollInterval);
+                        transcriptPollInterval = null;
+                    }
+                    if (visualizerAnimationId) {
+                        cancelAnimationFrame(visualizerAnimationId);
+                        visualizerAnimationId = null;
+                    }
+                }
+                
             } catch (error) {
+                console.error('❌ Voice input error:', error);
+                
                 isListening = false;
                 voiceBtn.classList.remove('listening');
+                updateStatus('connected');
+                
                 if (visualizerAnimationId) {
                     cancelAnimationFrame(visualizerAnimationId);
                     visualizerAnimationId = null;
                 }
-                updateStatus('connected');
                 
                 let errorMsg = '⚠️ ';
                 if (error.name === 'NotAllowedError') {
                     errorMsg += 'Microphone permission denied. Please allow access.';
                 } else {
-                    errorMsg += 'Microphone error: ' + error.message;
+                    errorMsg += 'Error: ' + error.message;
                 }
                 
                 showToast(errorMsg, 'error');
@@ -1349,7 +1444,8 @@
             const chatContainer = document.getElementById('chatContainer');
             const emptyState = document.getElementById('emptyState');
             
-            if (emptyState && !emptyState.classList.contains('hidden')) {
+            // Force hide empty state
+            if (emptyState) {
                 emptyState.classList.add('hidden');
             }
             
@@ -1365,12 +1461,17 @@
             
             const textDiv = document.createElement('div');
             textDiv.className = 'message-text';
+            textDiv.style.whiteSpace = 'pre-line';  // Preserve line breaks
             
             content.appendChild(textDiv);
             messageDiv.appendChild(avatar);
             messageDiv.appendChild(content);
             chatContainer.appendChild(messageDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            // Force scroll to bottom
+            setTimeout(() => {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }, 50);
             
             // Typing effect
             let index = 0;
@@ -1378,7 +1479,15 @@
             
             function typeChar() {
                 if (index < text.length) {
-                    textDiv.textContent += text.charAt(index);
+                    const char = text.charAt(index);
+                    
+                    // Handle newlines properly
+                    if (char === '\n') {
+                        textDiv.innerHTML += '<br>';
+                    } else {
+                        textDiv.textContent += char;
+                    }
+                    
                     index++;
                     chatContainer.scrollTop = chatContainer.scrollHeight;
                     setTimeout(typeChar, typingSpeed);
@@ -1459,6 +1568,9 @@
         }
         
         function showTypingIndicator() {
+            // Remove any existing typing indicator first
+            hideTypingIndicator();
+            
             const chatContainer = document.getElementById('chatContainer');
             const typingDiv = document.createElement('div');
             typingDiv.className = 'message ai';
@@ -1500,9 +1612,14 @@
             const audio = new Audio(audioUrl);
             currentAudio = audio;
             
-            audio.addEventListener('error', () => {
-                console.error('Audio playback error');
+            audio.addEventListener('error', (e) => {
+                console.error('Audio playback error:', e);
+                showToast('⚠️ Audio playback failed', 'error');
                 currentAudio = null;
+            });
+            
+            audio.addEventListener('loadeddata', () => {
+                console.log('✓ Audio loaded successfully');
             });
             
             audio.addEventListener('ended', () => {
@@ -1512,6 +1629,15 @@
             audio.play().catch(error => {
                 console.error('Audio play error:', error);
                 currentAudio = null;
+            });
+        }
+        
+        function showWelcomeMessage() {
+            const welcomeText = "Hi! I'm Lana. How can I help you today?\n\n🎯 My Features:\n• Voice & Text Communication\n• Weather & News Updates\n• Cybersecurity Tools (CyberSentry, NMAP, OSINT)\n• Document Analysis\n• Smart Conversations\n\nJust speak naturally, and I'll assist you!";
+            
+            addMessageWithTyping(welcomeText, 'ai', {
+                model: 'lana-welcome',
+                responseTime: 0
             });
         }
         
@@ -1570,10 +1696,9 @@
             if (visualizerAnimationId) {
                 cancelAnimationFrame(visualizerAnimationId);
             }
-            
             draw();
         }
-        
+
         function openModal(modalId, loadFunction) {
             const modal = document.getElementById(modalId);
             modal.classList.add('active');
