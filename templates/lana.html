@@ -42,7 +42,6 @@
             position: relative;
         }
         
-        /* Animated Background */
         body::before {
             content: '';
             position: fixed;
@@ -65,7 +64,6 @@
             66% { transform: translate(5%, 5%); }
         }
         
-        /* Grid Background */
         body::after {
             content: '';
             position: fixed;
@@ -92,7 +90,6 @@
             z-index: 1;
         }
         
-        /* Header */
         .header {
             background: rgba(21, 27, 46, 0.8);
             backdrop-filter: blur(20px);
@@ -221,7 +218,6 @@
             box-shadow: var(--glow-primary);
         }
         
-        /* Chat Container */
         .chat-container {
             flex: 1;
             overflow-y: auto;
@@ -242,7 +238,6 @@
             border-radius: 3px;
         }
         
-        /* Empty State */
         .empty-state {
             display: flex;
             flex-direction: column;
@@ -259,8 +254,8 @@
         }
         
         .empty-icon {
-            width: 120px;
-            height: 120px;
+            width: 140px;
+            height: 140px;
             margin-bottom: 1.5rem;
             position: relative;
             display: flex;
@@ -277,21 +272,26 @@
             justify-content: center;
         }
         
-        .robot-glow-ring {
+        .robot-outer-ring {
             position: absolute;
-            width: 140%;
-            height: 140%;
+            width: 160%;
+            height: 160%;
             border-radius: 50%;
-            background: conic-gradient(
-                from 0deg,
-                var(--primary),
-                var(--secondary),
-                var(--accent),
-                var(--primary)
-            );
-            opacity: 0.2;
-            animation: ringRotate 4s linear infinite;
-            filter: blur(20px);
+            border: 2px dashed rgba(0, 255, 136, 0.3);
+            animation: ringRotate 15s linear infinite;
+        }
+        
+        .robot-outer-ring::before {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 20px var(--primary);
         }
         
         @keyframes ringRotate {
@@ -302,61 +302,136 @@
         .robot-core {
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 153, 255, 0.1));
-            border-radius: 24px;
-            border: 2px solid rgba(0, 255, 136, 0.3);
+            background: linear-gradient(145deg, #1a2332 0%, #0d1321 100%);
+            border-radius: 50%;
+            border: 3px solid transparent;
+            background-clip: padding-box;
             position: relative;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(10px);
+            overflow: hidden;
             box-shadow: 
-                inset 0 0 30px rgba(0, 255, 136, 0.1),
-                0 0 40px rgba(0, 255, 136, 0.2);
-            animation: coreGlow 3s ease-in-out infinite;
+                0 0 60px rgba(0, 255, 136, 0.2),
+                inset 0 0 40px rgba(0, 0, 0, 0.5);
         }
         
-        @keyframes coreGlow {
-            0%, 100% { 
-                box-shadow: 
-                    inset 0 0 30px rgba(0, 255, 136, 0.1),
-                    0 0 40px rgba(0, 255, 136, 0.2);
-            }
-            50% { 
-                box-shadow: 
-                    inset 0 0 40px rgba(0, 153, 255, 0.2),
-                    0 0 60px rgba(0, 153, 255, 0.3);
-            }
+        .robot-core::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            z-index: -1;
+            animation: borderGlow 3s ease-in-out infinite;
         }
         
-        .robot-visor {
-            width: 70%;
-            height: 20px;
-            background: linear-gradient(90deg, 
-                transparent,
-                var(--primary),
-                var(--secondary),
-                transparent
-            );
-            border-radius: 10px;
+        @keyframes borderGlow {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+        
+        .robot-face-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .robot-eyes {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .robot-eye {
+            width: 24px;
+            height: 24px;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+            border-radius: 50%;
+            position: relative;
+            animation: eyeBlink 4s ease-in-out infinite;
+        }
+        
+        .robot-eye::before {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #fff;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px #fff;
+        }
+        
+        .robot-eye::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--secondary);
+            border-radius: 50%;
+            top: 4px;
+            right: 4px;
+        }
+        
+        @keyframes eyeBlink {
+            0%, 45%, 55%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(0.1); }
+        }
+        
+        .robot-mouth {
+            width: 50px;
+            height: 6px;
+            background: linear-gradient(90deg, transparent, var(--secondary), var(--primary), var(--secondary), transparent);
+            border-radius: 3px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 0 20px var(--primary);
         }
         
-        .robot-eye-scanner {
-            width: 30px;
+        .robot-mouth::after {
+            content: '';
+            position: absolute;
+            width: 20px;
             height: 100%;
             background: linear-gradient(90deg, transparent, #fff, transparent);
-            position: absolute;
-            animation: scanEye 2s ease-in-out infinite;
-            filter: blur(2px);
+            animation: mouthScan 2s ease-in-out infinite;
         }
         
-        @keyframes scanEye {
-            0%, 100% { left: -30px; }
-            50% { left: calc(100% + 30px); }
+        @keyframes mouthScan {
+            0% { left: -20px; }
+            100% { left: 70px; }
+        }
+        
+        .robot-antenna {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(to top, var(--bg-elevated), var(--primary));
+        }
+        
+        .robot-antenna::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--primary);
+            animation: antennaPulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes antennaPulse {
+            0%, 100% { box-shadow: 0 0 20px var(--primary); }
+            50% { box-shadow: 0 0 40px var(--primary), 0 0 60px var(--secondary); }
         }
         
         .robot-particles {
@@ -365,6 +440,7 @@
             height: 100%;
             top: 0;
             left: 0;
+            pointer-events: none;
         }
         
         .robot-particles span {
@@ -374,96 +450,25 @@
             background: var(--primary);
             border-radius: 50%;
             box-shadow: 0 0 10px var(--primary);
-            animation: particleFloat 3s ease-in-out infinite;
+            animation: particleOrbit 4s linear infinite;
         }
         
-        .robot-particles span:nth-child(1) {
-            top: 20%;
-            left: 15%;
-            animation-delay: 0s;
-        }
+        .robot-particles span:nth-child(1) { animation-delay: 0s; }
+        .robot-particles span:nth-child(2) { animation-delay: 0.8s; }
+        .robot-particles span:nth-child(3) { animation-delay: 1.6s; }
+        .robot-particles span:nth-child(4) { animation-delay: 2.4s; }
+        .robot-particles span:nth-child(5) { animation-delay: 3.2s; }
         
-        .robot-particles span:nth-child(2) {
-            top: 70%;
-            left: 25%;
-            animation-delay: 0.5s;
-        }
-        
-        .robot-particles span:nth-child(3) {
-            top: 40%;
-            right: 15%;
-            animation-delay: 1s;
-        }
-        
-        .robot-particles span:nth-child(4) {
-            top: 80%;
-            right: 20%;
-            animation-delay: 1.5s;
-        }
-        
-        .robot-particles span:nth-child(5) {
-            top: 30%;
-            left: 50%;
-            animation-delay: 2s;
-        }
-        
-        .robot-particles span:nth-child(6) {
-            bottom: 20%;
-            left: 40%;
-            animation-delay: 2.5s;
-        }
-        
-        @keyframes particleFloat {
-            0%, 100% { 
-                transform: translateY(0) scale(1);
-                opacity: 0.3;
-            }
-            50% { 
-                transform: translateY(-15px) scale(1.5);
-                opacity: 1;
-            }
-        }
-        
-        .robot-signal {
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 8px;
-            height: 8px;
-        }
-        
-        .robot-signal::before,
-        .robot-signal::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border: 2px solid var(--primary);
-            border-radius: 50%;
-            animation: signalPulse 2s ease-out infinite;
-        }
-        
-        .robot-signal::before {
-            width: 20px;
-            height: 20px;
-        }
-        
-        .robot-signal::after {
-            width: 35px;
-            height: 35px;
-            animation-delay: 0.5s;
-        }
-        
-        @keyframes signalPulse {
+        @keyframes particleOrbit {
             0% {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(0.5);
-            }
-            100% {
+                transform: rotate(0deg) translateX(80px) rotate(0deg);
                 opacity: 0;
-                transform: translate(-50%, -50%) scale(2);
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% {
+                transform: rotate(360deg) translateX(80px) rotate(-360deg);
+                opacity: 0;
             }
         }
         
@@ -517,7 +522,6 @@
             font-size: 1.5rem;
         }
         
-        /* Messages */
         .message {
             display: flex;
             gap: 1rem;
@@ -581,6 +585,21 @@
             word-wrap: break-word;
         }
         
+        .message-text .typing-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background: currentColor;
+            margin-left: 2px;
+            animation: cursorBlink 0.7s ease-in-out infinite;
+            vertical-align: text-bottom;
+        }
+        
+        @keyframes cursorBlink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
         .message-meta {
             margin-top: 0.5rem;
             display: flex;
@@ -593,7 +612,6 @@
             color: var(--bg-dark);
         }
         
-        /* Typing Indicator */
         .typing-indicator {
             display: flex;
             gap: 0.5rem;
@@ -616,7 +634,6 @@
             30% { transform: translateY(-10px); opacity: 1; }
         }
         
-        /* Input Area */
         .input-area {
             padding: 1.5rem 2rem 2.5rem 2rem;
             background: rgba(21, 27, 46, 0.8);
@@ -655,8 +672,8 @@
         }
         
         .voice-btn {
-            width: 60px;
-            height: 60px;
+            width: 70px;
+            height: 70px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             border: none;
             border-radius: 50%;
@@ -669,31 +686,127 @@
             transition: var(--transition);
             box-shadow: var(--glow-primary);
             position: relative;
-            overflow: hidden;
+            overflow: visible;
         }
         
-        .voice-visualizer {
+        .voice-btn::before {
+            content: '';
             position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
+            border-radius: 50%;
+            background: inherit;
+            opacity: 0;
+            z-index: -1;
+            transition: var(--transition);
+        }
+        
+        .voice-btn.listening::before {
+            animation: voiceRipple 1.5s ease-out infinite;
+        }
+        
+        @keyframes voiceRipple {
+            0% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+        
+        .voice-visualizer-container {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
             opacity: 0;
             transition: opacity 0.3s;
         }
         
-        .voice-btn.listening .voice-visualizer {
+        .voice-btn.listening .voice-visualizer-container {
             opacity: 1;
+        }
+        
+        .voice-wave-bars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+        }
+        
+        .wave-bar {
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(to top, var(--accent), #ff4466);
+            border-radius: 2px;
+            animation: waveBar 0.8s ease-in-out infinite;
+        }
+        
+        .wave-bar:nth-child(1) { animation-delay: 0s; height: 15px; }
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; height: 25px; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; height: 35px; }
+        .wave-bar:nth-child(4) { animation-delay: 0.3s; height: 45px; }
+        .wave-bar:nth-child(5) { animation-delay: 0.2s; height: 35px; }
+        .wave-bar:nth-child(6) { animation-delay: 0.1s; height: 25px; }
+        .wave-bar:nth-child(7) { animation-delay: 0s; height: 15px; }
+        
+        @keyframes waveBar {
+            0%, 100% { transform: scaleY(0.3); }
+            50% { transform: scaleY(1); }
+        }
+        
+        .voice-orbit {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid transparent;
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: orbitSpin 1s linear infinite;
+        }
+        
+        .voice-orbit:nth-child(2) {
+            width: 90%;
+            height: 90%;
+            top: 5%;
+            left: 5%;
+            border-top-color: var(--primary);
+            animation-duration: 1.5s;
+            animation-direction: reverse;
+        }
+        
+        .voice-orbit:nth-child(3) {
+            width: 80%;
+            height: 80%;
+            top: 10%;
+            left: 10%;
+            border-top-color: var(--secondary);
+            animation-duration: 2s;
+        }
+        
+        @keyframes orbitSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         .voice-icon {
             position: relative;
             z-index: 2;
             transition: var(--transition);
+            font-size: 1.75rem;
         }
         
         .voice-btn.listening {
             background: linear-gradient(135deg, var(--accent), #ff4466);
+            transform: scale(1.1);
         }
         
         .voice-btn.listening .voice-icon {
@@ -739,7 +852,6 @@
             cursor: not-allowed;
         }
         
-        /* Toast */
         .toast-container {
             position: fixed;
             top: 100px;
@@ -787,7 +899,6 @@
             font-size: 0.875rem;
         }
         
-        /* Modal */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -871,7 +982,6 @@
             display: none !important;
         }
         
-        /* Responsive */
         @media (max-width: 768px) {
             .header {
                 padding: 1rem;
@@ -893,29 +1003,15 @@
                 grid-template-columns: 1fr;
             }
             
-            .visualizer-overlay {
-                width: 280px;
-                height: 180px;
-            }
-            
-            .visualizer-canvas {
-                height: 120px;
-            }
-            
             .empty-icon {
                 width: 100px;
                 height: 100px;
-            }
-            
-            .robot-core {
-                border-radius: 20px;
             }
         }
     </style>
 </head>
 <body>
     <div class="app-container">
-        <!-- Header -->
         <header class="header">
             <div class="logo-section">
                 <div class="logo-icon">
@@ -935,22 +1031,25 @@
             </div>
         </header>
         
-        <!-- Chat Container -->
         <div class="chat-container" id="chatContainer">
             <div class="empty-state" id="emptyState">
                 <div class="empty-icon">
                     <div class="robot-face">
-                        <div class="robot-glow-ring"></div>
+                        <div class="robot-outer-ring"></div>
                         <div class="robot-core">
-                            <div class="robot-visor">
-                                <div class="robot-eye-scanner"></div>
-                            </div>
-                            <div class="robot-particles">
-                                <span></span><span></span><span></span>
-                                <span></span><span></span><span></span>
+                            <div class="robot-antenna"></div>
+                            <div class="robot-face-inner">
+                                <div class="robot-eyes">
+                                    <div class="robot-eye"></div>
+                                    <div class="robot-eye"></div>
+                                </div>
+                                <div class="robot-mouth"></div>
                             </div>
                         </div>
-                        <div class="robot-signal"></div>
+                        <div class="robot-particles">
+                            <span></span><span></span><span></span>
+                            <span></span><span></span>
+                        </div>
                     </div>
                 </div>
                 <h1 class="empty-title">Hello! I'm Lana</h1>
@@ -976,7 +1075,6 @@
             </div>
         </div>
         
-        <!-- Input Area -->
         <div class="input-area">
             <div class="input-wrapper">
                 <input 
@@ -988,7 +1086,20 @@
                     autocomplete="off"
                 >
                 <button class="voice-btn" id="voiceBtn" title="Voice Input">
-                    <canvas class="voice-visualizer" id="voiceVisualizer"></canvas>
+                    <div class="voice-visualizer-container">
+                        <div class="voice-orbit"></div>
+                        <div class="voice-orbit"></div>
+                        <div class="voice-orbit"></div>
+                        <div class="voice-wave-bars">
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                            <div class="wave-bar"></div>
+                        </div>
+                    </div>
                     <span class="voice-icon">🎤</span>
                 </button>
                 <button class="send-btn" id="sendBtn" title="Send">➤</button>
@@ -996,12 +1107,8 @@
         </div>
     </div>
     
-    
-    
-    <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
     
-    <!-- History Modal -->
     <div class="modal-overlay" id="historyModal">
         <div class="modal">
             <div class="modal-header">
@@ -1014,7 +1121,6 @@
         </div>
     </div>
     
-    <!-- Settings Modal -->
     <div class="modal-overlay" id="settingsModal">
         <div class="modal">
             <div class="modal-header">
@@ -1031,13 +1137,12 @@
         const API_BASE = window.location.origin + '/lana_ai';
         const USER_ID = 'web_user_' + Math.random().toString(36).substr(2, 9);
         let isListening = false;
-        let welcomeShown = false;  // Track if welcome message was shown
+        let welcomeShown = false;
         let responsePollInterval = null;
         let transcriptPollInterval = null;
         let currentAudio = null;
-        let visualizerAnimationId = null;
+        let isFirstMessage = true;
         
-        // Initialize   q
         document.addEventListener('DOMContentLoaded', () => {
             console.log('🚀 Lana AI Initialized');
             initializeEventListeners();
@@ -1053,14 +1158,12 @@
             charCounter.style.cssText = 'position: absolute; bottom: -22px; right: 20px; font-size: 0.75rem; color: var(--text-muted); z-index: 10;';
             charCounter.textContent = '0/397';
             
-            // Make input wrapper relative for absolute positioning
             const inputWrapper = textInput.closest('.input-wrapper');
             if (inputWrapper) {
                 inputWrapper.style.position = 'relative';
                 inputWrapper.appendChild(charCounter);
             }
             
-            // Update character counter on input
             textInput.addEventListener('input', () => {
                 const length = textInput.value.length;
                 charCounter.textContent = `${length}/397 characters`;
@@ -1112,24 +1215,31 @@
             const statusBadge = document.getElementById('statusBadge');
             const statusText = document.getElementById('statusText');
             
-            if (status === 'connected') {
-                statusBadge.className = 'status-badge connected';
-                statusText.textContent = 'Connected';
-            } else if (status === 'listening') {
-                statusBadge.className = 'status-badge listening';
-                statusText.textContent = 'Listening';
-            } else if (status === 'transcribing') {
-                statusBadge.className = 'status-badge transcribing';
-                statusText.textContent = 'Transcribing...';
-            } else if (status === 'processing') {
-                statusBadge.className = 'status-badge transcribing';
-                statusText.textContent = 'Processing...';
-            } else if (status === 'responding') {
-                statusBadge.className = 'status-badge connected';
-                statusText.textContent = 'Responding...';
-            } else {
-                statusBadge.className = 'status-badge';
-                statusText.textContent = 'Not Connected';
+            statusBadge.className = 'status-badge';
+            
+            switch(status) {
+                case 'connected':
+                    statusBadge.classList.add('connected');
+                    statusText.textContent = 'Connected';
+                    break;
+                case 'listening':
+                    statusBadge.classList.add('listening');
+                    statusText.textContent = 'Listening...';
+                    break;
+                case 'transcribing':
+                    statusBadge.classList.add('transcribing');
+                    statusText.textContent = 'Transcribing...';
+                    break;
+                case 'processing':
+                    statusBadge.classList.add('transcribing');
+                    statusText.textContent = 'Processing...';
+                    break;
+                case 'responding':
+                    statusBadge.classList.add('connected');
+                    statusText.textContent = 'Responding...';
+                    break;
+                default:
+                    statusText.textContent = 'Not Connected';
             }
         }
         
@@ -1137,15 +1247,13 @@
             const textInput = document.getElementById('textInput');
             const message = textInput.value.trim();
             
-            // OWASP: Client-side validation - check length before sending
             if (!message) {
                 showToast('⚠️ Please enter a message', 'error');
                 return;
             }
             
-            // OWASP: Enforce 397 character limit (matches backend validation)
             if (message.length > 397) {
-                showToast('⚠️ Message exceeds 397 character limit. Please shorten your message.', 'error');
+                showToast('⚠️ Message exceeds 397 character limit.', 'error');
                 textInput.value = message.substring(0, 397);
                 return;
             }
@@ -1153,7 +1261,8 @@
             textInput.value = '';
             document.getElementById('emptyState').classList.add('hidden');
             
-            addMessage(message, 'user');
+            addMessage(message, 'user', false);
+            isFirstMessage = false;
             showTypingIndicator();
             
             try {
@@ -1163,23 +1272,18 @@
                     body: JSON.stringify({ text: message, user_id: USER_ID })
                 });
                 
-                // OWASP: Handle rate limit (429) responses gracefully
                 if (response.status === 429) {
                     const errorData = await response.json().catch(() => ({}));
                     hideTypingIndicator();
-                    const retryAfter = errorData.retry_after || 'a few moments';
-                    showToast(`⏱️ Rate limit exceeded. Please try again in ${retryAfter}.`, 'error');
-                    addMessage('Rate limit exceeded. Please wait before sending another message.', 'ai');
+                    showToast(`⏱️ Rate limit exceeded. Try again later.`, 'error');
+                    addMessage('Rate limit exceeded. Please wait.', 'ai', true);
                     return;
                 }
                 
-                // OWASP: Handle validation errors (400)
                 if (response.status === 400) {
                     const errorData = await response.json().catch(() => ({}));
                     hideTypingIndicator();
-                    const errorMsg = errorData.error || errorData.message || 'Invalid input';
-                    showToast(`⚠️ ${errorMsg}`, 'error');
-                    addMessage(`Error: ${errorMsg}`, 'ai');
+                    showToast(`⚠️ ${errorData.error || 'Invalid input'}`, 'error');
                     return;
                 }
                 
@@ -1191,18 +1295,18 @@
                 hideTypingIndicator();
                 
                 if (data.status === 'success') {
-                    addMessage(data.response, 'ai', {
+                    addMessageWithTyping(data.response, 'ai', {
                         model: data.model_used,
                         responseTime: data.response_time
                     });
                     showToast('✓ Response received', 'success');
                 } else {
-                    addMessage('Error: ' + (data.message || 'Unknown error'), 'ai');
+                    addMessage('Error: ' + (data.message || 'Unknown error'), 'ai', true);
                     showToast('✗ Request failed', 'error');
                 }
             } catch (error) {
                 hideTypingIndicator();
-                addMessage('Error: ' + error.message, 'ai');
+                addMessage('Error: ' + error.message, 'ai', true);
                 showToast('✗ Connection error', 'error');
             }
         }
@@ -1210,52 +1314,29 @@
         async function toggleVoiceInput() {
             const voiceBtn = document.getElementById('voiceBtn');
             
-            // Stop listening if already listening
             if (isListening) {
-                isListening = false;
-                voiceBtn.classList.remove('listening');
-                updateStatus('connected');
-                console.log('🛑 User manually stopped listening');
-                
-                if (responsePollInterval) {
-                    clearInterval(responsePollInterval);
-                    responsePollInterval = null;
-                }
-                if (transcriptPollInterval) {
-                    clearInterval(transcriptPollInterval);
-                    transcriptPollInterval = null;
-                }
-                if (visualizerAnimationId) {
-                    cancelAnimationFrame(visualizerAnimationId);
-                    visualizerAnimationId = null;
-                }
+                stopListening();
                 return;
             }
             
             try {
-                // Request microphone permission
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 stream.getTracks().forEach(track => track.stop());
                 
-                // Start listening
                 isListening = true;
                 voiceBtn.classList.add('listening');
                 updateStatus('listening');
-                initVoiceVisualizer();
                 
-                // Hide empty state
                 const emptyState = document.getElementById('emptyState');
-                if (emptyState) {
+                if (emptyState && !emptyState.classList.contains('hidden')) {
                     emptyState.classList.add('hidden');
                 }
                 
-                // Show welcome message only on first use
                 if (!welcomeShown) {
                     showWelcomeMessage();
                     welcomeShown = true;
                 }
                 
-                // Start backend listening
                 const listenResponse = await fetch(`${API_BASE}/listen`, { method: 'POST' });
                 if (!listenResponse.ok) {
                     throw new Error('Failed to start listening');
@@ -1263,16 +1344,13 @@
                 
                 console.log('🎤 Started listening...');
                 
-                // State tracking
                 let transcriptReceived = false;
                 let responseReceived = false;
-                let userMessageDiv = null;
                 let pollCount = 0;
-                const MAX_POLLS = 150; // 30 seconds at 200ms intervals
+                const MAX_POLLS = 150;
                 
-                // Separate transcript polling (faster, dedicated)
                 transcriptPollInterval = setInterval(async () => {
-                    if (transcriptReceived || responseReceived) {
+                    if (transcriptReceived || responseReceived || !isListening) {
                         clearInterval(transcriptPollInterval);
                         transcriptPollInterval = null;
                         return;
@@ -1282,39 +1360,27 @@
                         const transcriptResponse = await fetch(`${API_BASE}/get_transcript`);
                         const transcriptData = await transcriptResponse.json();
                         
-                        console.log('[Transcript Poll]', transcriptData);  // Debug log
+                        console.log('[Transcript Poll]', transcriptData);
                         
                         if (transcriptData.status === 'transcript' && transcriptData.transcript && transcriptData.is_final) {
                             const transcript = transcriptData.transcript.trim();
                             
-                            if (transcript && transcript !== '.' && transcript.length > 0) {
+                            if (transcript && transcript !== '.' && transcript.length > 1) {
                                 transcriptReceived = true;
                                 console.log('✅ Transcript received:', transcript);
                                 
-                                // Force hide empty state
-                                const emptyState = document.getElementById('emptyState');
-                                if (emptyState) {
-                                    emptyState.classList.add('hidden');
+                                stopListening();
+                                
+                                if (isFirstMessage) {
+                                    addMessage(transcript, 'user', false);
+                                    isFirstMessage = false;
+                                } else {
+                                    addMessageWithTyping(transcript, 'user', {}, true);
                                 }
                                 
-                                // Display transcript immediately with typing effect
-                                userMessageDiv = addMessageWithTyping(transcript, 'user');
                                 showToast('✓ Heard: ' + transcript.substring(0, 50), 'success');
+                                updateStatus('processing');
                                 
-                                // Auto-stop listening visual (mic button)
-                                isListening = false;
-                                voiceBtn.classList.remove('listening');
-                                console.log('🔴 Mic auto-stopped');
-                                if (visualizerAnimationId) {
-                                    cancelAnimationFrame(visualizerAnimationId);
-                                    visualizerAnimationId = null;
-                                }
-                                updateStatus('transcribing');
-                                
-                                // Wait a bit before showing processing
-                                setTimeout(() => updateStatus('processing'), 500);
-                                
-                                // Stop transcript polling
                                 clearInterval(transcriptPollInterval);
                                 transcriptPollInterval = null;
                             }
@@ -1322,16 +1388,14 @@
                     } catch (error) {
                         console.error('Transcript poll error:', error);
                     }
-                }, 150); // Fast transcript polling
+                }, 150);
                 
-                // Main response polling (slower, checks for final response)
                 responsePollInterval = setInterval(async () => {
                     pollCount++;
                     
-                    // Timeout check
                     if (pollCount > MAX_POLLS) {
                         console.log('⏱️ Polling timeout');
-                        cleanup();
+                        stopListening();
                         showToast('⏱️ Timeout - no response received', 'error');
                         return;
                     }
@@ -1342,10 +1406,9 @@
                         
                         console.log(`[Poll ${pollCount}] Response status:`, responseData.status);
                         
-                        // Handle different response statuses
                         if (responseData.status === 'no_speech') {
                             console.log('🔇 No speech detected');
-                            cleanup();
+                            stopListening();
                             showToast('🔇 No speech detected', 'error');
                             return;
                         }
@@ -1355,17 +1418,21 @@
                             console.log('✅ Response received');
                             
                             updateStatus('responding');
-                            cleanup();   
-                            // Show transcript if not already shown
+                            stopListening();
+                            
                             if (!transcriptReceived && responseData.transcript) {
                                 const transcript = responseData.transcript.trim();
-                                if (transcript && transcript !== '.' && transcript.length > 0) {
-                                    userMessageDiv = addMessageWithTyping(transcript, 'user');
+                                if (transcript && transcript !== '.' && transcript.length > 1) {
+                                    if (isFirstMessage) {
+                                        addMessage(transcript, 'user', false);
+                                        isFirstMessage = false;
+                                    } else {
+                                        addMessageWithTyping(transcript, 'user', {}, true);
+                                    }
                                     transcriptReceived = true;
                                 }
                             }
                             
-                            // Show AI response
                             setTimeout(() => {
                                 addMessageWithTyping(responseData.response, 'ai', {
                                     model: responseData.model_used,
@@ -1384,54 +1451,23 @@
                         
                         if (responseData.status === 'error') {
                             console.error('❌ Response error:', responseData.message);
-                            cleanup();
+                            stopListening();
                             showToast('✗ ' + (responseData.message || 'Error occurred'), 'error');
                             return;
                         }
                         
-                        // Status: "processing" - continue polling
-                        
                     } catch (error) {
                         console.error('❌ Poll error:', error);
-                        // Don't stop on network errors, keep trying
                     }
-                }, 250); // Response polling interval
-                
-                // Cleanup function
-                function cleanup() {
-                    isListening = false;
-                    voiceBtn.classList.remove('listening');
-                    updateStatus('connected');
-                    
-                    if (responsePollInterval) {
-                        clearInterval(responsePollInterval);
-                        responsePollInterval = null;
-                    }
-                    if (transcriptPollInterval) {
-                        clearInterval(transcriptPollInterval);
-                        transcriptPollInterval = null;
-                    }
-                    if (visualizerAnimationId) {
-                        cancelAnimationFrame(visualizerAnimationId);
-                        visualizerAnimationId = null;
-                    }
-                }
+                }, 250);
                 
             } catch (error) {
                 console.error('❌ Voice input error:', error);
-                
-                isListening = false;
-                voiceBtn.classList.remove('listening');
-                updateStatus('connected');
-                
-                if (visualizerAnimationId) {
-                    cancelAnimationFrame(visualizerAnimationId);
-                    visualizerAnimationId = null;
-                }
+                stopListening();
                 
                 let errorMsg = '⚠️ ';
                 if (error.name === 'NotAllowedError') {
-                    errorMsg += 'Microphone permission denied. Please allow access.';
+                    errorMsg += 'Microphone permission denied.';
                 } else {
                     errorMsg += 'Error: ' + error.message;
                 }
@@ -1440,11 +1476,26 @@
             }
         }
         
-        function addMessageWithTyping(text, type, meta = {}) {
+        function stopListening() {
+            isListening = false;
+            const voiceBtn = document.getElementById('voiceBtn');
+            voiceBtn.classList.remove('listening');
+            updateStatus('connected');
+            
+            if (responsePollInterval) {
+                clearInterval(responsePollInterval);
+                responsePollInterval = null;
+            }
+            if (transcriptPollInterval) {
+                clearInterval(transcriptPollInterval);
+                transcriptPollInterval = null;
+            }
+        }
+        
+        function addMessageWithTyping(text, type, meta = {}, isUserTranscript = false) {
             const chatContainer = document.getElementById('chatContainer');
             const emptyState = document.getElementById('emptyState');
             
-            // Force hide empty state
             if (emptyState) {
                 emptyState.classList.add('hidden');
             }
@@ -1461,39 +1512,43 @@
             
             const textDiv = document.createElement('div');
             textDiv.className = 'message-text';
-            textDiv.style.whiteSpace = 'pre-line';  // Preserve line breaks
+            textDiv.style.whiteSpace = 'pre-line';
+            
+            const cursor = document.createElement('span');
+            cursor.className = 'typing-cursor';
+            textDiv.appendChild(cursor);
             
             content.appendChild(textDiv);
             messageDiv.appendChild(avatar);
             messageDiv.appendChild(content);
             chatContainer.appendChild(messageDiv);
             
-            // Force scroll to bottom
-            setTimeout(() => {
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            }, 50);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
             
-            // Typing effect
             let index = 0;
-            const typingSpeed = type === 'user' ? 20 : 30; // User faster, AI slightly slower
+            const typingSpeed = type === 'user' ? 15 : 25;
             
             function typeChar() {
                 if (index < text.length) {
                     const char = text.charAt(index);
                     
-                    // Handle newlines properly
+                    cursor.remove();
+                    
                     if (char === '\n') {
-                        textDiv.innerHTML += '<br>';
+                        textDiv.appendChild(document.createElement('br'));
                     } else {
-                        textDiv.textContent += char;
+                        textDiv.appendChild(document.createTextNode(char));
                     }
+                    
+                    textDiv.appendChild(cursor);
                     
                     index++;
                     chatContainer.scrollTop = chatContainer.scrollHeight;
                     setTimeout(typeChar, typingSpeed);
                 } else {
-                    // Add meta after typing complete
-                    if (meta.model || meta.responseTime) {
+                    cursor.remove();
+                    
+                    if ((meta.model || meta.responseTime) && type === 'ai') {
                         const metaDiv = document.createElement('div');
                         metaDiv.className = 'message-meta';
                         
@@ -1518,7 +1573,11 @@
             return messageDiv;
         }
         
-        function addMessage(text, type, meta = {}) {
+        function addMessage(text, type, withTyping = false, meta = {}) {
+            if (withTyping) {
+                return addMessageWithTyping(text, type, meta);
+            }
+            
             const chatContainer = document.getElementById('chatContainer');
             const emptyState = document.getElementById('emptyState');
             
@@ -1565,10 +1624,11 @@
             messageDiv.appendChild(content);
             chatContainer.appendChild(messageDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            return messageDiv;
         }
         
         function showTypingIndicator() {
-            // Remove any existing typing indicator first
             hideTypingIndicator();
             
             const chatContainer = document.getElementById('chatContainer');
@@ -1614,12 +1674,7 @@
             
             audio.addEventListener('error', (e) => {
                 console.error('Audio playback error:', e);
-                showToast('⚠️ Audio playback failed', 'error');
                 currentAudio = null;
-            });
-            
-            audio.addEventListener('loadeddata', () => {
-                console.log('✓ Audio loaded successfully');
             });
             
             audio.addEventListener('ended', () => {
@@ -1633,7 +1688,16 @@
         }
         
         function showWelcomeMessage() {
-            const welcomeText = "Hi! I'm Lana. How can I help you today?\n\n🎯 My Features:\n• Voice & Text Communication\n• Weather & News Updates\n• Cybersecurity Tools (CyberSentry, NMAP, OSINT)\n• Document Analysis\n• Smart Conversations\n\nJust speak naturally, and I'll assist you!";
+            const welcomeText = `Hi! I'm Lana. How can I help you today?
+
+🎯 My Features:
+• Voice & Text Communication
+• Weather & News Updates
+• Cybersecurity Tools (CyberSentry, NMAP, OSINT)
+• Document Analysis
+• Smart Conversations
+
+Just speak naturally, and I'll assist you!`;
             
             addMessageWithTyping(welcomeText, 'ai', {
                 model: 'lana-welcome',
@@ -1641,98 +1705,60 @@
             });
         }
         
-        function initVoiceVisualizer() {
-            const canvas = document.getElementById('voiceVisualizer');
-            if (!canvas) return;
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
             
-            const ctx = canvas.getContext('2d');
-            canvas.width = 60;
-            canvas.height = 60;
+            const icon = document.createElement('span');
+            icon.className = 'toast-icon';
+            icon.textContent = type === 'success' ? '✓' : '⚠';
             
-            function draw() {
-                if (!isListening) {
-                    if (visualizerAnimationId) {
-                        cancelAnimationFrame(visualizerAnimationId);
-                        visualizerAnimationId = null;
-                    }
-                    return;
-                }
-                
-                ctx.clearRect(0, 0, 60, 60);
-                
-                const centerX = 30;
-                const centerY = 30;
-                const time = Date.now() * 0.003;
-                
-                // Draw circular waveform
-                const bars = 16;
-                const radius = 20;
-                
-                for (let i = 0; i < bars; i++) {
-                    const angle = (Math.PI * 2 * i) / bars;
-                    const barHeight = 5 + Math.sin(time * 3 + i * 0.5) * 8;
-                    
-                    const x1 = centerX + Math.cos(angle) * radius;
-                    const y1 = centerY + Math.sin(angle) * radius;
-                    const x2 = centerX + Math.cos(angle) * (radius + barHeight);
-                    const y2 = centerY + Math.sin(angle) * (radius + barHeight);
-                    
-                    const alpha = 0.6 + Math.sin(time * 2 + i * 0.3) * 0.4;
-                    ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
-                    ctx.lineWidth = 2;
-                    ctx.lineCap = 'round';
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(x1, y1);
-                    ctx.lineTo(x2, y2);
-                    ctx.stroke();
-                }
-                
-                if (isListening) {
-                    visualizerAnimationId = requestAnimationFrame(draw);
-                }
-            }
+            const msg = document.createElement('span');
+            msg.className = 'toast-message';
+            msg.textContent = message;
             
-            if (visualizerAnimationId) {
-                cancelAnimationFrame(visualizerAnimationId);
-            }
-            draw();
-        }
-
-        function openModal(modalId, loadFunction) {
-            const modal = document.getElementById(modalId);
-            modal.classList.add('active');
+            toast.appendChild(icon);
+            toast.appendChild(msg);
+            container.appendChild(toast);
             
-            if (loadFunction) loadFunction();
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.3s ease-out reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
         
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
+        function openModal(id, callback) {
+            const modal = document.getElementById(id);
+            modal.classList.add('active');
+            if (callback) callback();
+        }
+        
+        function closeModal(id) {
+            const modal = document.getElementById(id);
             modal.classList.remove('active');
         }
         
         async function loadHistoryContent() {
             const content = document.getElementById('historyContent');
-            content.innerHTML = '<p style="text-align: center;">Loading...</p>';
+            content.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Loading...</p>';
             
             try {
-                const response = await fetch(`${API_BASE}/get_history?user_id=${USER_ID}`);
+                const response = await fetch(`${API_BASE}/history?user_id=${USER_ID}`);
                 const data = await response.json();
                 
-                if (data.status === 'success' && data.history.length > 0) {
+                if (data.conversations && data.conversations.length > 0) {
                     let html = '<div style="display: flex; flex-direction: column; gap: 1rem;">';
                     
-                    data.history.forEach(conv => {
+                    data.conversations.slice(0, 20).forEach(conv => {
+                        const date = new Date(conv.timestamp * 1000).toLocaleString();
                         html += `
-                            <div style="background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; padding: 1rem;">
-                                <div style="margin-bottom: 0.5rem;">
-                                    <strong style="color: var(--primary);">You:</strong>
-                                    <p style="color: var(--text-secondary); margin-top: 0.25rem;">${conv.user}</p>
-                                </div>
-                                <div>
-                                    <strong style="color: var(--secondary);">Lana:</strong>
-                                    <p style="color: var(--text-secondary); margin-top: 0.25rem;">${conv.assistant}</p>
-                                </div>
+                            <div style="padding: 1rem; background: var(--bg-elevated); border-radius: 12px;">
+                                <div style="color: var(--primary); font-weight: 600; margin-bottom: 0.5rem;">You:</div>
+                                <div style="margin-bottom: 0.75rem;">${escapeHtml(conv.user)}</div>
+                                <div style="color: var(--secondary); font-weight: 600; margin-bottom: 0.5rem;">Lana:</div>
+                                <div style="margin-bottom: 0.5rem;">${escapeHtml(conv.assistant)}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">${date}</div>
                             </div>
                         `;
                     });
@@ -1740,80 +1766,53 @@
                     html += '</div>';
                     content.innerHTML = html;
                 } else {
-                    content.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No history yet.</p>';
+                    content.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No conversation history yet.</p>';
                 }
             } catch (error) {
-                content.innerHTML = '<p style="color: var(--accent);">Error loading history.</p>';
+                content.innerHTML = '<p style="text-align: center; color: var(--accent);">Failed to load history.</p>';
             }
         }
         
-        async function loadSettingsContent() {
+        function loadSettingsContent() {
             const content = document.getElementById('settingsContent');
-            
-            try {
-                const response = await fetch(`${API_BASE}/health`);
-                const data = await response.json();
-                
-                let html = '<div style="display: flex; flex-direction: column; gap: 1.5rem;">';
-                
-                html += '<h3 style="color: var(--text-primary);">System Status</h3>';
-                html += '<div style="background: var(--bg-elevated); border-radius: 12px; padding: 1rem;">';
-                html += `<p><strong>Active Model:</strong> ${data.active_model || 'Unknown'}</p>`;
-                html += `<p><strong>Groq:</strong> ${data.models?.groq?.available ? '✓ Available' : '✗ Unavailable'}</p>`;
-                html += `<p><strong>Local LLM:</strong> ${data.models?.local?.available ? '✓ Available' : '✗ Unavailable'}</p>`;
-                html += `<p><strong>TTS:</strong> ${data.features?.audio_output ? '✓ Available' : '✗ Unavailable'}</p>`;
-                html += '</div>';
-                
-                html += '</div>';
-                content.innerHTML = html;
-            } catch (error) {
-                content.innerHTML = '<p style="color: var(--accent);">Error loading settings.</p>';
-            }
-        }
-        
-        function sendQuickQuery(query) {
-            document.getElementById('textInput').value = query;
-            sendTextMessage();
-        }
-        
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            
-            const icon = type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ';
-            toast.innerHTML = `
-                <div class="toast-icon">${icon}</div>
-                <div class="toast-message">${message}</div>
+            content.innerHTML = `
+                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div>
+                        <h3 style="color: var(--primary); margin-bottom: 0.5rem;">Voice Settings</h3>
+                        <p style="color: var(--text-muted); font-size: 0.875rem;">Voice input and output are enabled by default.</p>
+                    </div>
+                    <div>
+                        <h3 style="color: var(--primary); margin-bottom: 0.5rem;">AI Model</h3>
+                        <p style="color: var(--text-muted); font-size: 0.875rem;">Using Groq Cloud LLM with local fallback.</p>
+                    </div>
+                    <div>
+                        <h3 style="color: var(--primary); margin-bottom: 0.5rem;">About</h3>
+                        <p style="color: var(--text-muted); font-size: 0.875rem;">Lana AI v3.0 - Ultimate Voice Assistant</p>
+                    </div>
+                </div>
             `;
-            
-            container.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.animation = 'slideInRight 0.3s reverse';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
         }
         
         async function loadHistory() {
             try {
-                const response = await fetch(`${API_BASE}/get_history?user_id=${USER_ID}&per_page=5`);
+                const response = await fetch(`${API_BASE}/history?user_id=${USER_ID}&per_page=5`);
                 const data = await response.json();
-                
-                if (data.status === 'success' && data.history.length > 0) {
-                    document.getElementById('emptyState').classList.add('hidden');
-                    
-                    data.history.reverse().forEach(conv => {
-                        addMessage(conv.user, 'user');
-                        addMessage(conv.assistant, 'ai', {
-                            model: conv.model_used,
-                            responseTime: conv.response_time
-                        });
-                    });
-                }
+                console.log('History loaded:', data.total, 'conversations');
             } catch (error) {
-                console.error('Load history error:', error);
+                console.error('Failed to load history:', error);
             }
+        }
+        
+        function sendQuickQuery(query) {
+            const textInput = document.getElementById('textInput');
+            textInput.value = query;
+            sendTextMessage();
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
     </script>
 </body>
