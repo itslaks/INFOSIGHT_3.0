@@ -174,42 +174,51 @@
         }
         
         .robot-eye {
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             background: var(--primary);
             border-radius: 50%;
-            box-shadow: 0 0 15px var(--primary);
+            box-shadow: 0 0 20px var(--primary);
             animation: eyePulse 2s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .robot-eye::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 5px;
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
         }
         
         .robot-eye:nth-child(2) { animation-delay: 0.3s; }
         
         @keyframes eyePulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(0.8); opacity: 0.7; }
+            0%, 100% { transform: scale(1); opacity: 1; filter: brightness(1); }
+            50% { transform: scale(0.9); opacity: 0.8; filter: brightness(1.2); }
         }
         
         .robot-mouth {
-            width: 40px;
-            height: 6px;
-            background: linear-gradient(90deg, var(--secondary), var(--primary));
-            border-radius: 3px;
+            width: 36px;
+            height: 18px;
+            background: transparent;
+            border: 4px solid var(--primary);
+            border-top: none;
+            border-radius: 0 0 50px 50px;
             position: relative;
-            overflow: hidden;
+            margin-top: 2px;
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
+            animation: smilePulse 3s ease-in-out infinite;
         }
         
-        .robot-mouth::after {
-            content: '';
-            position: absolute;
-            width: 10px;
-            height: 100%;
-            background: rgba(255,255,255,0.6);
-            animation: mouthScan 1.5s linear infinite;
-        }
-        
-        @keyframes mouthScan {
-            0% { left: -10px; }
-            100% { left: 40px; }
+        @keyframes smilePulse {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.08); filter: brightness(1.3); }
         }
         
         .robot-scan {
@@ -218,13 +227,13 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(transparent, rgba(0,255,136,0.1), transparent);
-            animation: scanMove 2s linear infinite;
+            background: radial-gradient(circle at center, rgba(0,255,136,0.15), transparent 70%);
+            animation: faceGlow 4s ease-in-out infinite;
         }
         
-        @keyframes scanMove {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100%); }
+        @keyframes faceGlow {
+            0%, 100% { opacity: 0.5; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.1); }
         }
         
         .robot-ring {
@@ -640,7 +649,6 @@
         
         let isListening = false;
         let welcomeShown = false;
-        let isFirstUserMessage = true;
         let pollInterval = null;
         let currentAudio = null;
         
@@ -798,18 +806,13 @@
                         console.log('Got response!', data);
                         stopListening();
                         
-                        if (data.transcript) {
-                            const transcript = data.transcript.trim();
-                            if (transcript && transcript.length > 1) {
-                                if (isFirstUserMessage) {
-                                    addMessage(transcript, 'user', false);
-                                    isFirstUserMessage = false;
-                                } else {
-                                    addMessageWithTyping(transcript, 'user', {}, true);
-                                }
-                                showToast('Heard: ' + transcript.substring(0, 30) + (transcript.length > 30 ? '...' : ''), 'success');
-                            }
-                        }
+                      if (data.transcript) {
+                              const transcript = data.transcript.trim();
+                              if (transcript && transcript.length > 1) {
+                                  addMessage(transcript, 'user', false);
+                                  showToast('Heard: ' + transcript.substring(0, 30) + (transcript.length > 30 ? '...' : ''), 'success');
+                              }
+                          }
                         
                         updateStatus('processing');
                         
