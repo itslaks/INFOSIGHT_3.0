@@ -1,3 +1,11 @@
+#lana_ai.py
+import sys
+import os
+from pathlib import Path
+
+# Add project root to sys.path to allow importing from utils, core, etc.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from flask import Flask, render_template, jsonify, Blueprint, request, send_file, g
 from flask_cors import CORS
 import speech_recognition as sr
@@ -1462,3 +1470,11 @@ import atexit
 atexit.register(cleanup)
 
 logger.info("✓ Lana AI Backend loaded with improved speech recognition")
+
+if __name__ == "__main__":
+    from flask import Flask
+    app = Flask(__name__)
+    app.config['SECRET_KEY'] = 'dev-key-for-standalone-mode'
+    app.register_blueprint(lana_ai)
+    print("Starting LANA AI in standalone mode on port 5008...")
+    app.run(debug=True, port=5008)

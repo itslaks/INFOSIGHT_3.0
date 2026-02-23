@@ -1,9 +1,18 @@
 import os
 import sys
+import importlib
+# Ensure Hugging Face token is set before any modules that might use HF are imported
+# Prefer environment value if available; otherwise placeholder to remind operator to set it
+os.environ.setdefault("HF_TOKEN", os.getenv("HF_TOKEN", "your_token_here"))
+# Optional: set a dedicated HF cache directory
+os.environ.setdefault("HF_HOME", os.getenv("HF_HOME", "L:/hf_cache"))
 import subprocess
 import time
 import socket
 import platform
+import argparse
+import threading
+import signal
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
@@ -27,8 +36,24 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Import blueprints from app package
-blueprints = {}
-blueprint_configs = [
+# APP Configuration
+APP_PORTS = {
+    'infocrypt': 5001,
+    'cybersentry_ai': 5002,
+    'donna': 5003,
+    'enscan': 5004,
+    'filescanner': 5005,
+    'infosight_ai': 5006,
+    'inkwell_ai': 5007,
+    'lana_ai': 5008,
+    'osint': 5009,
+    'portscanner': 5010,
+    'snapspeak_ai': 5011,
+    'trueshot_ai': 5012,
+    'webseeker': 5013
+}
+
+BLUEPRINT_CONFIGS = [
     ('/infocrypt', 'app.infocrypt', 'infocrypt'),
     ('/cybersentry_ai', 'app.cybersentry_ai', 'cybersentry_ai'),
     ('/lana_ai', 'app.lana_ai', 'lana_ai'),
@@ -44,28 +69,65 @@ blueprint_configs = [
     ('/donna', 'app.donna', 'donna'),
 ]
 
-for prefix, module_path, blueprint_name in blueprint_configs:
-    try:
-        module = __import__(module_path, fromlist=[blueprint_name])
-        blueprint = getattr(module, blueprint_name)
-        blueprints[prefix] = blueprint
-        logger.info(f"✓ Registered blueprint: {prefix}")
-    except ImportError as e:
-        error_msg = str(e)
-        if 'protobuf' in error_msg.lower() or 'runtime_version' in error_msg.lower():
-            logger.warning(f"⚠️ {module_path}: Protobuf compatibility issue - blueprint disabled")
-            logger.warning(f"⚠️ This is a known issue. The module will continue without {blueprint_name} features.")
-        else:
-            logger.error(f"✗ Failed to import {module_path}: {e}")
-    except AttributeError as e:
-        logger.error(f"✗ Blueprint {blueprint_name} not found in {module_path}: {e}")
-    except Exception as e:
-        error_msg = str(e)
-        if 'protobuf' in error_msg.lower() or 'runtime_version' in error_msg.lower() or 'cannot import' in error_msg.lower():
-            logger.warning(f"⚠️ {module_path}: Protobuf compatibility issue - blueprint disabled")
-            logger.warning(f"⚠️ This is a known issue. The module will continue without {blueprint_name} features.")
-        else:
+def register_blueprints_unified(app):
+    """Register all blueprints for the unified server mode"""
+    blueprints = {}
+    for prefix, module_path, blueprint_name in BLUEPRINT_CONFIGS:
+        try:
+            module = importlib.import_module(module_path)
+            blueprint = getattr(module, blueprint_name)
+            blueprints[prefix] = blueprint
+            logger.info(f"✓ Registered blueprint: {prefix}")
+        except ImportError as e:
+            error_msg = str(e)
+            if 'protobuf' in error_msg.lower() or 'runtime_version' in error_msg.lower():
+                logger.warning(f"⚠️ {module_path}: Protobuf compatibility issue - blueprint disabled")
+            else:
+                logger.error(f"✗ Failed to import {module_path}: {e}")
+        except AttributeError as e:
+            logger.error(f"✗ Blueprint {blueprint_name} not found in {module_path}: {e}")
+        except Exception as e:
             logger.error(f"✗ Unexpected error loading {module_path}: {e}")
+
+    # Register with Flask app
+    for prefix, blueprint in blueprints.items():
+        try:
+            app.register_blueprint(blueprint, url_prefix=prefix)
+            logger.info(f"✓ Registered route: {prefix}")
+        except Exception as e:
+            logger.error(f"✗ Failed to register blueprint {prefix}: {e}")
+
+def launch_distributed_mode():
+    """Launch all apps as separate subprocesses"""
+    logger.info("🚀 Starting INFOSIGHT 3.0 in DISTRIBUTED mode")
+    processes = []
+    
+    # Path to python executable
+    python_exe = sys.executable
+    project_root = os.path.dirname(os.path.abspath(__file__))
+    
+    for app_name, port in APP_PORTS.items():
+        app_file = os.path.join(project_root, 'app', f"{app_name}.py")
+        if not os.path.exists(app_file):
+            logger.warning(f"⚠️ App file not found: {app_file}")
+            continue
+            
+        logger.info(f"🚀 Launching {app_name} on port {port}...")
+        try:
+            # Launch as subprocess
+            cmd = [python_exe, app_file]
+            # On Windows, use CREATE_NEW_CONSOLE to spawn separate windows or just run in background
+            creation_flags = subprocess.CREATE_NEW_CONSOLE if platform.system() == 'Windows' else 0
+            
+            p = subprocess.Popen(cmd, cwd=project_root, creationflags=creation_flags)
+            processes.append((app_name, p))
+        except Exception as e:
+            logger.error(f"✗ Failed to launch {app_name}: {e}")
+            
+    logger.info(f"✓ Launched {len(processes)} services")
+    logger.info("Press Ctrl+C to stop all services")
+    
+    return processes
 
 app = Flask(__name__, template_folder='templates')
 
@@ -78,12 +140,7 @@ limiter = init_rate_limiter(app)
 logger.info("✓ Rate limiting initialized")
 
 # Register blueprints with error handling
-for prefix, blueprint in blueprints.items():
-    try:
-        app.register_blueprint(blueprint, url_prefix=prefix)
-        logger.info(f"✓ Registered route: {prefix}")
-    except Exception as e:
-        logger.error(f"✗ Failed to register blueprint {prefix}: {e}")
+# MOVED TO register_blueprints_unified FUNCTION
 
 
 # Add response headers for caching and security
@@ -351,6 +408,13 @@ def start_ollama_server(port: int = 11434) -> bool:
 
 if __name__ == '__main__':
     from waitress import serve
+    
+    # Parse arguments
+    parser = argparse.ArgumentParser(description='INFOSIGHT 3.0 Server')
+    parser.add_argument('--mode', choices=['unified', 'distributed'], default='unified',
+                      help='Run mode: unified (single process) or distributed (multi-process)')
+    args = parser.parse_args()
+    
     try:
         from pathlib import Path
         sys.path.insert(0, str(Path(__file__).parent))
@@ -368,9 +432,30 @@ if __name__ == '__main__':
     start_ollama_server(ollama_port)
     logger.info("="*70)
     
-    logger.info("="*70)
-    logger.info("🚀 INFOSIGHT 3.0 - Starting Server")
-    logger.info(f"📍 Address: http://{host}:{port}")
-    logger.info(f"📊 Blueprints registered: {len(blueprints)}")
-    logger.info("="*70)
-    serve(app, host=host, port=port)
+    if args.mode == 'distributed':
+        # Launch distributed apps
+        processes = launch_distributed_mode()
+        
+        # Start the main server/gateway (lightweight, no blueprints)
+        # This acts as the entry point/landing page
+        logger.info("="*70)
+        logger.info("🚀 INFOSIGHT 3.0 - Starting Gateway Server (Distribution Mode)")
+        logger.info(f"📍 Address: http://{host}:{port}")
+        logger.info("="*70)
+        
+        try:
+            serve(app, host=host, port=port)
+        finally:
+            logger.info("🛑 Shutting down distributed services...")
+            for name, p in processes:
+                p.terminate()
+                
+    else:
+        # Unified mode
+        register_blueprints_unified(app)
+        
+        logger.info("="*70)
+        logger.info("🚀 INFOSIGHT 3.0 - Starting Server (Unified Mode)")
+        logger.info(f"📍 Address: http://{host}:{port}")
+        logger.info("="*70)
+        serve(app, host=host, port=port)

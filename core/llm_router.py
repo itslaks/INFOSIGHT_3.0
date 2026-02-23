@@ -27,6 +27,7 @@ MODEL_MAP = {
     # Deep reasoning tasks (cybersecurity, OSINT, analysis)
     # Using llama-3.3-70b-versatile for complex reasoning tasks
     "cybersentry_ai": "llama-3.3-70b-versatile",  # Best for complex security analysis
+    "cybersentry_ai_docs": "llama-3.3-70b-versatile",  # Best for document analysis
     "donna": "llama-3.3-70b-versatile",  # Best for OSINT research
     "enscan": "llama-3.3-70b-versatile",  # Best for security reasoning
     
@@ -46,6 +47,7 @@ TASK_MODEL_MAP = {
     "deep_reasoning": "llama-3.3-70b-versatile",
     "security_analysis": "llama-3.3-70b-versatile",
     "osint": "llama-3.3-70b-versatile",
+    "document_analysis": "llama-3.3-70b-versatile",
     "code_analysis": "llama-3.1-8b-instant",
     "chat": "llama-3.1-8b-instant",
     "image_reasoning": "llama-3.1-8b-instant",

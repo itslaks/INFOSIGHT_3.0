@@ -1,3 +1,10 @@
+import sys
+import os
+from pathlib import Path
+
+# Add project root to sys.path to allow importing from utils, core, etc.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from flask import Flask, request, jsonify, render_template, Blueprint, g
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -266,3 +273,11 @@ def ratelimit_handler(e):
 
 # Blueprint is registered in server.py
 # Limiter should be initialized in server.py if needed
+
+if __name__ == "__main__":
+    from flask import Flask
+    app = Flask(__name__)
+    app.config['SECRET_KEY'] = 'dev-key-for-standalone-mode'
+    app.register_blueprint(portscanner)
+    print("Starting PortScanner in standalone mode on port 5010...")
+    app.run(debug=True, port=5010)

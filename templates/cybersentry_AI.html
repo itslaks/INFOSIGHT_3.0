@@ -3,86 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberSentry AI</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; media-src 'self' blob: data: https: * mediastream:; connect-src 'self' https: blob: ws: wss:; worker-src blob: 'self';">
+    <title>CyberSentry AI - NextGen</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" rel="stylesheet"/>
     
     <style>
-        /* === CYBER NOIR THEME === */
+        /* === CYBER SENTRY 2026: NEON GENESIS THEME === */
         :root {
-            --bg-void: #0a0e12;
-            --bg-deep: #0f1419;
-            --bg-surface: #151b23;
-            --bg-elevated: #1a2129;
+            /* DEEP SPACE BACKGROUNDS */
+            --bg-void: #050505;
+            --bg-deep: #0a0a0f;
+            --bg-surface: rgba(20, 25, 35, 0.4);
+            --bg-elevated: rgba(30, 35, 45, 0.5);
+            --bg-glass: rgba(10, 15, 20, 0.7);
             
-            /* SCI-FI NEON COLORS */
-            --neon-blue: #00f0ff;
-            --neon-purple: #b026ff;
-            --cyber-pink: #ff006e;
+            /* INTENSE NEON PALETTE */
+            --neon-blue: #00f3ff;
+            --neon-purple: #bc13fe;
+            --neon-pink: #ff0055;
+            --neon-green: #0aff0a;
+            --neon-gold: #ffd700;
             
-            --accent-primary: #00f0ff; /* Cyan neon */
-            --accent-primary-dim: rgba(0, 240, 255, 0.12);
-            --accent-primary-glow: rgba(0, 240, 255, 0.3);
+            --accent-primary: #00f3ff;
+            --accent-primary-dim: rgba(0, 243, 255, 0.1);
+            --accent-primary-glow: rgba(0, 243, 255, 0.5);
             
-            --accent-secondary: #ff006e; /* Hot pink */
-            --accent-tertiary: #b026ff; /* Purple */
+            --accent-secondary: #ff0055;
+            --accent-tertiary: #bc13fe;
 
-            /* SOURCE COLORS */
-            --cloud-llm: #ff006e;
-            --cloud-llm-dim: rgba(255, 0, 110, 0.12);
-            --cloud-llm-glow: rgba(255, 0, 110, 0.3);
+            /* TYPOGRAPHY */
+            --font-display: 'Orbitron', sans-serif;
+            --font-tech: 'Rajdhani', sans-serif;
+            --font-body: 'Rajdhani', sans-serif; /* Tech-focused body */
+            --font-mono: 'JetBrains Mono', monospace;
             
-            --local-llm: #b026ff;
-            --local-llm-dim: rgba(176, 38, 255, 0.12);
-            --local-llm-glow: rgba(176, 38, 255, 0.3);
+            /* SIZES */
+            --text-xs: 0.75rem;
+            --text-sm: 0.875rem;
+            --text-base: 1rem;
+            --text-lg: 1.125rem;
+            --text-xl: 1.5rem;
+            --text-2xl: 2.5rem;
             
-            --json-source: #00f0ff;
-            --json-source-dim: rgba(0, 240, 255, 0.12);
-            --json-source-glow: rgba(0, 240, 255, 0.3);
-
-            /* Professional Typography Scale */
-            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+            --text-primary: #FFFFFF;
+            --text-secondary: #E0E6ED;
+            --text-tertiary: #B0B8C4;
             
-            /* Readable Font Sizes */
-            --text-xs: 0.6875rem;      /* 11px - Labels, timestamps */
-            --text-sm: 0.8125rem;      /* 13px - Secondary text */
-            --text-base: 0.9375rem;    /* 15px - Body text */
-            --text-md: 1.0625rem;      /* 17px - Emphasis */
-            --text-lg: 1.25rem;        /* 20px - Section headers */
-            --text-xl: 1.5rem;         /* 24px - Page titles */
-            --text-2xl: 2rem;          /* 32px - Hero text */
+            --border-subtle: rgba(0, 243, 255, 0.2);
+            --border-strong: rgba(0, 243, 255, 0.5);
+            --border-neon: 1px solid var(--accent-primary);
             
-            /* Line Heights */
-            --leading-tight: 1.25;
-            --leading-normal: 1.6;
-            --leading-relaxed: 1.8;
+            --glow-text: 0 0 10px rgba(0, 243, 255, 0.6);
+            --glow-box: 0 0 20px rgba(0, 243, 255, 0.25);
+            --glow-intense: 0 0 30px rgba(0, 243, 255, 0.4), inset 0 0 10px rgba(0, 243, 255, 0.2);
             
-            /* Letter Spacing */
-            --tracking-tight: -0.02em;
-            --tracking-normal: 0;
-            --tracking-wide: 0.025em;
-            --tracking-wider: 0.05em;
-            
-            --text-primary: #e8edf3;
-            --text-secondary: #a0aab8;
-            --text-tertiary: #6b7280;
-            
-            --border-subtle: rgba(255, 255, 255, 0.05);
-            --border-strong: rgba(0, 240, 255, 0.2);
-            
-            /* Reduced Glow Effects */
-            --glow-subtle: 0 0 10px rgba(0, 240, 255, 0.15);
-            --glow-medium: 0 0 15px rgba(0, 240, 255, 0.25);
-            --glow-strong: 0 0 20px rgba(0, 240, 255, 0.3);
-            
-            --radius-sm: 8px;
-            --radius-md: 12px;
+            --radius-sm: 4px;
+            --radius-md: 8px;
             --radius-lg: 16px;
-            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --clip-angle: polygon(
+                10px 0, 100% 0, 
+                100% calc(100% - 10px), calc(100% - 10px) 100%, 
+                0 100%, 0 10px
+            );
+            
+            --transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
         * {
@@ -460,7 +448,7 @@
             border-color: #00f0ff;
         }
         
-        body.light-mode {
+        body.light-mode, html.light-mode-pre body {
             --bg-void: #f8f9fa;
             --bg-deep: #ffffff;
             --bg-surface: #f1f3f5;
@@ -2406,7 +2394,580 @@
             text-align: right;
         }
 
+        /* === ADVANCED DOCUMENT INTELLIGENCE MODE === */
+        .doc-mode-btn {
+            position: fixed;
+            bottom: 100px;
+            right: 2rem;
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff006e, #b026ff, #00f0ff);
+            background-size: 200% 200%;
+            border: 3px solid rgba(255, 0, 110, 0.6);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(255, 0, 110, 0.5);
+            transition: all 0.4s ease;
+            animation: docPulse 4s ease-in-out infinite, gradientShift 6s ease infinite;
+        }
         
+        @keyframes docPulse {
+            0%, 100% { 
+                box-shadow: 0 10px 30px rgba(255, 0, 110, 0.5); 
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 15px 40px rgba(255, 0, 110, 0.8), 0 0 60px rgba(176, 38, 255, 0.4); 
+                transform: scale(1.05);
+            }
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .doc-mode-btn:hover {
+            transform: scale(1.15) rotate(10deg);
+            box-shadow: 0 15px 45px rgba(255, 0, 110, 0.7);
+        }
+        
+        .doc-modal {
+            overflow: auto;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 14, 18, 0.98);
+            backdrop-filter: blur(20px);
+            z-index: 2000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        
+        .doc-modal.active {
+            display: block;
+            opacity: 1;
+        }
+        
+        .doc-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+        }
+        
+        .doc-header {
+            background: linear-gradient(135deg, rgba(255, 0, 110, 0.12), rgba(176, 38, 255, 0.12), rgba(0, 240, 255, 0.08));
+            border: 2px solid rgba(255, 0, 110, 0.4);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .doc-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 0, 110, 0.15), transparent);
+            animation: scanDoc 4s infinite;
+        }
+        
+        @keyframes scanDoc {
+            0%, 100% { left: -100%; }
+            50% { left: 100%; }
+        }
+        
+        .doc-header-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .doc-title {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+        
+        .doc-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #ff006e, #b026ff);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.25rem;
+            box-shadow: 0 10px 20px rgba(255, 0, 110, 0.5);
+        }
+        
+        .doc-title-text h2 {
+            font-size: 2.25rem;
+            background: linear-gradient(135deg, #ff006e, #b026ff, #00f0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+        }
+        
+        .doc-subtitle {
+            color: var(--text-tertiary);
+            font-size: 1rem;
+            font-family: var(--font-mono);
+            letter-spacing: 1px;
+        }
+        
+        .doc-close-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: rgba(255, 0, 110, 0.15);
+            border: 2px solid rgba(255, 0, 110, 0.5);
+            color: #ff006e;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            transition: all 0.3s ease;
+        }
+        
+        .doc-close-btn:hover {
+            background: rgba(255, 0, 110, 0.3);
+            transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 8px 24px rgba(255, 0, 110, 0.5);
+        }
+        
+        .doc-content-area {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            gap: 1.5rem;
+            overflow: hidden;
+        }
+        
+        .doc-upload-panel {
+            background: rgba(21, 27, 35, 0.7);
+            border: 2px solid rgba(255, 0, 110, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            overflow-y: auto;
+        }
+        
+        .upload-zone {
+            border: 3px dashed rgba(255, 0, 110, 0.4);
+            border-radius: 16px;
+            padding: 3.5rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(10, 14, 18, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upload-zone::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 0, 110, 0.1), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .upload-zone:hover::before {
+            opacity: 1;
+        }
+        
+        .upload-zone:hover {
+            border-color: #ff006e;
+            background: rgba(255, 0, 110, 0.08);
+            transform: translateY(-2px);
+        }
+        
+        .upload-zone.dragover {
+            border-color: #b026ff;
+            background: rgba(176, 38, 255, 0.12);
+            transform: scale(1.02);
+            animation: dragPulse 0.8s ease-in-out infinite;
+        }
+        @keyframes dragPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(176, 38, 255, 0.4); }
+            50%       { box-shadow: 0 0 0 12px rgba(176, 38, 255, 0); }
+        }
+        
+        .upload-icon {
+            font-size: 5rem;
+            background: linear-gradient(135deg, #ff006e, #b026ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1.5rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes dragPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(176,38,255,0.4); }
+    50%       { box-shadow: 0 0 0 12px rgba(176,38,255,0); }
+}
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .upload-text {
+            font-size: 1.25rem;
+            color: #FFFFFF;
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .upload-hint {
+            font-size: 0.9375rem;
+            color: #E0E6ED;
+            line-height: 1.6;
+        }
+        
+        .supported-formats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        
+        .format-badge {
+            padding: 0.375rem 0.75rem;
+            background: rgba(0, 240, 255, 0.15);
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: #FFFFFF;
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            font-weight: 700;
+            text-shadow: 0 0 5px rgba(0, 240, 255, 0.5);
+        }
+        
+        .doc-info {
+            background: rgba(15, 20, 25, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(176, 38, 255, 0.2);
+            border-radius: 16px;
+            padding: 1.75rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .doc-info:hover {
+            border-color: rgba(176, 38, 255, 0.4);
+            box-shadow: 0 12px 40px rgba(176, 38, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .doc-info-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .doc-info-header i {
+            font-size: 1.5rem;
+            color: #b026ff;
+            text-shadow: 0 0 10px rgba(176, 38, 255, 0.5);
+        }
+        
+        .doc-info-header h4 {
+            font-size: 1.125rem;
+            color: var(--text-primary);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        
+        .doc-info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background 0.2s ease;
+        }
+        
+        .doc-info-item:hover {
+            background: rgba(255, 255, 255, 0.02);
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            border-radius: 8px;
+        }
+        
+        .doc-info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .doc-info-label {
+            color: #B0B8C4;
+            font-size: 0.9375rem;
+            font-weight: 600;
+        }
+        
+        .doc-info-value {
+            color: #FFFFFF;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            font-size: 0.9375rem;
+            text-shadow: 0 0 8px rgba(255, 0, 110, 0.6);
+        }
+        
+        .doc-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        
+        .doc-action-btn {
+            padding: 1rem;
+            background: linear-gradient(135deg, rgba(176, 38, 255, 0.1), rgba(255, 0, 110, 0.1));
+            border: 1px solid rgba(176, 38, 255, 0.3);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .doc-action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(176, 38, 255, 0.2), rgba(255, 0, 110, 0.2));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .doc-action-btn:hover:not(:disabled) {
+            border-color: #b026ff;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(176, 38, 255, 0.2);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+        
+        .doc-action-btn:hover:not(:disabled)::before {
+            opacity: 1;
+        }
+        
+        .doc-action-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+        
+        .doc-action-btn i {
+            font-size: 1.25rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .doc-action-btn span {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .doc-chat-panel {
+            display: flex;
+            flex-direction: column;
+            background: rgba(21, 27, 35, 0.7);
+            border: 2px solid rgba(0, 240, 255, 0.25);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        .doc-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.75rem;
+        }
+        
+        .doc-input-area {
+            padding: 1.75rem;
+            background: rgba(10, 14, 18, 0.9);
+            border-top: 2px solid rgba(0, 240, 255, 0.3);
+        }
+        
+        .doc-input-wrapper {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+        
+        .doc-input {
+            flex: 1;
+            background: rgba(21, 27, 35, 0.9);
+            border: 2px solid rgba(0, 240, 255, 0.3);
+            border-radius: 14px;
+            padding: 1.125rem 1.5rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: var(--font-primary);
+            resize: none;
+            min-height: 60px;
+            max-height: 180px;
+            transition: all 0.3s ease;
+        }
+        
+        .doc-input:focus {
+            border-color: #00f0ff;
+            box-shadow: 0 0 0 4px rgba(0, 240, 255, 0.12);
+            outline: none;
+        }
+        
+        .doc-send-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #00f0ff, #b026ff);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0, 240, 255, 0.3);
+        }
+        
+        .doc-send-btn:hover:not(:disabled) {
+            transform: scale(1.08) translateY(-2px);
+            box-shadow: 0 12px 28px rgba(0, 240, 255, 0.5);
+        }
+        
+        .doc-send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .doc-welcome {
+            text-align: center;
+            padding: 5rem 2rem;
+            color: #FFFFFF;
+        }
+        
+        .doc-welcome-icon {
+            font-size: 6rem;
+            background: linear-gradient(135deg, #00f0ff, #b026ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(176, 38, 255, 0.4));
+        }
+        
+        .doc-welcome-title {
+            font-size: 2rem;
+            color: #FFFFFF;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+        }
+        
+        .doc-welcome-text {
+            font-size: 1.125rem;
+            line-height: 1.8;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            color: #E0E6ED;
+        }
+        
+        .doc-features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: left;
+        }
+        
+        .doc-feature {
+            background: rgba(21, 27, 35, 0.6);
+            border: 2px solid rgba(0, 240, 255, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .doc-feature:hover {
+            border-color: rgba(0, 240, 255, 0.5);
+            background: rgba(21, 27, 35, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .doc-feature i {
+            font-size: 2rem;
+            color: #00f0ff;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+        }
+        
+        .doc-feature h5 {
+            font-size: 1.125rem;
+            color: #FFFFFF;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .doc-feature p {
+            font-size: 0.9375rem;
+            color: #E0E6ED;
+            line-height: 1.6;
+        }
 
         /* === CODE EXECUTION === */
         /* Run code button removed - keeping copy functionality only */
@@ -2668,9 +3229,367 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* ============================================================
+           DOCUMENT INTELLIGENCE — PATCHED STYLES
+           ============================================================ */
+
+        /* Fix CSP blob audio by inlining audio element */
+        .audio-player-widget {
+            background: rgba(10, 14, 18, 0.85);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 14px;
+            padding: 1.25rem 1.5rem;
+            margin-top: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            animation: slideInUp 0.3s ease;
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .audio-player-title {
+            font-size: 0.8125rem;
+            font-weight: 700;
+            color: #00f0ff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .audio-player-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .audio-ctrl-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .audio-play-btn {
+            background: linear-gradient(135deg, #00f0ff, #b026ff);
+            color: #000;
+            box-shadow: 0 4px 14px rgba(0, 240, 255, 0.4);
+        }
+
+        .audio-play-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 240, 255, 0.6);
+        }
+
+        .audio-stop-btn {
+            background: rgba(255, 0, 110, 0.15);
+            border: 1px solid rgba(255, 0, 110, 0.4) !important;
+            color: #ff006e;
+        }
+
+        .audio-stop-btn:hover {
+            background: rgba(255, 0, 110, 0.3);
+        }
+
+        .audio-progress-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .audio-progress-bar {
+            width: 100%;
+            height: 5px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .audio-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00f0ff, #b026ff);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.2s linear;
+        }
+
+        .audio-time-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.6875rem;
+            color: var(--text-tertiary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ---- Doc Modal layout fixes ---- */
+        .doc-modal {
+            overflow-y: auto !important;
+        }
+
+        .doc-container {
+            min-height: 100vh;
+            padding: 1.25rem 1.5rem 2rem !important;
+            box-sizing: border-box;
+        }
+
+        /* Header — tighter, no overflow */
+        .doc-header {
+            padding: 1.25rem 1.5rem !important;
+            margin-bottom: 1rem !important;
+            border-radius: 14px !important;
+        }
+
+        .doc-icon {
+            width: 52px !important;
+            height: 52px !important;
+            border-radius: 12px !important;
+            font-size: 1.75rem !important;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .doc-icon img,
+        .doc-icon svg {
+            width: 38px;
+            height: 38px;
+            object-fit: contain;
+        }
+
+        .doc-title-text h2 {
+            font-size: 1.75rem !important;
+        }
+
+        .doc-subtitle {
+            font-size: 0.875rem !important;
+        }
+
+        /* Content area grid */
+        .doc-content-area {
+            grid-template-columns: 380px 1fr !important;
+            gap: 1rem !important;
+            min-height: 0;
+            flex: 1;
+        }
+
+        /* Left panel scroll fix */
+        .doc-upload-panel {
+            gap: 1rem !important;
+            padding: 1.25rem !important;
+            overflow-y: auto;
+            max-height: calc(100vh - 160px);
+        }
+
+        /* Upload zone — compact */
+        .upload-zone {
+            padding: 2rem 1.25rem !important;
+        }
+
+        .upload-icon {
+            font-size: 3.5rem !important;
+            margin-bottom: 1rem !important;
+        }
+
+        .upload-text {
+            font-size: 1rem !important;
+        }
+
+        .upload-hint {
+            font-size: 0.8125rem !important;
+        }
+
+        .supported-formats {
+            gap: 0.375rem !important;
+            margin-top: 0.75rem !important;
+        }
+
+        .format-badge {
+            padding: 0.25rem 0.5rem !important;
+            font-size: 0.6875rem !important;
+        }
+
+        /* Doc info card */
+        .doc-info {
+            padding: 1.25rem !important;
+            border-radius: 12px !important;
+        }
+
+        .doc-info-header {
+            margin-bottom: 1rem !important;
+            padding-bottom: 0.75rem !important;
+        }
+
+        .doc-info-header h4 {
+            font-size: 1rem !important;
+        }
+
+        .doc-info-item {
+            padding: 0.65rem 0 !important;
+        }
+
+        .doc-info-label,
+        .doc-info-value {
+            font-size: 0.875rem !important;
+        }
+
+        /* Action buttons — compact */
+        .doc-actions {
+            gap: 0.5rem !important;
+            margin-top: 1rem !important;
+        }
+
+        .doc-action-btn {
+            padding: 0.75rem 1rem !important;
+            font-size: 0.875rem !important;
+            border-radius: 10px !important;
+        }
+
+        .doc-action-btn i {
+            font-size: 1.125rem !important;
+        }
+
+        /* Right panel — full height, no overflow */
+         .doc-chat-panel {
+            border-radius: 16px !important;
+            max-height: calc(100vh - 160px);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .doc-messages {
+            padding: 1.25rem !important;
+            gap: 1.25rem !important;
+        }
+
+        .doc-input-area {
+            padding: 1.25rem !important;
+        }
+
+        .doc-input {
+            padding: 0.875rem 1.125rem !important;
+            font-size: 0.9375rem !important;
+            min-height: 50px !important;
+            border-radius: 12px !important;
+        }
+
+        .doc-send-btn {
+            width: 50px !important;
+            height: 50px !important;
+            border-radius: 12px !important;
+            font-size: 1.375rem !important;
+        }
+
+        /* Welcome screen */
+        .doc-welcome {
+            padding: 2.5rem 1.5rem !important;
+        }
+
+        .doc-welcome-icon {
+            font-size: 4rem !important;
+            margin-bottom: 1.25rem !important;
+        }
+
+        .doc-welcome-title {
+            font-size: 1.5rem !important;
+            margin-bottom: 1rem !important;
+        }
+
+        .doc-welcome-text {
+            font-size: 0.9375rem !important;
+            margin: 0 auto 1.5rem !important;
+        }
+
+        .doc-features {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 1rem !important;
+            max-width: 680px !important;
+        }
+
+        .doc-feature {
+            padding: 1.125rem !important;
+            border-radius: 10px !important;
+        }
+
+        .doc-feature i {
+            font-size: 1.5rem !important;
+            margin-bottom: 0.625rem !important;
+        }
+
+        .doc-feature h5 {
+            font-size: 0.9375rem !important;
+            margin-bottom: 0.375rem !important;
+        }
+
+        .doc-feature p {
+            font-size: 0.8125rem !important;
+            line-height: 1.5 !important;
+        }
+
+        /* Close button */
+        .doc-close-btn {
+            width: 44px !important;
+            height: 44px !important;
+            font-size: 1.375rem !important;
+            flex-shrink: 0;
+        }
+
+        /* Responsive: stack on narrow screens */
+        @media (max-width: 960px) {
+            .doc-content-area {
+                grid-template-columns: 1fr !important;
+                grid-template-rows: auto 1fr;
+                overflow-y: auto;
+            }
+            .doc-upload-panel {
+                max-height: none !important;
+            }
+            .doc-chat-panel {
+                max-height: 60vh !important;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .doc-title-text h2 {
+                font-size: 1.25rem !important;
+            }
+            .doc-features {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        /* ============================================================
+           END PATCHED STYLES
+           ============================================================ */
+
     </style>
 </head>
 <body>
+    <script>
+        // Apply saved theme immediately to prevent flash
+        (function() {
+            const t = localStorage.getItem('theme');
+            if (t === 'light') document.documentElement.classList.add('light-mode-pre');
+        })();
+    </script>
     <div class="app-container">
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
@@ -2796,7 +3715,9 @@
                         <button class="mode-btn" data-mode="report">Report</button>
                     </div>
                     
-                    <div class="input-wrapper">
+                    <div style="display:flex; justify-content:flex-end; padding:0 0.25rem 0.25rem; margin-top:-0.25rem;">
+                        <span id="wordCountIndicator" style="font-size:0.6875rem; color:var(--text-tertiary); font-family:'JetBrains Mono',monospace;">0 / 2000</span>
+                    </div><div class="input-wrapper">
                         <textarea 
                             id="userInput" 
                             class="input-field" 
@@ -3072,6 +3993,198 @@
                     </div>
                     <div class="shortcut-desc">Save to history</div>
                 </div>
+                <div class="shortcut-item">
+                    <div class="shortcut-keys">
+                        <kbd>Ctrl</kbd> + <kbd>D</kbd>
+                    </div>
+                    <div class="shortcut-desc">Document Intelligence</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Document Intelligence Mode Button -->
+    <button class="doc-mode-btn" id="docModeBtn" title="Document Intelligence Mode">
+        <i class="ri-file-text-fill"></i>
+    </button>
+    
+    <!-- Document Intelligence Modal -->
+    <div class="doc-modal" id="docModal">
+        <div class="doc-container">
+            <div class="doc-header">
+                <div class="doc-header-content">
+                    <div class="doc-title">
+                        <div class="doc-icon" id="docHeaderIcon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="38" height="38">
+  <defs>
+    <linearGradient id="sg1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff006e"/>
+      <stop offset="50%" style="stop-color:#b026ff"/>
+      <stop offset="100%" style="stop-color:#00f0ff"/>
+    </linearGradient>
+  </defs>
+  <path d="M24 2 L40 8 L40 22 C40 32 32 40 24 46 C16 40 8 32 8 22 L8 8 Z"
+        fill="url(#sg1)" opacity="0.9"/>
+  <rect x="18" y="22" width="12" height="10" rx="2" fill="white" opacity="0.95"/>
+  <path d="M19 22 L19 18 C19 14.7 29 14.7 29 18 L29 22"
+        fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.95"/>
+  <circle cx="24" cy="27" r="2" fill="#ff006e"/>
+</svg>
+                        </div>
+                        <div class="doc-title-text">
+                            <h2>DOCUMENT INTELLIGENCE</h2>
+                            <p class="doc-subtitle">Multi-Format AI Analysis • Audio • Export</p>
+                        </div>
+                    </div>
+                    <button class="doc-close-btn" id="docCloseBtn">
+                        <i class="ri-close-line"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="doc-content-area">
+                <div class="doc-upload-panel">
+                    <div class="upload-zone" id="uploadZone">
+                        <div class="upload-icon" style="font-size:0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="72" height="72">
+                              <defs>
+                                <linearGradient id="upGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                  <stop offset="0%" style="stop-color:#ff006e"/>
+                                  <stop offset="100%" style="stop-color:#b026ff"/>
+                                </linearGradient>
+                              </defs>
+                              <path d="M32 4 L56 16 L56 36 C56 50 44 60 32 62 C20 60 8 50 8 36 L8 16 Z"
+                                    fill="url(#upGrad)" opacity="0.15" stroke="url(#upGrad)" stroke-width="2"/>
+                              <path d="M32 20 L32 44 M22 30 L32 20 L42 30" fill="none"
+                                    stroke="url(#upGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                              <rect x="22" y="44" width="20" height="3" rx="1.5" fill="url(#upGrad)"/>
+                            </svg>
+                        </div>
+                        <div class="upload-text">Drop document here or click to upload</div>
+                        <div class="upload-hint">Max 100MB • All formats supported</div>
+                        <div class="supported-formats">
+                            <span class="format-badge">PDF</span>
+                            <span class="format-badge">DOCX</span>
+                            <span class="format-badge">TXT</span>
+                            <span class="format-badge">XLSX</span>
+                            <span class="format-badge">CSV</span>
+                            <span class="format-badge">PNG</span>
+                            <span class="format-badge">JPG</span>
+                            <span class="format-badge">JSON</span>
+                            <span class="format-badge">MD</span>
+                        </div>
+                        <input type="file" id="docFileInput" accept=".pdf,.docx,.txt,.xlsx,.csv,.png,.jpg,.jpeg,.json,.md" style="display: none;">
+                    </div>
+                    <!-- Upload Progress -->
+                    <div id="uploadProgress" style="display:none; margin-top:0.75rem;">
+                        <div style="height:4px; background:rgba(255,255,255,0.1); border-radius:10px; overflow:hidden;">
+                            <div id="uploadProgressBar" style="height:100%; width:0%; background:linear-gradient(90deg,#ff006e,#b026ff); border-radius:10px; transition:width 0.3s ease;"></div>
+                        </div>
+                        <div id="uploadProgressText" style="font-size:0.75rem; color:var(--text-tertiary); margin-top:0.375rem; text-align:center; font-family:'JetBrains Mono',monospace;"></div>
+                    </div>
+
+                    <div class="doc-info" id="docInfo" style="display: none;">
+                        <div class="doc-info-header">
+                            <i class="ri-file-info-fill"></i>
+                            <h4>Document Info</h4>
+                        </div>
+                        <div class="doc-info-item">
+                            <span class="doc-info-label">Filename:</span>
+                            <span class="doc-info-value" id="docFileName">-</span>
+                        </div>
+                        <div class="doc-info-item">
+                            <span class="doc-info-label">Type:</span>
+                            <span class="doc-info-value" id="docType">-</span>
+                        </div>
+                        <div class="doc-info-item">
+                            <span class="doc-info-label">Size:</span>
+                            <span class="doc-info-value" id="docSize">-</span>
+                        </div>
+                        <div class="doc-info-item">
+                            <span class="doc-info-label">Status:</span>
+                            <span class="doc-info-value" id="docStatus">Ready</span>
+                        </div>
+                        <div id="docExtraInfo"></div>
+                        <div id="docKeywords" style="display:none; margin-top:0.75rem;">
+                            <div style="font-size:0.75rem; color:var(--text-tertiary); margin-bottom:0.5rem; font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:1px;">Keywords</div>
+                            <div id="docKeywordChips" style="display:flex; flex-wrap:wrap; gap:0.375rem;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="doc-actions" id="docActions" style="display: none;">
+                        <button class="doc-action-btn" id="summarizeBtn">
+                            <i class="ri-file-list-3-line"></i>
+                            <span>Summarize Document</span>
+                        </button>
+                        <button class="doc-action-btn" id="extractBtn">
+                            <i class="ri-search-line"></i>
+                            <span>Extract Key Points</span>
+                        </button>
+                        <button class="doc-action-btn" id="audioBtn">
+                            <i class="ri-volume-up-fill"></i>
+                            <span>Generate Audio Summary</span>
+                        </button>
+                        <button class="doc-action-btn" id="exportDocBtn">
+                            <i class="ri-download-2-line"></i>
+                            <span>Export Analysis</span>
+                        </button>
+                        <button class="doc-action-btn" id="clearDocBtn" style="border-color: rgba(255, 0, 110, 0.4);">
+                            <i class="ri-delete-bin-line"></i>
+                            <span>Clear Session</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="doc-chat-panel">
+                    <div class="doc-messages" id="docMessages">
+                        <div class="doc-welcome">
+                            <div class="doc-welcome-icon">
+                                <i class="ri-file-search-fill"></i>
+                            </div>
+                            <div class="doc-welcome-title">AI-Powered Document Analysis</div>
+                            <div class="doc-welcome-text">
+                                Upload any supported document to unlock intelligent querying, audio summaries, 
+                                and comprehensive analysis powered by advanced AI.
+                            </div>
+                            <div class="doc-features">
+                                <div class="doc-feature">
+                                    <i class="ri-file-text-fill"></i>
+                                    <h5>Multi-Format Support</h5>
+                                    <p>PDF, Word, Excel, Images, JSON, Markdown, and more</p>
+                                </div>
+                                <div class="doc-feature">
+                                    <i class="ri-scan-fill"></i>
+                                    <h5>OCR Technology</h5>
+                                    <p>Extract text from images and scanned documents</p>
+                                </div>
+                                <div class="doc-feature">
+                                    <i class="ri-volume-up-fill"></i>
+                                    <h5>Audio Summaries</h5>
+                                    <p>Listen to AI-generated audio summaries</p>
+                                </div>
+                                <div class="doc-feature">
+                                    <i class="ri-braces-fill"></i>
+                                    <h5>Smart Analysis</h5>
+                                    <p>Keyword extraction, statistics, and insights</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="doc-input-area">
+                        <div class="doc-input-wrapper">
+                            <textarea 
+                                id="docInput" 
+                                class="doc-input" 
+                                placeholder="Ask anything about the document..."
+                                disabled
+                            ></textarea>
+                            <button class="doc-send-btn" id="docSendBtn" disabled>
+                                <i class="ri-send-plane-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -3079,6 +4192,26 @@
     <script>
         // Global State
         const API_BASE = window.location.origin + '/cybersentry_ai';
+
+        // Smart fetch with retry on transient network errors
+        async function fetchWithRetry(url, options = {}, maxRetries = 3) {
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    const resp = await fetch(url, options);
+                    if (resp.status === 429) {
+                        const wait = Math.pow(2, attempt) * 500;
+                        showToast(`⏳ Rate limited – retrying in ${wait/1000}s…`, 'error');
+                        await new Promise(r => setTimeout(r, wait));
+                        continue;
+                    }
+                    return resp;
+                } catch (err) {
+                    if (attempt === maxRetries) throw err;
+                    const wait = Math.pow(2, attempt) * 300;
+                    await new Promise(r => setTimeout(r, wait));
+                }
+            }
+        }
         let conversationCount = 0;
 
         // Initialize
@@ -3086,6 +4219,7 @@
             initializeApp();
             initializeEventListeners();
             displayWelcomeTime();
+            initializeDocMode();
         });
 
         function initializeApp() {
@@ -3177,6 +4311,15 @@
             
             if (!sectionNav || !sectionNavItems || !messagesArea) return;
             
+            // debounce helper to avoid excessive rebuilds
+            const debounce = (fn, wait = 200) => {
+                let t = null;
+                return function(...args) {
+                    clearTimeout(t);
+                    t = setTimeout(() => fn.apply(this, args), wait);
+                };
+            };
+
             const updateSectionNav = () => {
                 const sections = document.querySelectorAll('.section h2, .message-content h2, .report-title');
                 if (sections.length === 0) {
@@ -3229,16 +4372,16 @@
                 });
             };
             
-            // Update on scroll
+            // Update on scroll (re-query sections each time to avoid stale NodeLists)
             messagesArea.addEventListener('scroll', () => {
-                const sections = document.querySelectorAll('.section h2, .message-content h2, .report-title');
+                const sectionsNow = document.querySelectorAll('.section h2, .message-content h2, .report-title');
                 const scrollTop = messagesArea.scrollTop;
-                
-                sections.forEach((section, index) => {
+
+                sectionsNow.forEach((section, index) => {
                     const rect = section.getBoundingClientRect();
                     const sectionTop = rect.top + messagesArea.scrollTop;
                     const navItem = sectionNavItems.querySelector(`[data-index="${index}"]`);
-                    
+
                     if (navItem) {
                         if (scrollTop >= sectionTop - 200 && scrollTop < sectionTop + 200) {
                             navItem.classList.add('active');
@@ -3248,9 +4391,9 @@
                     }
                 });
             });
-            
-            // Update when new content is added
-            const observer = new MutationObserver(updateSectionNav);
+
+            // Observe only direct children to avoid reacting to internal nav changes
+            const observer = new MutationObserver(debounce(updateSectionNav, 400));
             observer.observe(messagesArea, { childList: true, subtree: true });
             
             // Initial update
@@ -3295,39 +4438,37 @@
         function initializeActiveSectionHighlight() {
             const messagesArea = document.getElementById('messagesArea');
             if (!messagesArea) return;
-            
-            const sections = document.querySelectorAll('.section, .message-content');
-            
+
             const updateActiveSection = () => {
+                // Re-query sections each time to ensure we don't use a stale NodeList
+                const sectionsNow = Array.from(document.querySelectorAll('.section, .message-content'));
                 const scrollTop = messagesArea.scrollTop;
                 const viewportHeight = messagesArea.clientHeight;
                 const viewportCenter = scrollTop + viewportHeight / 2;
-                
+
                 let activeSection = null;
                 let minDistance = Infinity;
-                
-                sections.forEach(section => {
+
+                sectionsNow.forEach(section => {
                     const rect = section.getBoundingClientRect();
                     const sectionTop = rect.top + messagesArea.scrollTop;
                     const sectionCenter = sectionTop + rect.height / 2;
                     const distance = Math.abs(viewportCenter - sectionCenter);
-                    
+
                     if (distance < minDistance) {
                         minDistance = distance;
                         activeSection = section;
                     }
                 });
-                
-                // Update active class
-                sections.forEach(section => {
-                    section.classList.remove('active');
-                });
-                
+
+                // Remove active class from all sections
+                document.querySelectorAll('.section.active, .message-content.active').forEach(s => s.classList.remove('active'));
+
                 if (activeSection) {
                     activeSection.classList.add('active');
                 }
             };
-            
+
             messagesArea.addEventListener('scroll', updateActiveSection);
             updateActiveSection(); // Initial call
         }
@@ -3350,8 +4491,10 @@
             if (complianceStatus) {
                 // In a real app, this would fetch from an API
                 const complianceFrameworks = ['PCI-DSS', 'HIPAA', 'ISO 27001', 'SOC 2', 'GDPR'];
-                const randomFramework = complianceFrameworks[Math.floor(Math.random() * complianceFrameworks.length)];
-                complianceStatus.textContent = randomFramework;
+                if (!complianceStatus.dataset.set) {
+                complianceStatus.textContent = 'ISO 27001';
+                complianceStatus.dataset.set = '1';
+            }
             }
         }
 
@@ -3429,172 +4572,11 @@
                     }
                 });
             });
-            
+        
             // Generate report function
-            function generateReport() {
-                const messages = document.querySelectorAll('.message');
-                if (messages.length <= 1) {
-                    showToast('No conversation to summarize', 'error');
-                    return;
-                }
-                
-                // Collect conversation text
-                let conversationText = '';
-                messages.forEach(msg => {
-                    const sender = msg.querySelector('.message-sender')?.textContent;
-                    const text = msg.querySelector('.message-text')?.textContent || 
-                                msg.querySelector('.report-body')?.textContent;
-                    if (sender && text) {
-                        conversationText += `${sender}: ${text.trim()}\n\n`;
-                    }
-                });
-                
-                if (!conversationText.trim()) {
-                    showToast('No conversation content found', 'error');
-                    return;
-                }
-                
-                // Show typing indicator
-                const typingId = addTypingIndicator();
-                updateStatus('processing');
-                
-                // Send to AI for summarization
-                fetch(`${API_BASE}/ask`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        question: `Please provide a comprehensive security report summarizing the following conversation:\n\n${conversationText}\n\nGenerate a structured report with key findings, recommendations, and action items.`
-                    })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(err => Promise.reject(new Error(err.error || `HTTP ${response.status}`)));
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    removeTypingIndicator(typingId);
-                    if (data.error) {
-                        addErrorMessage(data.error || 'Failed to generate report');
-                        updateStatus('ready');
-                        showToast('✗ Report generation failed', 'error');
-                    } else if (data.answer) {
-                        // Display report with Ultimate button
-                        addReportMessage(data, conversationText);
-                        updateStatus('ready');
-                        showToast('✓ Report generated', 'success');
-                    } else {
-                        addErrorMessage('No answer received from server');
-                        updateStatus('ready');
-                        showToast('✗ Report generation failed', 'error');
-                    }
-                })
-                .catch(error => {
-                    removeTypingIndicator(typingId);
-                    addErrorMessage(error.message || 'Failed to generate report');
-                    updateStatus('ready');
-                    showToast('✗ Report generation failed', 'error');
-                });
-            }
             
-            function addReportMessage(response, conversationText) {
-                const time = getCurrentTime();
-                const answer = response.answer || response.response || '';
-                
-                const html = `
-                    <div class="message">
-                        <div class="message-header">
-                            <div class="message-avatar ai">
-                                <i class="ri-shield-check-fill"></i>
-                            </div>
-                            <div class="message-meta">
-                                <span class="message-sender">CyberSentry</span>
-                                <span class="message-time">${time}</span>
-                                <span class="message-badge badge-ai">REPORT</span>
-                            </div>
-                        </div>
-                        <div class="message-content ai">
-                            <div class="report-header">
-                                <div class="report-title">Security Conversation Report</div>
-                                <div class="report-meta">
-                                    <span>${time}</span>
-                                </div>
-                            </div>
-                            <div class="report-body">
-                                <div class="message-text">${formatResponse(answer)}</div>
-                                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(0, 240, 255, 0.15);">
-                                    <button class="mode-btn active" id="ultimateBtn" style="width: 100%; justify-content: center; margin-top: 0.5rem;">
-                                        <i class="ri-database-2-line"></i> Ultimate Analysis
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                document.getElementById('messagesArea').appendChild(createElementFromHTML(html));
-                
-                // Add Ultimate button event listener
-                setTimeout(() => {
-                    const ultimateBtn = document.getElementById('ultimateBtn');
-                    if (ultimateBtn) {
-                        ultimateBtn.addEventListener('click', () => {
-                            // Use /all function
-                            getAllSourcesForReport(conversationText);
-                        });
-                    } else {
-                        console.warn('Ultimate button not found');
-                    }
-                }, 100);
-                
-                scrollToBottom();
-            }
             
             // Update getAllSourcesForReport to use loading indicator and improved Ultimate Mode
-            function getAllSourcesForReport(conversationText) {
-                const question = `Provide comprehensive analysis of the following security conversation:\n\n${conversationText}`;
-                
-                // Show loading with visual feedback
-                const loadingId = addUltimateLoadingMessage();
-                updateStatus('processing');
-                showToast('⚡ Processing all sources...', 'success');
-                
-                // Send to /ask-all endpoint
-                fetch(`${API_BASE}/ask-all`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ question: question })
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(err => Promise.reject(new Error(err.error || `HTTP ${response.status}`)));
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // Remove loading indicator
-                    document.getElementById(loadingId)?.remove();
-                    
-                    if (data.error) {
-                        addErrorMessage(data.error || 'Failed to retrieve all sources');
-                        updateStatus('ready');
-                        showToast('✗ Ultimate analysis failed', 'error');
-                    } else if (data.results || data.json || data.cloud_llm || data.local_llm) {
-                        addAllSourcesMessage(data, question);
-                        updateStatus('ready');
-                        showToast('✓ Ultimate analysis complete', 'success');
-                    } else {
-                        addErrorMessage('No sources returned');
-                        updateStatus('ready');
-                        showToast('✗ Ultimate analysis failed', 'error');
-                    }
-                })
-                .catch(error => {
-                    document.getElementById(loadingId)?.remove();
-                    addErrorMessage(error.message || 'Failed to process request');
-                    updateStatus('ready');
-                    showToast('✗ Ultimate analysis failed', 'error');
-                });
-            }
             
             // Voice button
             document.getElementById('voiceBtn').addEventListener('click', toggleVoiceInput);
@@ -3661,6 +4643,12 @@
                     e.preventDefault();
                     showToast('💾 Conversation auto-saved', 'success');
                 }
+                // Ctrl+D: Open/close Document Intelligence
+                if (e.ctrlKey && e.key === 'd') {
+                    e.preventDefault();
+                    const dm = document.getElementById('docModal');
+                    if (dm) dm.classList.toggle('active');
+                }
             });
             
             // Load settings from localStorage
@@ -3673,26 +4661,210 @@
             
             
 
-            // Auto-resize textarea
+            // Auto-resize textarea + word count
             document.getElementById('userInput').addEventListener('input', function() {
                 this.style.height = 'auto';
                 this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+                const len = this.value.length;
+                const wci = document.getElementById('wordCountIndicator');
+                if (wci) {
+                    wci.textContent = `${len} / 2000`;
+                    wci.style.color = len > 1800 ? '#ff006e' : len > 1500 ? '#ffa500' : 'var(--text-tertiary)';
+                }
             });
 
-            // Copy and regenerate buttons
+                        // Copy and regenerate buttons
             document.addEventListener('click', (e) => {
                 if (e.target.closest('.action-btn[data-action="copy"]')) {
-                    const btn = e.target.closest('.action-btn');
+                    const btn  = e.target.closest('.action-btn');
                     const text = btn.closest('.message-content').querySelector('.message-text').textContent;
+                    copyToClipboard(text, btn);
+                    const mdBtn = btn.parentElement.querySelector('[data-action="copy-md"]');
+                    if (mdBtn) mdBtn.style.display = 'inline-flex';
+                }
+
+                if (e.target.closest('.action-btn[data-action="copy-md"]')) {
+                    const btn  = e.target.closest('.action-btn');
+                    const md   = btn.dataset.md || btn.closest('.message-content').querySelector('.message-text').innerHTML;
+                    let text   = md.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**')
+                                   .replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`')
+                                   .replace(/<br\s*\/?>/gi, '\n')
+                                   .replace(/<[^>]+>/g, '');
                     copyToClipboard(text, btn);
                 }
 
                 if (e.target.closest('.action-btn[data-action="regenerate"]')) {
-                    const btn = e.target.closest('.action-btn');
+                    const btn      = e.target.closest('.action-btn');
                     const question = btn.dataset.question;
-                    const source = btn.dataset.source;
+                    const source   = btn.dataset.source;
                     regenerateResponse(question, source);
                 }
+            });
+
+        }
+
+
+        function generateReport() {
+            const messages = document.querySelectorAll('.message');
+            if (messages.length <= 1) {
+                showToast('No conversation to summarize', 'error');
+                return;
+            }
+            
+            // Collect conversation text
+            let conversationText = '';
+            messages.forEach(msg => {
+                const sender = msg.querySelector('.message-sender')?.textContent;
+                const text = msg.querySelector('.message-text')?.textContent || 
+                            msg.querySelector('.report-body')?.textContent;
+                if (sender && text) {
+                    conversationText += `${sender}: ${text.trim()}\n\n`;
+                }
+            });
+            
+            if (!conversationText.trim()) {
+                showToast('No conversation content found', 'error');
+                return;
+            }
+            
+            // Show typing indicator
+            const typingId = addTypingIndicator();
+            updateStatus('processing');
+            
+            // Send to AI for summarization
+            fetch(`${API_BASE}/ask`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    question: `Please provide a comprehensive security report summarizing the following conversation:\n\n${conversationText}\n\nGenerate a structured report with key findings, recommendations, and action items.`
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => Promise.reject(new Error(err.error || `HTTP ${response.status}`)));
+                }
+                return response.json();
+            })
+            .then(data => {
+                removeTypingIndicator(typingId);
+                if (data.error) {
+                    addErrorMessage(data.error || 'Failed to generate report');
+                    updateStatus('ready');
+                    showToast('✗ Report generation failed', 'error');
+                } else if (data.answer) {
+                    // Display report with Ultimate button
+                    addReportMessage(data, conversationText);
+                    updateStatus('ready');
+                    showToast('✓ Report generated', 'success');
+                } else {
+                    addErrorMessage('No answer received from server');
+                    updateStatus('ready');
+                    showToast('✗ Report generation failed', 'error');
+                }
+            })
+            .catch(error => {
+                removeTypingIndicator(typingId);
+                addErrorMessage(error.message || 'Failed to generate report');
+                updateStatus('ready');
+                showToast('✗ Report generation failed', 'error');
+            });
+        }
+
+        function addReportMessage(response, conversationText) {
+            const time = getCurrentTime();
+            const answer = response.answer || response.response || '';
+            
+            const html = `
+                <div class="message">
+                    <div class="message-header">
+                        <div class="message-avatar ai">
+                            <i class="ri-shield-check-fill"></i>
+                        </div>
+                        <div class="message-meta">
+                            <span class="message-sender">CyberSentry</span>
+                            <span class="message-time">${time}</span>
+                            <span class="message-badge badge-ai">REPORT</span>
+                        </div>
+                    </div>
+                    <div class="message-content ai">
+                        <div class="report-header">
+                            <div class="report-title">Security Conversation Report</div>
+                            <div class="report-meta">
+                                <span>${time}</span>
+                            </div>
+                        </div>
+                        <div class="report-body">
+                            <div class="message-text">${formatResponse(answer)}</div>
+                            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(0, 240, 255, 0.15);">
+                                <button class="mode-btn active" id="ultimateBtn" style="width: 100%; justify-content: center; margin-top: 0.5rem;">
+                                    <i class="ri-database-2-line"></i> Ultimate Analysis
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('messagesArea').appendChild(createElementFromHTML(html));
+            
+            // Add Ultimate button event listener
+            setTimeout(() => {
+                const ultimateBtn = document.getElementById('ultimateBtn');
+                if (ultimateBtn) {
+                    ultimateBtn.addEventListener('click', () => {
+                        // Use /all function
+                        getAllSourcesForReport(conversationText);
+                    });
+                } else {
+                    console.warn('Ultimate button not found');
+                }
+            }, 100);
+            
+            scrollToBottom();
+        }
+
+        function getAllSourcesForReport(conversationText) {
+            const question = `Provide comprehensive analysis of the following security conversation:\n\n${conversationText}`;
+            
+            // Show loading with visual feedback
+            const loadingId = addUltimateLoadingMessage();
+            updateStatus('processing');
+            showToast('⚡ Processing all sources...', 'success');
+            
+            // Send to /ask-all endpoint
+            fetch(`${API_BASE}/ask-all`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: question })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => Promise.reject(new Error(err.error || `HTTP ${response.status}`)));
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Remove loading indicator
+                document.getElementById(loadingId)?.remove();
+                
+                if (data.error) {
+                    addErrorMessage(data.error || 'Failed to retrieve all sources');
+                    updateStatus('ready');
+                    showToast('✗ Ultimate analysis failed', 'error');
+                } else if (data.results || data.json || data.cloud_llm || data.local_llm) {
+                    addAllSourcesMessage(data, question);
+                    updateStatus('ready');
+                    showToast('✓ Ultimate analysis complete', 'success');
+                } else {
+                    addErrorMessage('No sources returned');
+                    updateStatus('ready');
+                    showToast('✗ Ultimate analysis failed', 'error');
+                }
+            })
+            .catch(error => {
+                document.getElementById(loadingId)?.remove();
+                addErrorMessage(error.message || 'Failed to process request');
+                updateStatus('ready');
+                showToast('✗ Ultimate analysis failed', 'error');
             });
         }
 
@@ -3715,8 +4887,8 @@
             const typingId = addTypingIndicator();
             updateStatus('processing');
 
-            // Send to backend
-            fetch(`${API_BASE}/ask`, {
+            // Send to backend (with retry)
+            fetchWithRetry(`${API_BASE}/ask`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ question: question })
@@ -3750,6 +4922,7 @@
                 input.disabled = false;
                 document.getElementById('sendBtn').disabled = false;
                 input.focus();
+                document.dispatchEvent(new CustomEvent('cybersentry:response'));
             });
         }
 
@@ -3856,12 +5029,26 @@
             }
 
             let actionsHtml = '';
+            let threatHtml  = '';
+            if (response.threat_analysis) {
+                const ta    = response.threat_analysis;
+                const tCol  = { CRITICAL:'#ff006e', HIGH:'#ff6b35', MEDIUM:'#ffa500', LOW:'#00d4aa' };
+                const color = tCol[ta.threat_level] || '#aaa';
+                threatHtml  = `<div style="display:inline-flex; align-items:center; gap:0.375rem; padding:0.25rem 0.75rem; border-radius:20px; border:1px solid ${color}; background:${color}22; font-size:0.6875rem; font-weight:700; color:${color}; font-family:'JetBrains Mono',monospace; margin-right:0.5rem; text-transform:uppercase;">
+                    <span style="width:6px; height:6px; border-radius:50%; background:${color}; box-shadow:0 0 6px ${color};"></span>
+                    ${ta.threat_level} RISK · ${ta.risk_score}
+                </div>`;
+            }
             if (canRegenerate) {
                 const altSource = source === 'JSON' ? 'ai' : 'json';
                 actionsHtml = `
-                    <div class="card-actions">
+                    <div class="card-actions" style="flex-wrap:wrap; align-items:center;">
+                        ${threatHtml}
                         <button class="action-btn" data-action="copy">
                             <i class="ri-file-copy-line"></i> Copy
+                        </button>
+                        <button class="action-btn" data-action="copy-md" style="display:none;" data-md="${escapeHtml(response.answer || '')}">
+                            <i class="ri-markdown-fill"></i> Copy MD
                         </button>
                         <button class="action-btn" data-action="regenerate" data-question="${escapeHtml(question)}" data-source="${altSource}">
                             <i class="ri-refresh-line"></i> Regenerate
@@ -5033,14 +6220,28 @@ Generated on ${new Date().toLocaleString()}
             printWindow.document.write(htmlContent);
             printWindow.document.close();
             
+            if (!printWindow) {
+                // Popup blocked - fallback to blob download
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = `cybersentry_report_${Date.now()}.html`;
+                a.click(); URL.revokeObjectURL(url);
+                showToast('✓ Report downloaded as HTML (open in browser to print PDF)', 'success');
+                return;
+            }
             printWindow.onload = () => {
                 printWindow.focus();
                 setTimeout(() => {
                     printWindow.print();
-                    showToast('✓ PDF export initiated - Use Print dialog to save', 'success');
-                }, 500);
+                    showToast('✓ PDF export initiated - Use Print dialog to save as PDF', 'success');
+                }, 800);
             };
+
         }
+        
+        
+        // Share conversation
 
         function formatHTMLContent(text) {
             let formatted = escapeHtml(text);
@@ -5061,8 +6262,7 @@ Generated on ${new Date().toLocaleString()}
             
             return formatted;
         }
-        
-        // Share conversation
+
         async function shareConversation() {
             const messages = document.querySelectorAll('.message');
             let shareText = 'CyberSentry AI Conversation:\n\n';
@@ -5093,21 +6293,48 @@ Generated on ${new Date().toLocaleString()}
         }
 
         function showToast(message, type = 'success') {
-            // Remove existing toasts
-            const existing = document.querySelectorAll('.toast');
-            existing.forEach(t => t.remove());
+            // Stackable toasts: keep a container and append new items
+            let container = document.getElementById('toastContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toastContainer';
+                container.style.position = 'fixed';
+                container.style.top = '16px';
+                container.style.right = '16px';
+                container.style.zIndex = '2000';
+                container.style.display = 'flex';
+                container.style.flexDirection = 'column';
+                container.style.gap = '8px';
+                document.body.appendChild(container);
+            }
 
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
+            toast.style.minWidth = '180px';
+            toast.style.padding = '10px 14px';
+            toast.style.borderRadius = '8px';
+            toast.style.boxShadow = '0 6px 18px rgba(0,0,0,0.4)';
+            toast.style.display = 'flex';
+            toast.style.alignItems = 'center';
+            toast.style.gap = '8px';
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
             toast.innerHTML = `
                 <i class="ri-${type === 'success' ? 'check' : 'error-warning'}-line"></i>
                 <span>${message}</span>
             `;
-            document.body.appendChild(toast);
 
-            setTimeout(() => toast.classList.add('show'), 10);
+            container.appendChild(toast);
+
+            // Show
+            requestAnimationFrame(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateY(0)';
+            });
+
+            // Auto remove after timeout
             setTimeout(() => {
-                toast.classList.remove('show');
+                toast.style.opacity = '0';
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
         }
@@ -5157,49 +6384,63 @@ Generated on ${new Date().toLocaleString()}
         
         function toggleVoiceInput() {
             const voiceBtn = document.getElementById('voiceBtn');
-            
+
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
                 showToast('⚠ Voice input not supported', 'error');
                 return;
             }
-            
+
             if (isRecording) {
-                recognition.stop();
+                try { recognition?.stop(); } catch(e) { console.warn('stop error', e); }
                 isRecording = false;
                 voiceBtn.classList.remove('recording');
+                recognition = null;
                 return;
             }
-            
-            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'en-US';
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            
-            recognition.onstart = () => {
-                isRecording = true;
-                voiceBtn.classList.add('recording');
-                showToast('🎤 Listening...', 'success');
-            };
-            
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                document.getElementById('userInput').value = transcript;
-                showToast('✓ Voice captured', 'success');
-            };
-            
-            recognition.onerror = (event) => {
-                console.error('Speech recognition error:', event.error);
-                showToast('✗ Voice input failed', 'error');
+
+            try {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = 'en-US';
+                recognition.continuous = false;
+                recognition.interimResults = false;
+
+                recognition.onstart = () => {
+                    isRecording = true;
+                    voiceBtn.classList.add('recording');
+                    showToast('🎤 Listening...', 'success');
+                };
+
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    const input = document.getElementById('userInput');
+                    if (input) input.value = transcript;
+                    showToast('✓ Voice captured', 'success');
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    showToast('✗ Voice input failed', 'error');
+                    isRecording = false;
+                    voiceBtn.classList.remove('recording');
+                    try { recognition.stop(); } catch(e) {}
+                    recognition = null;
+                };
+
+                recognition.onend = () => {
+                    isRecording = false;
+                    if (voiceBtn && voiceBtn.classList) voiceBtn.classList.remove('recording');
+                    // Delay null assignment so onresult can still fire
+                    setTimeout(() => { recognition = null; }, 200);
+                };
+
+                recognition.start();
+            } catch (e) {
+                console.error('SpeechRecognition initialization failed', e);
+                showToast('✗ Voice input initialization failed', 'error');
+                recognition = null;
                 isRecording = false;
                 voiceBtn.classList.remove('recording');
-            };
-            
-            recognition.onend = () => {
-                isRecording = false;
-                voiceBtn.classList.remove('recording');
-            };
-            
-            recognition.start();
+            }
         }
         
         // Modal functions
@@ -5360,10 +6601,11 @@ Generated on ${new Date().toLocaleString()}
             conv.messages.forEach(msg => {
                 if (msg.sender === 'You') {
                     addUserMessage(msg.text);
-                } else if (msg.sender === 'CyberSentry AI') {
+                } else if (msg.sender && msg.sender !== 'You') {
+                    // msg.text is already plain text from textContent extraction - wrap to avoid re-escaping
                     addAIMessage({
-                        answer: msg.text,
-                        source: msg.source,
+                        answer: '<div class="message-text">' + escapeHtml(msg.text) + '</div>',
+                        source: msg.source || 'Archived',
                         can_regenerate: false,
                         model_used: 'archived'
                     }, '');
@@ -5372,9 +6614,12 @@ Generated on ${new Date().toLocaleString()}
             
             // Highlight active conversation
             document.querySelectorAll('.conversation-item').forEach(item => {
-                item.classList.remove('active');
+                if (item && item.classList) item.classList.remove('active');
             });
-            document.querySelectorAll('.conversation-item')[index]?.classList.add('active');
+            const items = document.querySelectorAll('.conversation-item');
+            if (items[index] && items[index].classList) {
+                items[index].classList.add('active');
+            }
             
             showToast('✓ Conversation loaded', 'success');
         }
@@ -5391,6 +6636,666 @@ Generated on ${new Date().toLocaleString()}
             
             return date.toLocaleDateString();
         }
+
+        // === DOCUMENT INTELLIGENCE MESSAGE FUNCTIONS ===
+        
+        function addDocUserMessage(text) {
+            const time = getCurrentTime();
+            const html = `
+                <div class="message">
+                    <div class="message-header">
+                        <div class="message-avatar user">
+                            <i class="ri-user-3-fill"></i>
+                        </div>
+                        <div class="message-meta">
+                            <span class="message-sender">You</span>
+                            <span class="message-time">${time}</span>
+                        </div>
+                    </div>
+                    <div class="message-content user">
+                        <div class="message-text">${escapeHtml(text)}</div>
+                    </div>
+                </div>
+            `;
+            const container = document.getElementById('docMessages');
+            if(container) {
+                container.appendChild(createElementFromHTML(html));
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        function addDocAIMessage(data) {
+            const time = getCurrentTime();
+            const response = data.answer || data.response || '';
+            const html = `
+                <div class="message">
+                    <div class="message-header">
+                        <div class="message-avatar ai">
+                            <i class="ri-file-text-fill"></i>
+                        </div>
+                        <div class="message-meta">
+                            <span class="message-sender">Document AI</span>
+                            <span class="message-time">${time}</span>
+                            <span class="message-badge badge-ai">ANALYSIS</span>
+                        </div>
+                    </div>
+                    <div class="message-content ai">
+                        <div class="message-text">${formatResponse(response)}</div>
+                        <div class="card-actions">
+                            <button class="action-btn" onclick="copyToClipboard(this.parentElement.previousElementSibling.textContent, this)">
+                                <i class="ri-file-copy-line"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            const container = document.getElementById('docMessages');
+            if(container) {
+                container.appendChild(createElementFromHTML(html));
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        function addDocSystemMessage(text) {
+            const time = getCurrentTime();
+            const html = `
+                <div class="message system-message">
+                    <div class="message-header">
+                        <div class="message-avatar system">
+                            <i class="ri-information-fill"></i>
+                        </div>
+                        <div class="message-meta">
+                            <span class="message-sender">System</span>
+                            <span class="message-time">${time}</span>
+                        </div>
+                    </div>
+                    <div class="message-content system">
+                        <div class="message-text">${formatResponse(text)}</div>
+                    </div>
+                </div>
+            `;
+            const container = document.getElementById('docMessages');
+            if(container) {
+                container.appendChild(createElementFromHTML(html));
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        function addDocErrorMessage(text) {
+            const time = getCurrentTime();
+            const html = `
+                <div class="message error-message">
+                    <div class="message-header">
+                        <div class="message-avatar error">
+                            <i class="ri-error-warning-fill"></i>
+                        </div>
+                        <div class="message-meta">
+                            <span class="message-sender">Error</span>
+                            <span class="message-time">${time}</span>
+                        </div>
+                    </div>
+                    <div class="message-content error" style="border-color: var(--accent-secondary); color: var(--accent-secondary);">
+                        <div class="message-text">${escapeHtml(text)}</div>
+                    </div>
+                </div>
+            `;
+            const container = document.getElementById('docMessages');
+            if(container) {
+                container.appendChild(createElementFromHTML(html));
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        function addDocTypingIndicator() {
+            const time = getCurrentTime();
+            const id = 'doc-typing-' + Date.now();
+            const html = `
+                <div class="message" id="${id}">
+                    <div class="message-header">
+                        <div class="message-avatar ai">
+                            <i class="ri-file-text-fill"></i>
+                        </div>
+                        <div class="message-meta">
+                            <span class="message-sender">Document AI</span>
+                            <span class="message-time">${time}</span>
+                        </div>
+                    </div>
+                    <div class="message-content ai">
+                        <div class="message-text">
+                            <div class="loading-dots">
+                                <div class="loading-dot"></div>
+                                <div class="loading-dot"></div>
+                                <div class="loading-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            const container = document.getElementById('docMessages');
+            if(container) {
+                container.appendChild(createElementFromHTML(html));
+                container.scrollTop = container.scrollHeight;
+            }
+            return id;
+        }
+
+        function removeDocTypingIndicator(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+        
+        // === PDF INTELLIGENCE MODE ===
+        // === ADVANCED DOCUMENT INTELLIGENCE MODE ===
+        let currentDocSession = null;
+        let currentDocFilename = '';
+        let currentDocType = '';
+        
+        function initializeDocMode() {
+            const docModeBtn = document.getElementById('docModeBtn');
+            const docModal = document.getElementById('docModal');
+            const docCloseBtn = document.getElementById('docCloseBtn');
+            const uploadZone = document.getElementById('uploadZone');
+            const docFileInput = document.getElementById('docFileInput');
+            const docSendBtn = document.getElementById('docSendBtn');
+            const docInput = document.getElementById('docInput');
+            
+            // Open doc mode
+            if (docModeBtn && docModal) {
+                docModeBtn.addEventListener('click', () => {
+                    docModal.classList.add('active');
+                });
+            }
+            
+            // Close doc mode
+            if (docCloseBtn && docModal) {
+                docCloseBtn.addEventListener('click', () => {
+                    docModal.classList.remove('active');
+                });
+            }
+            
+            // Close when clicking backdrop (outside container)
+            if (docModal) {
+                docModal.addEventListener('click', (e) => {
+                    if (e.target === docModal) {
+                        docModal.classList.remove('active');
+                    }
+                });
+            }
+            // Upload zone interactions
+            if (uploadZone && docFileInput) {
+                uploadZone.addEventListener('click', () => {
+                    docFileInput.click();
+                });
+                
+                uploadZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (uploadZone.classList) uploadZone.classList.add('dragover');
+                });
+                
+                uploadZone.addEventListener('dragleave', () => {
+                    if (uploadZone.classList) uploadZone.classList.remove('dragover');
+                });
+                
+                uploadZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    if (uploadZone.classList) uploadZone.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        handleDocumentUpload(files[0]);
+                    }
+                });
+                
+                docFileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        handleDocumentUpload(e.target.files[0]);
+                    }
+                });
+            }
+            
+            // Send doc query
+            if (docSendBtn) {
+                docSendBtn.addEventListener('click', sendDocQuery);
+            }
+            
+            if (docInput) {
+                docInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendDocQuery();
+                    }
+                });
+            }
+            
+            // Safe binding for quick actions
+            const safeBind = (id, handler) => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('click', handler);
+            };
+
+            safeBind('summarizeBtn', () => quickDocAction('summarize'));
+            safeBind('extractBtn', () => quickDocAction('extract'));
+            safeBind('audioBtn', generateAudioSummary);
+            // document modal export uses a unique id to avoid colliding with sidebar export
+            safeBind('exportDocBtn', exportDocAnalysis);
+            safeBind('clearDocBtn', clearDocSession);
+        }
+        
+                function handleDocumentUpload(file) {
+            const ext       = file.name.split('.').pop().toLowerCase();
+            const supported = ['pdf','docx','txt','xlsx','csv','png','jpg','jpeg','json','md'];
+            if (!supported.includes(ext)) { showToast(`⚠ Unsupported format: .${ext}`, 'error'); return; }
+            if (file.size > 100*1024*1024) { showToast('⚠ File too large (max 100MB)', 'error'); return; }
+
+            const upProg   = document.getElementById('uploadProgress');
+            const upBar    = document.getElementById('uploadProgressBar');
+            const upTxt    = document.getElementById('uploadProgressText');
+            const statusEl = document.getElementById('docStatus');
+            if (upProg)   { upProg.style.display='block'; upBar.style.width='0%'; upTxt.textContent='Uploading…'; }
+            if (statusEl)   statusEl.textContent = 'Processing...';
+            showToast(`📄 Processing ${ext.toUpperCase()}…`, 'success');
+
+            const fd = new FormData();
+            fd.append('document_file', file);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', `${API_BASE}/document/upload`);
+            xhr.timeout = 120000;
+
+            xhr.upload.addEventListener('progress', e => {
+                if (e.lengthComputable && upProg) {
+                    const pct = Math.round(e.loaded/e.total*80);
+                    upBar.style.width   = pct+'%';
+                    upTxt.textContent   = `Uploading… ${pct}%`;
+                }
+            });
+
+            xhr.addEventListener('load', () => {
+                if (upProg) { upBar.style.width='95%'; upTxt.textContent='Processing…'; }
+                let data;
+                try { data = JSON.parse(xhr.responseText); }
+                catch(_) { showToast('✗ Invalid server response','error'); if(upProg)upProg.style.display='none'; return; }
+                if (data.error) { showToast(`✗ ${data.error}`,'error'); if(upProg)upProg.style.display='none'; if(statusEl)statusEl.textContent='Error'; return; }
+
+                if (upProg) { upBar.style.width='100%'; upTxt.textContent='Done!'; setTimeout(()=>upProg.style.display='none',1500); }
+
+                currentDocSession  = data.session_id;
+                currentDocFilename = data.filename;
+                currentDocType     = data.file_type;
+
+                const iconMap = {pdf:'ri-file-pdf-fill',docx:'ri-file-word-fill',xlsx:'ri-file-excel-fill',
+                    csv:'ri-table-fill',txt:'ri-file-text-fill',md:'ri-markdown-fill',
+                    json:'ri-braces-fill',png:'ri-image-fill',jpg:'ri-image-fill',jpeg:'ri-image-fill'};
+                const docIcon = document.querySelector('.doc-icon');
+                if (docIcon) docIcon.innerHTML = `<i class="${iconMap[data.file_type]||'ri-file-list-fill'}" style="font-size:1.75rem;"></i>`;
+
+                const s = id => document.getElementById(id);
+                if(s('docFileName')) s('docFileName').textContent = file.name;
+                if(s('docType'))     s('docType').textContent     = data.file_type.toUpperCase();
+                if(s('docSize'))     s('docSize').textContent     = formatBytes(file.size);
+                if(s('docStatus'))   s('docStatus').textContent   = 'Ready';
+                if(s('docInfo'))     s('docInfo').style.display   = 'block';
+                if(s('docActions')) s('docActions').style.display = 'flex';
+
+                const extra = s('docExtraInfo');
+                if (extra) {
+                    extra.innerHTML = '';
+                    const st = data.statistics||{}, mt = data.metadata||{};
+                    [[mt.total_pages||mt.total_sheets,'Pages'],[st.total_words,'Words'],[st.total_rows,'Rows'],[st.total_chars,'Chars']].forEach(([v,l])=>{
+                        if(!v) return;
+                        const d = document.createElement('div');
+                        d.className = 'doc-info-item';
+                        d.innerHTML = `<span class="doc-info-label">${l}:</span><span class="doc-info-value">${typeof v==='number'?v.toLocaleString():v}</span>`;
+                        extra.appendChild(d);
+                    });
+                }
+
+                const kws = (data.statistics||{}).keywords||[];
+                if (kws.length && s('docKeywords') && s('docKeywordChips')) {
+                    s('docKeywordChips').innerHTML = kws.map(k=>
+                        `<span onclick="document.getElementById('docInput').value='Tell me about ${k} in this document'; document.getElementById('docInput').disabled=false; document.getElementById('docInput').focus();"
+                               style="padding:.25rem .625rem;background:rgba(0,240,255,.1);border:1px solid rgba(0,240,255,.3);border-radius:20px;font-size:.6875rem;color:#00f0ff;font-family:'JetBrains Mono',monospace;cursor:pointer;">${k}</span>`
+                    ).join('');
+                    s('docKeywords').style.display = 'block';
+                }
+
+                if(s('docInput'))   s('docInput').disabled   = false;
+                if(s('docSendBtn')) s('docSendBtn').disabled = false;
+
+                document.getElementById('docMessages').innerHTML = '';
+                const mt2   = data.metadata||{}, st2 = data.statistics||{};
+                const title = (mt2.title && mt2.title!=='Unknown') ? mt2.title : file.name;
+                const pages = mt2.total_pages||mt2.total_sheets||1;
+                const words = st2.total_words||st2.total_chars||0;
+                const unit  = st2.total_words ? 'words' : 'characters';
+                const pg    = data.file_type==='xlsx' ? 'sheets' : 'pages';
+                addDocSystemMessage(`✓ ${data.file_type.toUpperCase()} loaded: ${title}\n📄 ${pages} ${pg} • ${words.toLocaleString()} ${unit}\n\n💡 You can now ask questions!`);
+                showToast(`✓ ${data.file_type.toUpperCase()} ready for analysis`, 'success');
+            });
+
+            xhr.addEventListener('error',   ()=>{ if(upProg)upProg.style.display='none'; showToast('✗ Network error','error'); });
+            xhr.addEventListener('timeout',  ()=>{ if(upProg)upProg.style.display='none'; showToast('✗ Upload timed out','error'); });
+            xhr.send(fd);
+        }
+
+
+        function sendDocQuery() {
+            const docInput = document.getElementById('docInput');
+            const question = docInput.value.trim();
+            
+            if (!question || !currentDocSession) return;
+            
+            // Disable input
+            docInput.disabled = true;
+            document.getElementById('docSendBtn').disabled = true;
+            
+            // Add user message
+            addDocUserMessage(question);
+            docInput.value = '';
+            docInput.style.height = 'auto';
+            
+            // Show typing
+            const typingId = addDocTypingIndicator();
+            
+            // Send query
+            fetch(`${API_BASE}/document/query`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    session_id: currentDocSession,
+                    question: question
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => Promise.reject(new Error(err.error || 'Query failed')));
+                }
+                return response.json();
+            })
+            .then(data => {
+                removeDocTypingIndicator(typingId);
+                if (data.success) {
+                    addDocAIMessage(data);
+                    showToast(`✓ Answered (${Math.round(data.latency_ms)}ms)`, 'success');
+                } else {
+                    addDocErrorMessage(data.error || 'Failed to process query');
+                    showToast('✗ Query failed', 'error');
+                }
+            })
+            .catch(error => {
+                removeDocTypingIndicator(typingId);
+                addDocErrorMessage(error.message);
+                showToast('✗ Query failed', 'error');
+            })
+            .finally(() => {
+                docInput.disabled = false;
+                document.getElementById('docSendBtn').disabled = false;
+                docInput.focus();
+            });
+        }
+        
+        
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+        
+        function quickDocAction(action) {
+            const actions = {
+                summarize: 'Please provide a comprehensive summary of this entire document, highlighting the main topics, key findings, and important conclusions.',
+                extract: 'Extract and list the most important points, facts, and takeaways from this document in bullet point format.'
+            };
+            const docInput = document.getElementById('docInput');
+            if (actions[action] && docInput && !docInput.disabled) {
+                docInput.disabled = false;
+                docInput.value = actions[action];
+                sendDocQuery();
+            } else if (docInput && docInput.disabled) {
+                showToast('⚠ Please wait for current query to complete', 'error');
+            }
+        }
+        
+        function generateAudioSummary() {
+            if (!currentDocSession) {
+                showToast('⚠ No document loaded', 'error');
+                return;
+            }
+
+            showToast('🔊 Generating audio summary...', 'success');
+
+            // Use /audio-stream which returns audio/mpeg directly – avoids blob: CSP issues
+            // by injecting the URL straight into an <audio> src attribute.
+            const streamUrl = `${API_BASE}/document/audio-stream/${currentDocSession}?lang=en&_t=${Date.now()}`;
+
+            // First verify the endpoint responds (HEAD-like GET with range)
+            fetch(streamUrl, { method: 'GET', headers: { Range: 'bytes=0-1' } })
+                .then(r => {
+                    if (!r.ok) return r.json().then(e => Promise.reject(new Error(e.error || 'Audio unavailable')));
+                    // Build the player widget using a real <audio> element so the browser
+                    // handles streaming natively – no blob URL needed.
+                    _buildAudioWidget(streamUrl);
+                })
+                .catch(err => {
+                    // Fallback: try the original blob approach
+                    console.warn('[Audio] stream probe failed, trying blob fallback:', err);
+                    _generateAudioBlob();
+                });
+        }
+
+        function _buildAudioWidget(audioSrc) {
+            const widgetId = 'audio-widget-' + Date.now();
+            const widgetHtml = `
+                <div class="audio-player-widget" id="${widgetId}">
+                    <div class="audio-player-title">
+                        <i class="ri-volume-up-fill"></i> Audio Summary
+                    </div>
+                    <div class="audio-player-controls">
+                        <button class="audio-ctrl-btn audio-play-btn" id="playBtn-${widgetId}" title="Play / Pause">
+                            <i class="ri-play-fill"></i>
+                        </button>
+                        <button class="audio-ctrl-btn audio-stop-btn" id="stopBtn-${widgetId}" title="Stop">
+                            <i class="ri-stop-fill"></i>
+                        </button>
+                        <div class="audio-progress-wrap">
+                            <div class="audio-progress-bar" id="progBar-${widgetId}">
+                                <div class="audio-progress-fill" id="progFill-${widgetId}"></div>
+                            </div>
+                            <div class="audio-time-row">
+                                <span id="curTime-${widgetId}">0:00</span>
+                                <span id="totTime-${widgetId}">--:--</span>
+                            </div>
+                        </div>
+                        <a href="${audioSrc}" download="audio_summary.mp3"
+                           style="color:var(--text-tertiary); font-size:1.125rem; text-decoration:none; margin-left:0.25rem;" title="Download MP3">
+                           <i class="ri-download-line"></i>
+                        </a>
+                    </div>
+                    <!-- Native audio element – hidden, drives the custom UI -->
+                    <audio id="audioEl-${widgetId}" preload="auto" crossorigin="anonymous"
+                           style="display:none;" src="${audioSrc}"></audio>
+                </div>`;
+
+            const docMessages = document.getElementById('docMessages');
+            const widgetNode  = createElementFromHTML(widgetHtml);
+            docMessages.appendChild(widgetNode);
+            docMessages.scrollTop = docMessages.scrollHeight;
+
+            const audioEl  = document.getElementById(`audioEl-${widgetId}`);
+            const playBtn  = document.getElementById(`playBtn-${widgetId}`);
+            const stopBtn  = document.getElementById(`stopBtn-${widgetId}`);
+            const progFill = document.getElementById(`progFill-${widgetId}`);
+            const progBar  = document.getElementById(`progBar-${widgetId}`);
+            const curTime  = document.getElementById(`curTime-${widgetId}`);
+            const totTime  = document.getElementById(`totTime-${widgetId}`);
+
+            function fmtTime(s) {
+                if (!isFinite(s) || isNaN(s)) return '--:--';
+                const m   = Math.floor(s / 60);
+                const sec = Math.floor(s % 60).toString().padStart(2, '0');
+                return `${m}:${sec}`;
+            }
+
+            audioEl.addEventListener('loadedmetadata', () => {
+        if (audioEl.duration && isFinite(audioEl.duration)) {
+            totTime.textContent = fmtTime(audioEl.duration);
+        }
+    });
+
+    // Retry duration on canplaythrough (fires after enough data buffered)
+    audioEl.addEventListener('canplaythrough', () => {
+        if (audioEl.duration && isFinite(audioEl.duration)) {
+            totTime.textContent = fmtTime(audioEl.duration);
+        }
+    });
+
+    // Poll for duration as it becomes available
+    const durationPoll = setInterval(() => {
+        if (audioEl.duration && isFinite(audioEl.duration)) {
+            totTime.textContent = fmtTime(audioEl.duration);
+            clearInterval(durationPoll);
+        }
+    }, 300);
+
+            audioEl.addEventListener('durationchange', () => {
+                if (audioEl.duration && isFinite(audioEl.duration)) {
+                    totTime.textContent = fmtTime(audioEl.duration);
+                }
+            });
+
+            audioEl.addEventListener('timeupdate', () => {
+                if (audioEl.duration && isFinite(audioEl.duration)) {
+                    const pct = (audioEl.currentTime / audioEl.duration) * 100;
+                    progFill.style.width = pct + '%';
+                    curTime.textContent  = fmtTime(audioEl.currentTime);
+                }
+            });
+
+            audioEl.addEventListener('ended', () => {
+                playBtn.innerHTML      = '<i class="ri-play-fill"></i>';
+                progFill.style.width   = '100%';
+            });
+
+            audioEl.addEventListener('error', (e) => {
+        console.error('Audio error:', audioEl.error);
+        showToast('✗ Audio playback error – trying fallback', 'error');
+        _generateAudioBlob();
+    });
+
+    audioEl.addEventListener('canplay', () => {
+        if (audioEl.duration && isFinite(audioEl.duration)) {
+            totTime.textContent = fmtTime(audioEl.duration);
+        }
+    });
+
+            playBtn.addEventListener('click', () => {
+                if (audioEl.paused) {
+                    audioEl.play()
+                        .then(() => { playBtn.innerHTML = '<i class="ri-pause-fill"></i>'; })
+                        .catch(e  => { console.error('play() error', e); showToast('⚠ Browser blocked autoplay – click Play', 'error'); });
+                } else {
+                    audioEl.pause();
+                    playBtn.innerHTML = '<i class="ri-play-fill"></i>';
+                }
+            });
+
+            stopBtn.addEventListener('click', () => {
+                audioEl.pause();
+                audioEl.currentTime  = 0;
+                playBtn.innerHTML    = '<i class="ri-play-fill"></i>';
+                progFill.style.width = '0%';
+                curTime.textContent  = '0:00';
+            });
+
+            progBar.addEventListener('click', e => {
+                const rect = progBar.getBoundingClientRect();
+                const pct  = (e.clientX - rect.left) / rect.width;
+                if (isFinite(audioEl.duration)) audioEl.currentTime = pct * audioEl.duration;
+            });
+
+            // Auto-play attempt
+            audioEl.play()
+                .then(() => {
+                    playBtn.innerHTML = '<i class="ri-pause-fill"></i>';
+                    showToast('✓ Audio summary playing', 'success');
+                })
+                .catch(() => { showToast('▶ Audio ready – press Play', 'success'); });
+        }
+
+        function _generateAudioBlob() {
+            /* Blob fallback – used only when streaming endpoint is unreachable */
+            if (!currentDocSession) return;
+            fetch(`${API_BASE}/document/audio-summary/${currentDocSession}?lang=en`)
+                .then(r => { if (!r.ok) throw new Error('Blob audio unavailable'); return r.blob(); })
+                .then(blob => {
+                    if (!blob || blob.size === 0) throw new Error('Empty blob');
+                    _buildAudioWidget(URL.createObjectURL(blob));
+                })
+                .catch(err => showToast(`✗ ${err.message || 'Audio unavailable'}`, 'error'));
+        }
+        
+        function exportDocAnalysis() {
+            if (!currentDocSession) {
+                showToast('⚠ No document loaded', 'error');
+                return;
+            }
+            
+            const format = prompt('Export format (json, txt, md):', 'json');
+            if (!format || !['json', 'txt', 'md'].includes(format)) {
+                return;
+            }
+            
+            fetch(`${API_BASE}/document/export/${currentDocSession}?format=${format}`)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => Promise.reject(new Error(err.error || 'Export failed')));
+                    }
+                    return response.text();
+                })
+                .then(content => {
+                    const blob = new Blob([content], { type: format === 'json' ? 'application/json' : 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `analysis_${currentDocSession}.${format}`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showToast('✓ Analysis exported', 'success');
+                })
+                .catch(error => {
+                    showToast(`✗ ${error.message}`, 'error');
+                    console.error('Export error:', error);
+                });
+        }
+        
+        function clearDocSession() {
+            if (!currentDocSession) return;
+            
+            if (confirm('Clear current document session? This will remove the document from memory.')) {
+                fetch(`${API_BASE}/document/session/${currentDocSession}`, { method: 'DELETE' })
+                    .then(() => {
+                        currentDocSession = null;
+                        currentDocFilename = '';
+                        currentDocType = '';
+                        document.getElementById('docInfo').style.display = 'none';
+                        document.getElementById('docActions').style.display = 'none';
+                        document.getElementById('docMessages').innerHTML = '';
+                        document.getElementById('docInput').disabled = true;
+                        document.getElementById('docSendBtn').disabled = true;
+                        showToast('✓ Session cleared', 'success');
+                    })
+                    .catch(err => showToast('✗ Failed to clear session', 'error'));
+            }
+        }
+        
+        // Auto-resize doc input
+        document.getElementById('docInput')?.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 180) + 'px';
+        });
+        
+        
         
         // Advanced search
         function performAdvancedSearch() {
@@ -5485,19 +7390,20 @@ Generated on ${new Date().toLocaleString()}
         ];
         
         // Show suggestions on focus
-        document.getElementById('userInput').addEventListener('focus', () => {
-            const input = document.getElementById('userInput');
-            if (input.value.trim() === '') {
-                showSuggestions();
-            }
-        });
+        const userInput = document.getElementById('userInput');
+        if (userInput) {
+            userInput.addEventListener('focus', () => {
+                if (userInput.value.trim() === '') {
+                    showSuggestions();
+                }
+            });
+        }
         
         function showSuggestions() {
             const panel = document.getElementById('suggestionsPanel');
             const list = document.getElementById('suggestionsList');
             
             if (!panel || !list) {
-                console.warn('Suggestions panel or list not found');
                 return;
             }
             
@@ -5513,7 +7419,7 @@ Generated on ${new Date().toLocaleString()}
                 </div>
             `).join('');
             
-            panel.classList.add('active');
+            if (panel.classList) panel.classList.add('active');
         }
         
         function applySuggestion(query) {
@@ -5523,7 +7429,7 @@ Generated on ${new Date().toLocaleString()}
                 input.value = query;
                 input.focus();
             }
-            if (panel) {
+            if (panel && panel.classList) {
                 panel.classList.remove('active');
             }
         }
@@ -5531,27 +7437,35 @@ Generated on ${new Date().toLocaleString()}
         // Hide suggestions when clicking outside
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.input-area')) {
-                document.getElementById('suggestionsPanel').classList.remove('active');
+                const panel = document.getElementById('suggestionsPanel');
+                if (panel && panel.classList) panel.classList.remove('active');
             }
         });
         
         // Font size range slider
-        document.getElementById('fontSizeRange')?.addEventListener('input', (e) => {
-            document.getElementById('fontSizeValue').textContent = e.target.value + 'px';
-        });
+        const fontSizeRange = document.getElementById('fontSizeRange');
+        if (fontSizeRange && !fontSizeRange.dataset.bound) {
+            // Prevent double-binding by marking when the listener is attached
+            fontSizeRange.dataset.bound = '1';
+            fontSizeRange.addEventListener('input', (e) => {
+                const valDisplay = document.getElementById('fontSizeValue');
+                if (valDisplay) valDisplay.textContent = e.target.value + 'px';
+                // Apply font size immediately
+                document.documentElement.style.fontSize = e.target.value + 'px';
+            });
+        }
         
         // Auto-save conversation on new message
         let autoSaveTimeout;
-        const originalAddAIMessage = addAIMessage;
-        addAIMessage = function(...args) {
-            originalAddAIMessage.apply(this, args);
-            
-            // Auto-save after 2 seconds of inactivity
+        // Auto-save via MutationObserver on messagesArea instead of monkey-patching
+        const autoSaveObserver = new MutationObserver(() => {
             clearTimeout(autoSaveTimeout);
-            autoSaveTimeout = setTimeout(() => {
-                saveConversationToHistory();
-            }, 2000);
-        };
+            autoSaveTimeout = setTimeout(saveConversationToHistory, 2000);
+        });
+        const _autoSaveTarget = document.getElementById('messagesArea');
+        if (_autoSaveTarget) {
+            autoSaveObserver.observe(_autoSaveTarget, { childList: true });
+        }
         
         // Code execution removed - keeping copy functionality only
         
@@ -5657,13 +7571,12 @@ Generated on ${new Date().toLocaleString()}
             });
         }
         
-        // Enhance code blocks after each AI message
-        const originalFormatResponse = formatResponse;
-        formatResponse = function(text) {
-            const result = originalFormatResponse(text);
-            setTimeout(enhanceCodeBlocks, 100);
-            return result;
-        };
+        // Enhance code blocks after rendering without monkey-patching formatResponse
+        const messagesObserver = new MutationObserver(() => setTimeout(enhanceCodeBlocks, 150));
+        const _msgObserveTarget = document.getElementById('messagesArea');
+        if (_msgObserveTarget) {
+            messagesObserver.observe(_msgObserveTarget, { childList: true, subtree: false });
+        }
         
         // Real-time typing indicator for AI
         let typingTimeout;
@@ -5700,25 +7613,15 @@ Generated on ${new Date().toLocaleString()}
         
         // Performance monitoring
         let lastRequestTime = Date.now();
-        const originalSendMessage = sendMessage;
-        sendMessage = function() {
-            lastRequestTime = Date.now();
-            originalSendMessage.apply(this, arguments);
-        };
+        document.getElementById('sendBtn').addEventListener('click', () => { lastRequestTime = Date.now(); }, true);
         
-        // Show loading state improvements
-        const enhancedUpdateStatus = updateStatus;
-        updateStatus = function(status) {
-            enhancedUpdateStatus(status);
-            
-            // Add performance metrics
-            if (status === 'ready' && lastRequestTime) {
+        // Performance metrics inline - no monkey-patch needed
+        document.addEventListener('cybersentry:response', (e) => {
+            if (lastRequestTime) {
                 const responseTime = Date.now() - lastRequestTime;
-                if (responseTime > 5000) {
-                    console.log(`Slow response: ${responseTime}ms`);
-                }
+                if (responseTime > 5000) console.log(`Slow response: ${responseTime}ms`);
             }
-        };
+        });
         
         // Initialize all features
         document.addEventListener('DOMContentLoaded', () => {

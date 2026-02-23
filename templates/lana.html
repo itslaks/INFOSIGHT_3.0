@@ -29,6 +29,8 @@
             color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         
         body::before {
@@ -40,6 +42,8 @@
                 radial-gradient(circle at 80% 80%, rgba(0, 153, 255, 0.08) 0%, transparent 50%);
             pointer-events: none;
             z-index: 0;
+            will-change: auto;
+            transform: translateZ(0);
         }
         
         .app-container {
@@ -51,6 +55,8 @@
             display: flex;
             flex-direction: column;
             z-index: 1;
+            transform: translateZ(0);
+            will-change: scroll-position;
         }
         
         .header {
@@ -72,14 +78,20 @@
         .logo-icon {
             width: 44px;
             height: 44px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--bg-dark);
+            overflow: hidden;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+        }
+        
+        .logo-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
         }
         
         .logo-text {
@@ -125,6 +137,8 @@
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
+            transform: translateZ(0);
+            -webkit-overflow-scrolling: touch;
         }
         
         .chat-container::-webkit-scrollbar { width: 6px; }
@@ -137,6 +151,8 @@
             justify-content: center;
             height: 100%;
             text-align: center;
+            transform: translateZ(0);
+            contain: layout style paint;
         }
         
         .robot-face {
@@ -144,6 +160,7 @@
             height: 140px;
             margin-bottom: 1.5rem;
             position: relative;
+            will-change: transform;
         }
         
         .robot-outer {
@@ -158,6 +175,8 @@
             box-shadow: 0 0 40px rgba(0, 255, 136, 0.3), inset 0 0 30px rgba(0, 0, 0, 0.5);
             position: relative;
             overflow: hidden;
+            will-change: transform;
+            transform: translateZ(0);
         }
         
         .robot-inner {
@@ -182,6 +201,8 @@
             animation: eyePulse 2s ease-in-out infinite;
             position: relative;
             overflow: hidden;
+            will-change: transform, opacity, filter;
+            transform: translateZ(0);
         }
         
         .robot-eye::after {
@@ -199,8 +220,8 @@
         .robot-eye:nth-child(2) { animation-delay: 0.3s; }
         
         @keyframes eyePulse {
-            0%, 100% { transform: scale(1); opacity: 1; filter: brightness(1); }
-            50% { transform: scale(0.9); opacity: 0.8; filter: brightness(1.2); }
+            0%, 100% { opacity: 1; filter: brightness(1); }
+            50% { opacity: 0.8; filter: brightness(1.2); }
         }
         
         .robot-mouth {
@@ -214,11 +235,13 @@
             margin-top: 2px;
             box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
             animation: smilePulse 3s ease-in-out infinite;
+            will-change: filter;
+            transform: translateZ(0);
         }
         
         @keyframes smilePulse {
-            0%, 100% { transform: scale(1); filter: brightness(1); }
-            50% { transform: scale(1.08); filter: brightness(1.3); }
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
         }
         
         .robot-scan {
@@ -229,11 +252,13 @@
             height: 100%;
             background: radial-gradient(circle at center, rgba(0,255,136,0.15), transparent 70%);
             animation: faceGlow 4s ease-in-out infinite;
+            will-change: opacity;
+            transform: translateZ(0);
         }
         
         @keyframes faceGlow {
-            0%, 100% { opacity: 0.5; transform: scale(0.8); }
-            50% { opacity: 1; transform: scale(1.1); }
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
         }
         
         .robot-ring {
@@ -247,6 +272,8 @@
             left: 50%;
             transform: translate(-50%, -50%);
             animation: ringRotate 3s linear infinite;
+            will-change: transform;
+            transform-origin: center center;
         }
         
         @keyframes ringRotate {
@@ -583,7 +610,9 @@
     <div class="app-container">
         <header class="header">
             <div class="logo-section">
-                <div class="logo-icon">L</div>
+                <div class="logo-icon">
+                    <img src="/static/images/lana_ai_logo.png" alt="Lana AI Logo" onerror="this.style.display='none'; this.parentElement.innerHTML='L';">
+                </div>
                 <div class="logo-text">Lana AI</div>
             </div>
             <div class="status-badge" id="statusBadge">

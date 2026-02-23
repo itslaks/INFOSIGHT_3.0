@@ -1,3 +1,10 @@
+import sys
+import os
+from pathlib import Path
+
+# Add project root to sys.path to allow importing from utils, core, etc.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from flask import Flask, Blueprint, request, jsonify, send_from_directory, render_template, g
 from flask_cors import CORS
 import os
@@ -1234,11 +1241,14 @@ def batch_status_endpoint(job_id):
 
 
 # For standalone running (if needed)
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     from flask import Flask
     app = Flask(__name__, template_folder='templates')
     CORS(app)
-    app.register_blueprint(inkwell_ai, url_prefix='/inkwell_ai')
+    app.config['SECRET_KEY'] = 'dev-key-for-standalone-mode'
+    # Register directly without prefix for standalone mode to match server expectations
+    app.register_blueprint(inkwell_ai)
     
     print("\n" + "="*60)
     print("🚀 InkWell AI Ultimate - Starting...")
@@ -1249,7 +1259,7 @@ if __name__ == '__main__':
         local_available = check_ollama_available()
         print(f"{'✅' if local_available else '⚠️ '} Local LLM: {'Available' if local_available else 'Not running (start Ollama/llama.cpp server)'}")
     print("="*60)
-    print("🌐 Server running on http://localhost:5000")
+    print("🌐 Server running on http://localhost:5007")
     print("="*60 + "\n")
     
-    app.run(debug=True, port=5000, threaded=True)
+    app.run(debug=True, port=5007, threaded=True)

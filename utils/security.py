@@ -422,13 +422,17 @@ class InputValidator:
                     # Empty nested_schema means allow all fields
                     validated[field_name] = value
             
-            # Check allowed values
+            # Check allowed values - coerce to default/first allowed value rather than hard error
             allowed_values = field_schema.get('allowed_values')
             if allowed_values and validated[field_name] not in allowed_values:
-                raise ValidationError(
-                    f"{field_name} must be one of: {', '.join(map(str, allowed_values))}", 
-                    field_name
-                )
+                default_value = field_schema.get('default')
+                if default_value and default_value in allowed_values:
+                    logger.warning(f"Invalid value for {field_name}; coercing to default: {default_value}")
+                    validated[field_name] = default_value
+                else:
+                    # Fallback to first allowed value
+                    logger.warning(f"Invalid value for {field_name}; coercing to first allowed value: {allowed_values[0]}")
+                    validated[field_name] = allowed_values[0]
         
         return validated
 

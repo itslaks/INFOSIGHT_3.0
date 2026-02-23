@@ -1,3 +1,10 @@
+import sys
+import os
+from pathlib import Path
+
+# Add project root to sys.path to allow importing from utils, core, etc.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from flask import Flask, request, jsonify, Blueprint, render_template, g
 from flask_cors import CORS
 import json
@@ -523,4 +530,13 @@ def health_check():
     })
 
 # Log status when module is imported
+# Log status when module is imported
 logger.info(f"OSINT Blueprint loaded with {len(user_data)} platforms")
+
+if __name__ == "__main__":
+    from flask import Flask
+    app = Flask(__name__)
+    app.config['SECRET_KEY'] = 'dev-key-for-standalone-mode'
+    app.register_blueprint(osint)
+    print("Starting OSINT in standalone mode on port 5009...")
+    app.run(debug=True, port=5009)

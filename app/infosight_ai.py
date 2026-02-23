@@ -1,3 +1,11 @@
+#infosight_ai.py
+import sys
+import os
+from pathlib import Path
+
+# Add project root to sys.path to allow importing from utils, core, etc.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from flask import Blueprint, request, jsonify, render_template, g
 from flask_cors import CORS
 from utils.security import rate_limit_api, validate_request as validate_request_central, InputValidator
@@ -1603,3 +1611,11 @@ if __name__ != '__main__':
     )
     
     logger.info("INFOSIGHT AI Pro initialized successfully")
+
+if __name__ == "__main__":
+    from flask import Flask
+    app = Flask(__name__)
+    app.config['SECRET_KEY'] = 'dev-key-for-standalone-mode'
+    app.register_blueprint(infosight_ai)
+    print("Starting InfoSight AI in standalone mode on port 5006...")
+    app.run(debug=True, port=5006)
