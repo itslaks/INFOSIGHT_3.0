@@ -1477,18 +1477,19 @@ def api_camera_fingerprint():
         hashes = multiple_hash_generation(image)
 
         return jsonify(convert_to_json_serializable({
-            'prnu': prnu,
-            'image_hashes': hashes,
             'metadata': base_metadata,
-            'camera_fingerprinting_note': (
-                'For high-confidence matching against large camera databases, '
-                'integrate external PRNU service.'
+            'prnu_signature': prnu,
+            'image_hashes': hashes,
+            'note': (
+                'Camera fingerprinting via PRNU is approximate; '
+                'match against known device databases for higher confidence.'
             ),
         }))
     except Exception as e:
         logger.error(f"camera-fingerprint error: {e}")
         return jsonify({'error': str(e)}), 500
 
+        
 
 @snapspeak_ai.route('/api/forensics/location-intelligence', methods=['POST'])
 @rate_limit_strict(requests_per_minute=10, requests_per_hour=100)
@@ -1570,13 +1571,162 @@ def api_validate_timestamp():
             if timestamps['DateTimeOriginal'] != timestamps['DateTimeDigitized']:
                 consistency_flags.append('Original and digitised timestamps differ.')
 
+        # --- Sun position analysis ---
+        sun_analysis = {'status': 'no_data', 'note': 'GPS or timestamp missing.'}
+        gps_info = meta.get('metadata', {}).get('gps_location', {})
+        dt_str = timestamps.get('DateTimeOriginal') or timestamps.get('DateTime')
+
+        lat = lon = None  # will be set if GPS parsing succeeds
+
+        if gps_info and dt_str:
+            try:
+                import math, datetime as dt_mod
+
+                def dms_to_dec(dms_str, ref):
+                    parts = dms_str.replace('[','').replace(']','').split(',')
+                    def frac(s):
+                        s = s.strip()
+                        if '/' in s:
+                            n, d = s.split('/')
+                            return float(n) / float(d)
+                        return float(s)
+                    deg = frac(parts[0]); mn = frac(parts[1]); sec = frac(parts[2])
+                    dec = deg + mn/60 + sec/3600
+                    if ref in ('S', 'W'):
+                        dec = -dec
+                    return dec
+
+                lat_raw = str(gps_info.get('GPSLatitude') or gps_info.get('Latitude') or '')
+                lon_raw = str(gps_info.get('GPSLongitude') or gps_info.get('Longitude') or '')
+                lat_ref = str(gps_info.get('GPSLatitudeRef') or gps_info.get('LatitudeRef') or 'N')
+                lon_ref = str(gps_info.get('GPSLongitudeRef') or gps_info.get('LongitudeRef') or 'E')
+
+                lat = dms_to_dec(lat_raw, lat_ref.strip())
+                lon = dms_to_dec(lon_raw, lon_ref.strip())
+
+                photo_dt = dt_mod.datetime.strptime(dt_str.strip(), '%Y:%m:%d %H:%M:%S')
+                day_of_year = photo_dt.timetuple().tm_yday
+                hour_utc = photo_dt.hour + photo_dt.minute / 60.0
+
+                decl = math.radians(23.45 * math.sin(math.radians((360 / 365) * (day_of_year - 81))))
+                lat_r = math.radians(lat)
+                B = math.radians((360 / 365) * (day_of_year - 81))
+                eot = 9.87 * math.sin(2 * B) - 7.53 * math.cos(B) - 1.5 * math.sin(B)
+                solar_noon_utc = 12 - lon / 15 - eot / 60
+                hour_angle = math.radians(15 * (hour_utc - solar_noon_utc))
+
+                sin_alt = (math.sin(lat_r) * math.sin(decl) +
+                           math.cos(lat_r) * math.cos(decl) * math.cos(hour_angle))
+                altitude_deg = math.degrees(math.asin(max(-1, min(1, sin_alt))))
+
+                cos_az = ((math.sin(decl) - math.sin(lat_r) * sin_alt) /
+                          (math.cos(lat_r) * math.cos(math.asin(sin_alt)) + 1e-9))
+                azimuth_deg = math.degrees(math.acos(max(-1, min(1, cos_az))))
+                if hour_angle > 0:
+                    azimuth_deg = 360 - azimuth_deg
+
+                period = ('night' if altitude_deg < 0 else
+                          'civil_twilight' if altitude_deg < 6 else
+                          'nautical_twilight' if altitude_deg < 12 else
+                          'astronomical_twilight' if altitude_deg < 18 else 'day')
+
+                sun_analysis = {
+                    'status': 'computed',
+                    'latitude': round(lat, 4),
+                    'longitude': round(lon, 4),
+                    'photo_datetime_utc_assumed': dt_str,
+                    'solar_altitude_deg': round(altitude_deg, 2),
+                    'solar_azimuth_deg': round(azimuth_deg, 2),
+                    'period_of_day': period,
+                    'solar_noon_utc_approx': round(solar_noon_utc, 2),
+                    'note': 'Assumes timestamp is UTC.',
+                }
+            except Exception as sun_err:
+                sun_analysis = {'status': 'error', 'detail': str(sun_err)}
+
+        # --- Timezone consistency ---
+        tz_analysis = {'status': 'no_data', 'note': 'GPS coordinates required.'}
+        if lat is not None and lon is not None and dt_str:
+            try:
+                import datetime as dt_mod
+                estimated_offset_h = round(lon / 15)
+                tz_analysis = {
+                    'status': 'estimated',
+                    'longitude_based_utc_offset_h': estimated_offset_h,
+                    'expected_timezone_label': f'UTC{estimated_offset_h:+d}',
+                    'note': 'Rough longitude-based estimate. Install timezonefinder for exact results.',
+                }
+                try:
+                    from timezonefinder import TimezoneFinder
+                    import pytz
+                    tf = TimezoneFinder()
+                    tz_name = tf.timezone_at(lat=lat, lng=lon)
+                    if tz_name:
+                        tz_obj = pytz.timezone(tz_name)
+                        photo_dt_naive = dt_mod.datetime.strptime(dt_str.strip(), '%Y:%m:%d %H:%M:%S')
+                        utc_offset = tz_obj.utcoffset(photo_dt_naive)
+                        tz_analysis = {
+                            'status': 'computed',
+                            'timezone_name': tz_name,
+                            'utc_offset_hours': utc_offset.total_seconds() / 3600,
+                            'longitude_based_estimate_h': estimated_offset_h,
+                            'consistent': abs(utc_offset.total_seconds() / 3600 - estimated_offset_h) <= 1.5,
+                        }
+                except ImportError:
+                    pass
+            except Exception as tz_err:
+                tz_analysis = {'status': 'error', 'detail': str(tz_err)}
+
+        # --- Weather validation (Open-Meteo, free, no key required) ---
+        weather_analysis = {'status': 'no_data', 'note': 'GPS + timestamp required.'}
+        if lat is not None and lon is not None and dt_str:
+            try:
+                import urllib.request, json as _json, datetime as dt_mod2
+                photo_dt2 = dt_mod2.datetime.strptime(dt_str.strip(), '%Y:%m:%d %H:%M:%S')
+                date_str = photo_dt2.strftime('%Y-%m-%d')
+                hour_val = photo_dt2.hour
+                url = (
+                    f'https://archive-api.open-meteo.com/v1/archive'
+                    f'?latitude={lat:.4f}&longitude={lon:.4f}'
+                    f'&start_date={date_str}&end_date={date_str}'
+                    f'&hourly=temperature_2m,precipitation,weathercode,cloudcover'
+                    f'&timezone=UTC'
+                )
+                with urllib.request.urlopen(url, timeout=6) as resp:
+                    wdata = _json.loads(resp.read())
+                hourly = wdata.get('hourly', {})
+                temps = hourly.get('temperature_2m', [])
+                precip = hourly.get('precipitation', [])
+                codes = hourly.get('weathercode', [])
+                clouds = hourly.get('cloudcover', [])
+                WMO = {
+                    0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast',
+                    45: 'Fog', 61: 'Slight rain', 63: 'Moderate rain', 65: 'Heavy rain',
+                    71: 'Slight snow', 80: 'Slight showers', 95: 'Thunderstorm',
+                }
+                idx = hour_val if hour_val < len(temps) else -1
+                weather_analysis = {
+                    'status': 'retrieved',
+                    'source': 'Open-Meteo historical archive (free, no key)',
+                    'date': date_str,
+                    'hour_utc': hour_val,
+                    'temperature_c': temps[idx] if idx < len(temps) else None,
+                    'precipitation_mm': precip[idx] if idx < len(precip) else None,
+                    'cloud_cover_pct': clouds[idx] if idx < len(clouds) else None,
+                    'weather_code': codes[idx] if idx < len(codes) else None,
+                    'weather_description': WMO.get(codes[idx], 'Unknown') if idx < len(codes) else 'Unknown',
+                    'note': 'Historical weather at photo location. Assumes timestamp is UTC.',
+                }
+            except Exception as w_err:
+                weather_analysis = {'status': 'error', 'detail': str(w_err)}
+
         return jsonify(convert_to_json_serializable({
             'timestamps': timestamps,
             'consistency_flags': consistency_flags,
             'advanced_checks': {
-                'weather_validation': 'Not implemented – integrate with external weather/time APIs.',
-                'sun_position_analysis': 'Not implemented – require geo + solar position modelling.',
-                'timezone_consistency': 'Not implemented – requires explicit timezone data.',
+                'sun_position_analysis': sun_analysis,
+                'timezone_consistency': tz_analysis,
+                'weather_validation': weather_analysis,
             },
         }))
     except Exception as e:
@@ -1624,6 +1774,9 @@ def api_stego_deep_scan():
                 ),
             },
         }))
+    except Exception as e:
+        logger.error(f"stego-deep-scan error: {e}")
+        return jsonify({'error': str(e)}), 500
     except Exception as e:
         logger.error(f"stego-deep-scan error: {e}")
         return jsonify({'error': str(e)}), 500

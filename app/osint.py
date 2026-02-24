@@ -1,542 +1,556 @@
 import sys
 import os
-from pathlib import Path
-
-# Add project root to sys.path to allow importing from utils, core, etc.
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-from flask import Flask, request, jsonify, Blueprint, render_template, g
-from flask_cors import CORS
-import json
-import requests
 import re
+import json
+import time
+import logging
+import concurrent.futures
+from pathlib import Path
 from datetime import datetime
 from collections import OrderedDict
-import concurrent.futures
-import time
-import os
-import logging
-from utils.security import rate_limit_api, validate_request, InputValidator
 
-# Configure logging
+# Add project root to sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from flask import (
+    Flask, request, jsonify, Blueprint,
+    render_template, g
+)
+from flask_cors import CORS
+import requests as http_requests
+
+# ── Conditional project imports ──────────────────────────────────────────────
+try:
+    from utils.security import rate_limit_api, validate_request, InputValidator
+    _HAS_SECURITY = True
+except ImportError:
+    _HAS_SECURITY = False
+    def rate_limit_api(*a, **kw):
+        def dec(f): return f
+        return dec
+    def validate_request(*a, **kw):
+        def dec(f): return f
+        return dec
+    class InputValidator:
+        @staticmethod
+        def validate_string(v, *a, **kw): return v
+
+try:
+    from utils.paths import get_data_path
+    _HAS_PATHS = True
+except ImportError:
+    _HAS_PATHS = False
+
+# ── Logging ──────────────────────────────────────────────────────────────────
 logger = logging.getLogger(__name__)
 
-# Create Blueprint for OSINT
+# ── Blueprint ────────────────────────────────────────────────────────────────
 osint = Blueprint('osint', __name__, template_folder='templates')
 
-# Log application initialization
 logger.info("=" * 70)
 logger.info("🔍 OSINT - Initializing")
 logger.info("=" * 70)
 
-# Load JSON data
-def load_data():
-    try:
-        # Path relative to project root
-        try:
-            import sys
-            from pathlib import Path
-            sys.path.insert(0, str(Path(__file__).parent.parent))
-            from utils.paths import get_data_path
-            possible_paths = [
-                str(get_data_path('data.json')),
-                os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data.json'),  # Fallback
-                'data.json',  # Current directory fallback
-            ]
-        except ImportError:
-            project_root = os.path.dirname(os.path.dirname(__file__))
-            possible_paths = [
-                os.path.join(project_root, 'data', 'data.json'),
-                os.path.join(project_root, 'data.json'),  # Fallback
-                'data.json',  # Current directory fallback
-            ]
-        
-        for path in possible_paths:
-            if os.path.exists(path):
-                logger.info(f"✅ Loading data.json from: {path}")
-                with open(path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    
-                    # Validate data structure
-                    if not isinstance(data, dict):
-                        logger.warning("⚠️ WARNING: data.json is not a dictionary. Using sample data...")
-                        return get_sample_data()
-                    
-                    # Filter out invalid entries
-                    valid_data = {}
-                    for key, value in data.items():
-                        if isinstance(value, dict) and 'url' in value:
-                            valid_data[key] = value
-                        else:
-                            logger.debug(f"Skipping invalid entry: {key}")
-                    
-                    if len(valid_data) == 0:
-                        logger.warning("⚠️ WARNING: No valid platforms in data.json. Using sample data...")
-                        return get_sample_data()
-                    
-                    logger.info(f"✅ Loaded {len(valid_data)} platforms from data.json")
-                    return valid_data
-        
-        logger.warning("⚠️ WARNING: data.json not found. Using sample data...")
-        return get_sample_data()
-    except json.JSONDecodeError as e:
-        logger.error(f"❌ Error parsing data.json: {e}. Using sample data...")
-        return get_sample_data()
-    except Exception as e:
-        logger.error(f"❌ Error loading data.json: {e}. Using sample data...")
-        return get_sample_data()
+# ═════════════════════════════════════════════════════════════════════════════
+#  DATA LOADING
+# ═════════════════════════════════════════════════════════════════════════════
 
-def get_sample_data():
-    """Fallback sample data with more platforms"""
+def _candidate_paths():
+    base = Path(__file__).resolve().parent.parent
+    paths = [
+        base / 'data' / 'data.json',
+        base / 'data.json',
+        Path('data/data.json'),
+        Path('data.json'),
+    ]
+    if _HAS_PATHS:
+        try:
+            paths.insert(0, Path(get_data_path('data.json')))
+        except Exception:
+            pass
+    return paths
+
+
+def load_data():
+    for p in _candidate_paths():
+        if p.exists():
+            logger.info(f"✅ Loading data.json from: {p}")
+            try:
+                raw = json.loads(p.read_text(encoding='utf-8'))
+                if not isinstance(raw, dict):
+                    logger.warning("⚠️  data.json is not a dict – using fallback")
+                    break
+                # Skip the $schema meta key, keep only platform entries
+                valid = {
+                    k: v for k, v in raw.items()
+                    if isinstance(v, dict) and 'url' in v and not k.startswith('$')
+                }
+                if valid:
+                    logger.info(f"✅ Loaded {len(valid)} platforms from data.json")
+                    return valid
+            except (json.JSONDecodeError, OSError) as exc:
+                logger.error(f"❌ Failed to read data.json: {exc}")
+                break
+
+    logger.warning("⚠️  data.json not found or invalid – using built-in fallback")
+    return _builtin_platforms()
+
+
+def _builtin_platforms():
+    """Minimal fallback used only when data.json is unavailable."""
     return {
-        "Instagram": {
-            "url": "https://instagram.com/{}",
-            "urlMain": "https://instagram.com",
-            "errorType": "status_code",
-            "regexCheck": "^[a-zA-Z0-9._]{1,30}$"
-        },
-        "GitHub": {
-            "url": "https://github.com/{}",
-            "urlMain": "https://github.com",
-            "errorType": "status_code",
-            "regexCheck": "^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$"
-        },
-        "Twitter": {
-            "url": "https://x.com/{}",
-            "urlMain": "https://x.com",
-            "errorType": "status_code",
-            "regexCheck": "^[a-zA-Z0-9_]{1,15}$"
-        },
-        "LinkedIn": {
-            "url": "https://linkedin.com/in/{}",
-            "urlMain": "https://linkedin.com",
-            "errorType": "status_code"
-        },
-        "Facebook": {
-            "url": "https://facebook.com/{}",
-            "urlMain": "https://facebook.com",
-            "errorType": "status_code"
-        },
-        "YouTube": {
-            "url": "https://youtube.com/@{}",
-            "urlMain": "https://youtube.com",
-            "errorType": "status_code"
-        },
-        "Reddit": {
-            "url": "https://reddit.com/user/{}",
-            "urlMain": "https://reddit.com",
-            "errorType": "status_code",
-            "regexCheck": "^[a-zA-Z0-9_-]{3,20}$"
-        },
-        "TikTok": {
-            "url": "https://tiktok.com/@{}",
-            "urlMain": "https://tiktok.com",
-            "errorType": "status_code"
-        },
-        "Twitch": {
-            "url": "https://twitch.tv/{}",
-            "urlMain": "https://twitch.tv",
-            "errorType": "status_code"
-        },
-        "Pinterest": {
-            "url": "https://pinterest.com/{}",
-            "urlMain": "https://pinterest.com",
-            "errorType": "status_code"
-        }
+        "Instagram":    {"url": "https://instagram.com/{}",             "urlMain": "https://instagram.com",     "errorType": "status_code"},
+        "Twitter/X":    {"url": "https://x.com/{}",                     "urlMain": "https://x.com",             "errorType": "status_code"},
+        "GitHub":       {"url": "https://github.com/{}",                "urlMain": "https://github.com",        "errorType": "status_code"},
+        "LinkedIn":     {"url": "https://linkedin.com/in/{}",           "urlMain": "https://linkedin.com",      "errorType": "status_code"},
+        "Reddit":       {"url": "https://reddit.com/user/{}",           "urlMain": "https://reddit.com",        "errorType": "status_code"},
+        "TikTok":       {"url": "https://tiktok.com/@{}",               "urlMain": "https://tiktok.com",        "errorType": "status_code"},
+        "YouTube":      {"url": "https://youtube.com/@{}",              "urlMain": "https://youtube.com",       "errorType": "status_code"},
+        "Facebook":     {"url": "https://facebook.com/{}",              "urlMain": "https://facebook.com",      "errorType": "status_code"},
+        "Pinterest":    {"url": "https://pinterest.com/{}",             "urlMain": "https://pinterest.com",     "errorType": "status_code"},
+        "Twitch":       {"url": "https://twitch.tv/{}",                 "urlMain": "https://twitch.tv",         "errorType": "status_code"},
+        "Steam":        {"url": "https://steamcommunity.com/id/{}",     "urlMain": "https://steamcommunity.com","errorType": "status_code"},
+        "Telegram":     {"url": "https://t.me/{}",                      "urlMain": "https://telegram.org",      "errorType": "status_code"},
+        "Medium":       {"url": "https://medium.com/@{}",               "urlMain": "https://medium.com",        "errorType": "status_code"},
+        "Behance":      {"url": "https://behance.net/{}",               "urlMain": "https://behance.net",       "errorType": "status_code"},
+        "Dribbble":     {"url": "https://dribbble.com/{}",              "urlMain": "https://dribbble.com",      "errorType": "status_code"},
+        "SoundCloud":   {"url": "https://soundcloud.com/{}",            "urlMain": "https://soundcloud.com",    "errorType": "status_code"},
+        "Vimeo":        {"url": "https://vimeo.com/{}",                 "urlMain": "https://vimeo.com",         "errorType": "status_code"},
+        "Spotify":      {"url": "https://open.spotify.com/user/{}",     "urlMain": "https://spotify.com",       "errorType": "status_code"},
+        "GitLab":       {"url": "https://gitlab.com/{}",                "urlMain": "https://gitlab.com",        "errorType": "status_code"},
+        "Keybase":      {"url": "https://keybase.io/{}",                "urlMain": "https://keybase.io",        "errorType": "status_code"},
+        "Patreon":      {"url": "https://patreon.com/{}",               "urlMain": "https://patreon.com",       "errorType": "status_code"},
+        "Last.fm":      {"url": "https://last.fm/user/{}",              "urlMain": "https://last.fm",           "errorType": "status_code"},
+        "Goodreads":    {"url": "https://goodreads.com/{}",             "urlMain": "https://goodreads.com",     "errorType": "status_code"},
+        "ArtStation":   {"url": "https://artstation.com/{}",            "urlMain": "https://artstation.com",    "errorType": "status_code"},
+        "Flickr":       {"url": "https://flickr.com/people/{}",         "urlMain": "https://flickr.com",        "errorType": "status_code"},
+        "CodePen":      {"url": "https://codepen.io/{}",                "urlMain": "https://codepen.io",        "errorType": "status_code"},
+        "Letterboxd":   {"url": "https://letterboxd.com/{}",            "urlMain": "https://letterboxd.com",    "errorType": "status_code"},
+        "LeetCode":     {"url": "https://leetcode.com/{}",              "urlMain": "https://leetcode.com",      "errorType": "status_code"},
+        "Kaggle":       {"url": "https://kaggle.com/{}",                "urlMain": "https://kaggle.com",        "errorType": "status_code"},
+        "ResearchGate": {"url": "https://researchgate.net/profile/{}",  "urlMain": "https://researchgate.net",  "errorType": "status_code"},
+        "Fiverr":       {"url": "https://fiverr.com/{}",                "urlMain": "https://fiverr.com",        "errorType": "status_code"},
+        "About.me":     {"url": "https://about.me/{}",                  "urlMain": "https://about.me",          "errorType": "status_code"},
+        "Wattpad":      {"url": "https://wattpad.com/user/{}",          "urlMain": "https://wattpad.com",       "errorType": "status_code"},
+        "Tumblr":       {"url": "https://{}.tumblr.com",                "urlMain": "https://tumblr.com",        "errorType": "status_code"},
+        "Mastodon":     {"url": "https://mastodon.social/@{}",          "urlMain": "https://mastodon.social",   "errorType": "status_code"},
+        "Bluesky":      {"url": "https://bsky.app/profile/{}",          "urlMain": "https://bsky.app",          "errorType": "status_code"},
+        "Dev.to":       {"url": "https://dev.to/{}",                    "urlMain": "https://dev.to",            "errorType": "status_code"},
+        "Hashnode":     {"url": "https://hashnode.com/@{}",             "urlMain": "https://hashnode.com",      "errorType": "status_code"},
     }
 
-user_data = load_data()
 
-# Popular platforms for priority display
-POPULAR_PLATFORMS = [
-    'Instagram', 'Twitter', 'Facebook', 'LinkedIn', 'GitHub', 
-    'TikTok', 'YouTube', 'Reddit', 'Twitch', 'Discord',
-    'Snapchat', 'Pinterest', 'Telegram'
-]
-
-# Platform categories
+# Platform category lookup
 PLATFORM_CATEGORIES = {
-    'social': ['Instagram', 'Twitter', 'Facebook', 'TikTok', 'Snapchat', 'Reddit', 'Pinterest', 'Tumblr', '9GAG', 'Telegram'],
-    'professional': ['LinkedIn', 'AngelList', 'Behance', 'Dribbble', 'About.me', 'Medium'],
-    'developer': ['GitHub', 'GitLab', 'Stack Overflow', 'LeetCode', 'HackerRank', 'Codepen', 'BitBucket', 'Replit'],
-    'gaming': ['Steam Community', 'Xbox Gamertag', 'Twitch', 'Discord', 'Roblox', 'Minecraft'],
-    'media': ['YouTube', 'Vimeo', 'SoundCloud', 'Spotify', 'Bandcamp', 'Flickr', 'Dailymotion'],
+    'social':       ['Instagram','Twitter/X','Facebook','TikTok','Snapchat','Reddit',
+                     'Pinterest','Tumblr','Telegram','Mastodon','Bluesky','Threads',
+                     'BeReal','Quora','Clubhouse','Signal','WhatsApp','9GAG',
+                     'VKontakte','Ask.fm','Taringa'],
+    'developer':    ['GitHub','GitLab','Stack Overflow','LeetCode','HackerRank',
+                     'CodePen','Replit','HackerNews','Keybase','npm','PyPI',
+                     'Docker Hub','Kaggle','Dev.to','Hashnode','Sourcehut','Gitea',
+                     'Codeberg','ORCID','SourceForge'],
+    'professional': ['LinkedIn','AngelList','Behance','Dribbble','About.me','Medium',
+                     'Substack','ProductHunt','Fiverr','Upwork','ResearchGate',
+                     'Academia.edu','ORCID','ArtStation','Freelancer','Toptal'],
+    'gaming':       ['Steam','Twitch','Discord','Xbox','PlayStation','Roblox','Itch.io',
+                     'Minecraft','Battlenet','Origin','Epic Games','GOG'],
+    'media':        ['YouTube','Vimeo','SoundCloud','Spotify','Bandcamp','Flickr',
+                     'Dailymotion','Rumble','Patreon','Ko-fi','Wattpad',
+                     'Goodreads','MyAnimeList','500px','DeviantArt','Last.fm',
+                     'Letterboxd','Gravatar','Mixcloud','ReverbNation'],
 }
 
-# Search history storage
-search_history = []
+POPULAR_PLATFORMS = [
+    'Instagram','Twitter/X','GitHub','LinkedIn','Facebook','TikTok',
+    'YouTube','Reddit','Twitch','Discord','Telegram','Pinterest',
+    'Steam','Medium','SoundCloud','Spotify',
+]
 
-def get_platform_category(platform_name):
-    """Determine platform category"""
-    for category, platforms in PLATFORM_CATEGORIES.items():
-        if platform_name in platforms:
-            return category
+user_data: dict = load_data()
+search_history: list = []
+
+
+def get_platform_category(name: str) -> str:
+    for cat, names in PLATFORM_CATEGORIES.items():
+        if name in names:
+            return cat
     return 'other'
 
-def validate_username(username, regex_check):
-    """Validate username against regex pattern"""
-    if not regex_check:
+
+def validate_username_regex(username: str, regex: str) -> bool:
+    if not regex:
         return True
     try:
-        pattern = re.compile(regex_check)
-        return bool(pattern.match(username))
-    except:
+        return bool(re.compile(regex).match(username))
+    except re.error:
         return True
 
-def check_url_exists(url, site_data):
-    """Check if URL exists with proper error handling"""
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  HTTP CHECK ENGINE
+#  NOTE: errorMsg in data.json can be a string OR a list of strings
+# ═════════════════════════════════════════════════════════════════════════════
+
+_SESSION = http_requests.Session()
+_SESSION.headers.update({
+    'User-Agent': (
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+        'AppleWebKit/537.36 (KHTML, like Gecko) '
+        'Chrome/124.0.0.0 Safari/537.36'
+    ),
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'DNT': '1',
+})
+_SESSION.max_redirects = 5
+
+
+def _error_msg_matches(body: str, error_msg) -> bool:
+    """
+    error_msg from data.json can be:
+      - a string  → single pattern
+      - a list    → ANY match means "not found"
+    """
+    if not error_msg:
+        return False
+    if isinstance(error_msg, list):
+        return any(m in body for m in error_msg if isinstance(m, str))
+    return str(error_msg) in body
+
+
+def check_url(url: str, site_data: dict, timeout: int = 10) -> dict:
+    """
+    Perform a real HTTP check on *url*.
+    Returns: { exists, status_code, error, method, response_time_ms }
+    """
+    error_type = site_data.get('errorType', 'status_code')
+    error_msg  = site_data.get('errorMsg', '')
+    extra_hdrs = site_data.get('headers', {})
+
+    headers = dict(_SESSION.headers)
+    if isinstance(extra_hdrs, dict):
+        headers.update(extra_hdrs)
+
+    t0 = time.monotonic()
     try:
-        headers = site_data.get('headers', {})
-        if not headers:
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.5',
-                'DNT': '1',
-                'Connection': 'keep-alive',
-                'Upgrade-Insecure-Requests': '1'
-            }
-        
-        response = requests.get(url, headers=headers, timeout=8, allow_redirects=True)
-        
-        # Consider both 200 and 403 as existing (403 means it exists but is protected)
-        if response.status_code in [200, 403]:
-            return True
-        elif response.status_code == 404:
-            return False
+        resp = _SESSION.get(url, headers=headers, timeout=timeout, allow_redirects=True)
+        ms   = int((time.monotonic() - t0) * 1000)
+
+        if error_type == 'status_code':
+            if resp.status_code in (200, 403):
+                exists = True
+            elif resp.status_code in (404, 410):
+                exists = False
+            else:
+                exists = None
+            return {'exists': exists, 'status_code': resp.status_code,
+                    'error': None, 'method': 'status_code', 'response_time_ms': ms}
+
+        elif error_type == 'message':
+            if resp.status_code == 200 and _error_msg_matches(resp.text, error_msg):
+                exists = False
+            elif resp.status_code == 200:
+                exists = True
+            else:
+                exists = None
+            return {'exists': exists, 'status_code': resp.status_code,
+                    'error': None, 'method': 'message', 'response_time_ms': ms}
+
+        elif error_type == 'response_url':
+            uname  = url.split('/')[-1].split('?')[0].lstrip('@').lower()
+            exists = uname in resp.url.lower() if uname else None
+            return {'exists': exists, 'status_code': resp.status_code,
+                    'error': None, 'method': 'response_url', 'response_time_ms': ms}
+
         else:
-            return None
-            
-    except requests.exceptions.Timeout:
-        return None
-    except requests.exceptions.RequestException:
-        return None
-    except Exception as e:
-        import logging
-        logging.getLogger(__name__).error(f"Error checking URL {url}: {e}")
-        return None
+            exists = resp.status_code in (200, 403)
+            return {'exists': exists, 'status_code': resp.status_code,
+                    'error': None, 'method': 'fallback', 'response_time_ms': ms}
+
+    except http_requests.exceptions.SSLError as exc:
+        return {'exists': None, 'status_code': None, 'error': f'SSL error', 'method': error_type, 'response_time_ms': None}
+    except http_requests.exceptions.ConnectionError:
+        return {'exists': None, 'status_code': None, 'error': 'Connection error', 'method': error_type, 'response_time_ms': None}
+    except http_requests.exceptions.Timeout:
+        return {'exists': None, 'status_code': None, 'error': 'Timeout', 'method': error_type, 'response_time_ms': None}
+    except Exception as exc:
+        logger.error(f"check_url({url}) unexpected: {exc}")
+        return {'exists': None, 'status_code': None, 'error': str(exc)[:120], 'method': error_type, 'response_time_ms': None}
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  ROUTES
+# ═════════════════════════════════════════════════════════════════════════════
 
 @osint.route('/')
 def index():
     return render_template("osint.html")
 
-@osint.route('/api/search', methods=['POST'])
-@rate_limit_api(requests_per_minute=20, requests_per_hour=200)
-@validate_request({
-    "username": {
-        "type": "string",
-        "required": True,
-        "max_length": 100
-    },
-    "options": {
-        "type": "dict",
-        "required": False,
-        "nested_schema": {
-            "caseInsensitive": {"type": "bool", "required": False},
-            "validateUrls": {"type": "bool", "required": False},
-            "popularFirst": {"type": "bool", "required": False}
-        }
-    }
-}, strict=True)
-def search():
-    """
-    Enhanced search with validation and categorization
-    OWASP: Rate limited, input validated, schema-based validation
-    """
-    try:
-        # Get validated data from request context
-        data = g.validated_data
-        username = InputValidator.validate_string(
-            data.get('username'), 'username', max_length=100, required=True
-        )
-        options = data.get('options', {})
-        
-        # Options
-        case_insensitive = options.get('caseInsensitive', True)
-        validate_urls = options.get('validateUrls', False)
-        popular_first = options.get('popularFirst', True)
-        
-        # Adjust username case
-        search_username = username.lower() if case_insensitive else username
-        
-        results = OrderedDict()
-        popular_results = OrderedDict()
-        other_results = OrderedDict()
-        
-        start_time = time.time()
-        
-        # Process platforms
-        for site, site_data in user_data.items():
-            if 'url' not in site_data:
-                continue
-            
-            # Validate username format
-            regex_check = site_data.get('regexCheck', '')
-            if regex_check and not validate_username(search_username, regex_check):
-                continue
-            
-            try:
-                url = site_data['url'].format(search_username)
-                
-                platform_info = {
-                    'url': url,
-                    'urlMain': site_data.get('urlMain', ''),
-                    'category': get_platform_category(site),
-                    'errorType': site_data.get('errorType', 'unknown'),
-                    'validated': False,
-                    'validationStatus': 'pending'
-                }
-                
-                # Categorize results
-                if site in POPULAR_PLATFORMS:
-                    popular_results[site] = platform_info
-                else:
-                    other_results[site] = platform_info
-                    
-            except Exception as e:
-                logger.error(f"Error processing {site}: {e}")
-                continue
-        
-        # Combine results based on popular_first option
-        if popular_first:
-            results = {**popular_results, **other_results}
-        else:
-            # Alphabetical order
-            all_platforms = {**popular_results, **other_results}
-            results = OrderedDict(sorted(all_platforms.items()))
-        
-        search_time = round(time.time() - start_time, 2)
-        
-        # Save to search history
-        search_entry = {
-            'username': username,
-            'timestamp': datetime.now().isoformat(),
-            'resultsCount': len(results),
-            'searchTime': search_time
-        }
-        search_history.insert(0, search_entry)
-        if len(search_history) > 50:
-            search_history.pop()
-        
-        return jsonify({
-            'success': True,
-            'username': username,
-            'results': results,
-            'stats': {
-                'totalPlatforms': len(results),
-                'searchTime': search_time,
-                'timestamp': datetime.now().isoformat()
-            }
-        })
-    except Exception as e:
-        logger.error(f"Search error: {e}", exc_info=True)
-        return jsonify({"error": str(e), "success": False}), 500
 
-@osint.route('/api/validate-url', methods=['POST'])
-@rate_limit_api(requests_per_minute=30, requests_per_hour=300)
-@validate_request({
-    "url": {
-        "type": "string",
-        "required": True,
-        "max_length": 2048
-    },
-    "platform": {
-        "type": "string",
-        "required": False,
-        "max_length": 100
-    }
-}, strict=True)
-def validate_url():
-    """
-    Validate a single URL
-    OWASP: Rate limited, input validated
-    """
-    try:
-        # Get validated data from request context
-        data = g.validated_data
-        url = InputValidator.validate_string(
-            data.get('url'), 'url', max_length=2048, required=True
-        )
-        platform = data.get('platform', '')
-        
-        site_data = user_data.get(platform, {})
-        exists = check_url_exists(url, site_data)
-        
-        return jsonify({
-            'success': True,
-            'url': url,
-            'exists': exists,
-            'status': 'verified' if exists else 'not_found' if exists is False else 'unknown'
-        })
-    except Exception as e:
-        logger.error(f"Validation error: {e}", exc_info=True)
-        return jsonify({"error": str(e), "success": False}), 500
-
-@osint.route('/api/batch-validate', methods=['POST'])
-@rate_limit_api(requests_per_minute=10, requests_per_hour=100)
-@validate_request({
-    "urls": {
-        "type": "list",
-        "required": True,
-        "max_items": 50,
-        "item_schema": {
-            "type": "string",
-            "max_length": 2048
-        }
-    }
-}, strict=True)
-def batch_validate():
-    """
-    Validate multiple URLs concurrently
-    OWASP: Rate limited, input validated
-    """
-    try:
-        # Get validated data from request context
-        data = g.validated_data
-        urls = data.get('urls', [])
-        
-        results = {}
-        
-        def validate_single(item):
-            url = item['url']
-            platform = item['platform']
-            site_data = user_data.get(platform, {})
-            exists = check_url_exists(url, site_data)
-            return platform, exists
-        
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-            futures = [executor.submit(validate_single, item) for item in urls]
-            for future in concurrent.futures.as_completed(futures):
-                try:
-                    platform, exists = future.result()
-                    results[platform] = {
-                        'exists': exists,
-                        'status': 'verified' if exists else 'not_found' if exists is False else 'unknown'
-                    }
-                except Exception as e:
-                    logger.error(f"Error in batch validation: {e}")
-                    continue
-        
-        return jsonify({'success': True, 'results': results})
-    except Exception as e:
-        logger.error(f"Batch validation error: {e}", exc_info=True)
-        return jsonify({"error": str(e), "success": False}), 500
-
-@osint.route('/api/history', methods=['GET'])
-def get_history():
-    """Get search history"""
-    return jsonify({
-        'success': True,
-        'history': search_history[:20]
-    })
-
+# ── /api/platforms ─────────────────────────────────────────────────────────
 @osint.route('/api/platforms', methods=['GET'])
 def get_platforms():
-    """Get all available platforms with metadata"""
+    """
+    Returns full platform list with metadata.
+    Frontend loads this on startup — single source of truth from data.json.
+    """
     try:
         platforms = []
-        
-        for site, site_data in user_data.items():
-            # Ensure site_data is a dictionary
-            if not isinstance(site_data, dict):
-                logger.warning(f"Warning: {site} has invalid data type: {type(site_data)}")
+        for name, data in user_data.items():
+            if not isinstance(data, dict):
                 continue
-                
             platforms.append({
-                'name': site,
-                'category': get_platform_category(site),
-                'urlMain': site_data.get('urlMain', ''),
-                'hasRegex': bool(site_data.get('regexCheck')),
-                'isNSFW': site_data.get('isNSFW', False)
+                'name':      name,
+                'url':       data.get('url', ''),
+                'urlMain':   data.get('urlMain', ''),
+                'category':  get_platform_category(name),
+                'errorType': data.get('errorType', 'status_code'),
+                'isNSFW':    data.get('isNSFW', False),
+                'hasRegex':  bool(data.get('regexCheck')),
             })
-        
+        # Popular first, then alphabetical
+        platforms.sort(key=lambda x: (x['name'] not in POPULAR_PLATFORMS, x['name'].lower()))
         return jsonify({
             'success': True,
-            'platforms': sorted(platforms, key=lambda x: x['name']),
+            'platforms': platforms,
             'totalCount': len(platforms),
-            'categories': list(PLATFORM_CATEGORIES.keys())
+            'categories': list(PLATFORM_CATEGORIES.keys()),
+            'popularPlatforms': POPULAR_PLATFORMS,
         })
-    except Exception as e:
-        logger.error(f"Platforms error: {e}", exc_info=True)
-        return jsonify({"error": str(e), "success": False}), 500
+    except Exception as exc:
+        logger.error(f"get_platforms: {exc}", exc_info=True)
+        return jsonify({'success': False, 'error': str(exc)}), 500
 
+
+# ── /api/search ─────────────────────────────────────────────────────────────
+@osint.route('/api/search', methods=['POST'])
+@rate_limit_api(requests_per_minute=20, requests_per_hour=200)
+def search():
+    """
+    Build URL list for *username* across all matching platforms.
+    Returns structured platform list — does NOT do HTTP checks.
+    The frontend then calls /api/batch-check in chunks to get live results.
+    """
+    try:
+        data      = request.get_json(force=True) or {}
+        username  = str(data.get('username', '')).strip()[:100]
+        if not username:
+            return jsonify({'success': False, 'error': 'username required'}), 400
+
+        options      = data.get('options', {}) if isinstance(data.get('options'), dict) else {}
+        popular_first = options.get('popularFirst', True)
+        filter_nsfw   = options.get('filterNSFW', False)
+        scan_type     = options.get('scanType', 'all')
+
+        results = OrderedDict()
+        for name, sdata in user_data.items():
+            if not isinstance(sdata, dict) or 'url' not in sdata:
+                continue
+            if filter_nsfw and sdata.get('isNSFW'):
+                continue
+            cat = get_platform_category(name)
+            if scan_type != 'all' and cat != scan_type:
+                continue
+            regex = sdata.get('regexCheck', '')
+            if regex and not validate_username_regex(username, regex):
+                continue
+            try:
+                url = sdata['url'].format(username)
+            except (IndexError, KeyError):
+                continue
+            results[name] = {
+                'url':       url,
+                'urlMain':   sdata.get('urlMain', ''),
+                'category':  cat,
+                'errorType': sdata.get('errorType', 'status_code'),
+                'isNSFW':    sdata.get('isNSFW', False),
+            }
+
+        if popular_first:
+            popular = {k: v for k, v in results.items() if k in POPULAR_PLATFORMS}
+            other   = {k: v for k, v in results.items() if k not in POPULAR_PLATFORMS}
+            results = OrderedDict(**popular, **other)
+
+        search_history.insert(0, {
+            'username': username,
+            'timestamp': datetime.now().isoformat(),
+            'totalPlatforms': len(results),
+        })
+        del search_history[50:]
+
+        return jsonify({
+            'success': True,
+            'username': username,
+            'platforms': results,
+            'stats': {'totalPlatforms': len(results), 'timestamp': datetime.now().isoformat()},
+        })
+    except Exception as exc:
+        logger.error(f"search: {exc}", exc_info=True)
+        return jsonify({'success': False, 'error': str(exc)}), 500
+
+
+# ── /api/validate-url ───────────────────────────────────────────────────────
+@osint.route('/api/validate-url', methods=['POST'])
+@rate_limit_api(requests_per_minute=60, requests_per_hour=600)
+def validate_url():
+    """
+    Validate a single URL. Used by the frontend in parallel fetch() calls.
+    Body: { "url": "...", "platform": "GitHub" }
+    """
+    try:
+        data     = request.get_json(force=True) or {}
+        url      = str(data.get('url', '')).strip()
+        platform = str(data.get('platform', '')).strip()[:100]
+        timeout  = min(int(data.get('timeout', 10)), 20)
+
+        if not url:
+            return jsonify({'success': False, 'error': 'url required'}), 400
+        if not url.startswith(('http://', 'https://')):
+            return jsonify({'success': False, 'error': 'invalid url scheme'}), 400
+
+        site_data = user_data.get(platform, {})
+        result    = check_url(url, site_data, timeout=6)
+
+        return jsonify({'success': True, 'url': url, 'platform': platform, **result})
+    except Exception as exc:
+        logger.error(f"validate_url: {exc}", exc_info=True)
+        return jsonify({'success': False, 'error': str(exc)}), 500
+
+
+# ── /api/batch-check ─────────────────────────────────────────────────────────
+@osint.route('/api/batch-check', methods=['POST'])
+@rate_limit_api(requests_per_minute=15, requests_per_hour=150)
+def batch_check():
+    """
+    MAIN SCAN ENDPOINT (Waitress-compatible, no SSE/streaming needed).
+    The frontend sends batches of 20 platforms; backend checks them all
+    concurrently and returns when done. Frontend fires multiple batches
+    in parallel to achieve live-streaming feel.
+
+    Body: {
+        "items": [
+            {"platform": "GitHub", "url": "https://github.com/alice"},
+            ...
+        ]
+    }
+    Returns: {
+        "success": true,
+        "results": {
+            "GitHub": { "exists": true, "status_code": 200, "response_time_ms": 312, ... },
+            ...
+        }
+    }
+    """
+    try:
+        data  = request.get_json(force=True) or {}
+        items = data.get('items', [])
+        if not isinstance(items, list):
+            return jsonify({'success': False, 'error': 'items must be a list'}), 400
+        items = [i for i in items if isinstance(i, dict)][:30]  # max 30 per batch
+
+        results = {}
+
+        def check_one(item):
+            platform = str(item.get('platform', '')).strip()
+            url      = str(item.get('url', '')).strip()
+            if not url.startswith(('http://', 'https://')):
+                return platform, {'exists': None, 'error': 'invalid url', 'status_code': None, 'response_time_ms': None}
+            sdata  = user_data.get(platform, {})
+            result = check_url(url, sdata, timeout=6)
+            return platform, result
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(items), 30)) as pool:
+            for platform, result in pool.map(check_one, items):
+                if platform:
+                    results[platform] = result
+
+        return jsonify({'success': True, 'results': results})
+    except Exception as exc:
+        logger.error(f"batch_check: {exc}", exc_info=True)
+        return jsonify({'success': False, 'error': str(exc)}), 500
+
+
+# ── /api/history ─────────────────────────────────────────────────────────────
+@osint.route('/api/history', methods=['GET'])
+def get_history():
+    return jsonify({'success': True, 'history': search_history[:20]})
+
+
+@osint.route('/api/history', methods=['DELETE'])
+def clear_history():
+    search_history.clear()
+    return jsonify({'success': True})
+
+
+# ── /api/stats ───────────────────────────────────────────────────────────────
 @osint.route('/api/stats', methods=['GET'])
 def get_stats():
-    """Get application statistics"""
     try:
         return jsonify({
             'success': True,
             'totalPlatforms': len(user_data),
             'totalSearches': len(search_history),
-            'categories': {cat: len(plat) for cat, plat in PLATFORM_CATEGORIES.items()},
-            'popularPlatforms': POPULAR_PLATFORMS
+            'categories': {cat: len(names) for cat, names in PLATFORM_CATEGORIES.items()},
+            'popularPlatforms': POPULAR_PLATFORMS,
         })
-    except Exception as e:
-        logger.error(f"Stats error: {e}", exc_info=True)
-        return jsonify({"error": str(e), "success": False}), 500
+    except Exception as exc:
+        logger.error(f"get_stats: {exc}", exc_info=True)
+        return jsonify({'success': False, 'error': str(exc)}), 500
 
+
+# ── /api/compare ─────────────────────────────────────────────────────────────
 @osint.route('/api/compare', methods=['POST'])
 @rate_limit_api(requests_per_minute=10, requests_per_hour=100)
-@validate_request({
-    "usernames": {
-        "type": "list",
-        "required": True,
-        "min_items": 2,
-        "max_items": 10,
-        "item_schema": {
-            "type": "string",
-            "max_length": 100
-        }
-    }
-}, strict=True)
 def compare_users():
-    """
-    Compare multiple usernames across platforms
-    OWASP: Rate limited, input validated
-    """
+    """Return profile URLs for 2–5 usernames (no HTTP checks)."""
     try:
-        # Get validated data from request context
-        data = g.validated_data
+        data      = request.get_json(force=True) or {}
         usernames = data.get('usernames', [])
-        
-        comparison = {}
-        
-        for username in usernames:
-            comparison[username] = {}
-            for site, site_data in user_data.items():
-                if 'url' in site_data:
-                    try:
-                        url = site_data['url'].format(username)
-                        comparison[username][site] = url
-                    except:
-                        continue
-        
-        return jsonify({
-            'success': True,
-            'comparison': comparison,
-            'usernames': usernames
-        })
-    except Exception as e:
-        logger.error(f"Compare error: {e}", exc_info=True)
-        return jsonify({"error": str(e), "success": False}), 500
+        if not isinstance(usernames, list) or len(usernames) < 2:
+            return jsonify({'success': False, 'error': 'Need at least 2 usernames'}), 400
+        usernames = [str(u).strip()[:100] for u in usernames[:5]]
 
+        comparison = {}
+        for uname in usernames:
+            comparison[uname] = {}
+            for name, sdata in user_data.items():
+                if not isinstance(sdata, dict) or 'url' not in sdata:
+                    continue
+                try:
+                    comparison[uname][name] = {
+                        'url':      sdata['url'].format(uname),
+                        'urlMain':  sdata.get('urlMain', ''),
+                        'category': get_platform_category(name),
+                    }
+                except (IndexError, KeyError):
+                    continue
+
+        return jsonify({'success': True, 'comparison': comparison, 'usernames': usernames})
+    except Exception as exc:
+        logger.error(f"compare_users: {exc}", exc_info=True)
+        return jsonify({'success': False, 'error': str(exc)}), 500
+
+
+# ── /health ───────────────────────────────────────────────────────────────────
 @osint.route('/health', methods=['GET'])
 def health_check():
-    """Health check endpoint"""
     return jsonify({
         'status': 'healthy',
         'platforms_loaded': len(user_data),
-        'timestamp': datetime.now().isoformat()
+        'timestamp': datetime.now().isoformat(),
     })
 
-# Log status when module is imported
-# Log status when module is imported
-logger.info(f"OSINT Blueprint loaded with {len(user_data)} platforms")
 
-if __name__ == "__main__":
-    from flask import Flask
+logger.info(f"OSINT Blueprint loaded — {len(user_data)} platforms ready")
+
+
+# ── Standalone dev runner ─────────────────────────────────────────────────────
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'dev-key-for-standalone-mode'
-    app.register_blueprint(osint)
-    print("Starting OSINT in standalone mode on port 5009...")
-    app.run(debug=True, port=5009)
+    app.config['SECRET_KEY'] = 'dev-standalone'
+    CORS(app)
+    app.register_blueprint(osint, url_prefix='/osint')
+    print(f"OSINT standalone on http://127.0.0.1:5009/osint  ({len(user_data)} platforms)")
+    app.run(debug=True, port=5009, threaded=True)
