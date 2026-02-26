@@ -76,81 +76,88 @@ logger.info("="*60)
 # Log LLM status at startup
 try:
     log_llm_status("InfoSight AI")
-except:
+except Exception:
     pass
+# =========================
+# Hugging Face Token Loader
+# =========================
 
-# Load Hugging Face token safely with reload capability
+import os
+import requests
+
 HF_API_TOKEN = None
+HF_CONFIGURED = False
+
+
+def _is_valid_hf_token(token: str) -> bool:
+    return bool(token and token.startswith("hf_") and len(token) > 20)
+
 
 def reload_hf_token():
     """Reload HF token from config or environment variables."""
     global HF_API_TOKEN
+
     token = None
-    
+
+    # 1. Try loading from Config
     try:
         import sys
         from pathlib import Path
-        sys.path.insert(0, str(Path(__file__).parent.parent))
+
+        project_root = Path(__file__).resolve().parent.parent
+        if str(project_root) not in sys.path:
+            sys.path.insert(0, str(project_root))
+
         from config import Config
         token = getattr(Config, "HF_API_TOKEN", None)
-    except Exception:
+
+    except ImportError:
         pass
-    
+
+    # 2. Fallback to environment
     if not token:
         try:
             from dotenv import load_dotenv
             load_dotenv()
-        except:
+        except ImportError:
             pass
-        token = os.getenv("HF_API_TOKEN") or os.getenv("HUGGINGFACE_API_TOKEN")
-    
-    # Normalize token
+
+        token = (
+            os.getenv("HF_API_TOKEN")
+            or os.getenv("HUGGINGFACE_API_TOKEN")
+        )
+
+    # 3. Normalize and validate
     if token:
         token = token.strip()
-        if token.startswith("hf_") and len(token) > 20:
-            HF_API_TOKEN = token
-            return True
-    
+
+    if _is_valid_hf_token(token):
+        HF_API_TOKEN = token
+        return True
+
     HF_API_TOKEN = None
     return False
+
 
 # Initial load
 reload_hf_token()
 
 # Log status
-if HF_API_TOKEN and HF_API_TOKEN.startswith("hf_") and len(HF_API_TOKEN) > 20:
+if HF_API_TOKEN:
     masked = HF_API_TOKEN[:8] + "..." + HF_API_TOKEN[-4:]
-    logger.info(f"✓ HF_API_TOKEN loaded correctly ({masked})")
+    logger.info(f"✓ HF_API_TOKEN loaded ({masked})")
 else:
     logger.error("✗ HF_API_TOKEN missing or invalid")
-    HF_API_TOKEN = None
 
-# Use centralized LLM router (replaces Gemini)
-try:
-    import sys
-    from pathlib import Path
-    sys.path.insert(0, str(Path(__file__).parent.parent))
-    from core.llm_router import generate_text
-    LLM_ROUTER_AVAILABLE = True
-    logger.info("✓ LLM router available for InfoSight AI")
-except ImportError as e:
-    LLM_ROUTER_AVAILABLE = False
-    logger.warning(f"⚠ LLM router not available: {e}")
-    def generate_text(*args, **kwargs):
-        return {"response": "", "model": "none", "source": "none"}
 
-GEMINI_CONFIGURED = LLM_ROUTER_AVAILABLE  # Keep for backward compatibility
-gemini_model = None  # Deprecated
-
+# =========================
 # Validate Hugging Face Token
-HF_CONFIGURED = False
+# =========================
 
-if not HF_API_TOKEN:
-    logger.error("✗ Hugging Face API: TOKEN NOT SET")
-else:
+if HF_API_TOKEN:
     try:
         headers = {"Authorization": f"Bearer {HF_API_TOKEN}"}
-        logger.info("Testing HF_API_TOKEN with Hugging Face API...")
+        logger.info("Validating HF_API_TOKEN...")
 
         r = requests.get(
             "https://huggingface.co/api/whoami-v2",
@@ -158,20 +165,50 @@ else:
             timeout=10
         )
 
-        if r.status_code == 200:
+        if r.status_code == 200 and r.json().get("name"):
             HF_CONFIGURED = True
             user = r.json().get("name", "Unknown")
-            logger.info(f"✓ Hugging Face API CONFIGURED (User: {user})")
+            logger.info(f"✓ Hugging Face API configured (User: {user})")
         else:
-            logger.error(f"✗ Hugging Face API INVALID TOKEN (HTTP {r.status_code})")
-            logger.error(r.text)
+            logger.error(f"✗ Invalid HF token (HTTP {r.status_code})")
             HF_API_TOKEN = None
 
-    except Exception as e:
-        logger.error(f"✗ Hugging Face API validation failed: {e}")
+    except requests.RequestException as e:
+        logger.error(f"✗ HF validation request failed: {e}")
         HF_API_TOKEN = None
+else:
+    logger.error("✗ Hugging Face API: TOKEN NOT SET")
 
-logger.info("="*60)
+
+# =========================
+# LLM Router
+# =========================
+
+try:
+    import sys
+    from pathlib import Path
+
+    project_root = Path(__file__).resolve().parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+
+    from core.llm_router import generate_text
+
+    LLM_ROUTER_AVAILABLE = True
+    logger.info("✓ LLM router available")
+
+except ImportError as e:
+    LLM_ROUTER_AVAILABLE = False
+    logger.warning(f"LLM router not available: {e}")
+
+    def generate_text(*args, **kwargs):
+        return {"response": "", "model": "none", "source": "none"}
+
+
+GEMINI_CONFIGURED = LLM_ROUTER_AVAILABLE
+gemini_model = None
+
+logger.info("=" * 60)
 
 # Safety settings removed - Groq handles content moderation automatically
 
@@ -185,7 +222,7 @@ def check_image_generation_config():
         headers = {"Authorization": f"Bearer {HF_API_TOKEN}"}
         r = requests.get("https://huggingface.co/api/whoami-v2", headers=headers, timeout=10)
 
-        if r.status_code == 200:
+        if r.status_code == 200 and r.json().get("name"):
             logger.info(f"✓ HF API ready for {r.json().get('name','Unknown')}")
             return True
         else:
@@ -522,253 +559,1038 @@ Provide a comprehensive response without using markdown formatting or special ch
             else:
                 raise ValueError(f"Text generation failed: {str(e)}")
 
-    def generate_image(self, prompt, use_cache=True):
-        """Generate contextually relevant, high-quality images with smart prompt analysis."""
+
+
+
+
+
+
+    def generate_image(self, prompt, use_cache=True, width=1024, height=1024):
+        """
+        Generate images with maximum accuracy using multiple providers:
+        1. HuggingFace AI (PRIMARY - most accurate for any concept)
+        2. Unsplash Stock (SECONDARY - relevant, high-quality photos)
+        3. Pexels Stock (TERTIARY - additional stock fallback)
+        4. Pixabay Stock (QUATERNARY - free stock photos)
+        5. Wikipedia (QUINARY - named entities only)
+        
+        Required .env variables:
+        - HF_API_TOKEN (HuggingFace)
+        - UNSPLASH_ACCESS_KEY (Unsplash)
+        - PEXELS_API_KEY (Pexels)
+        - PIXABAY_API_KEY (Pixabay)
+        """
         try:
-            prompt = self._sanitize_prompt(prompt)
+            # Load API keys from environment
+            HF_API_TOKEN = os.getenv('HF_API_TOKEN')
+            UNSPLASH_ACCESS_KEY = os.getenv('UNSPLASH_ACCESS_KEY')
+            PEXELS_API_KEY = os.getenv('PEXELS_API_KEY')
             
-            # Check cache
+            prompt = self._sanitize_prompt(prompt)
+            cache_key = self._create_cache_key(prompt, 'image')
+            
             if use_cache:
-                cache_key = self._create_cache_key(prompt, 'image')
                 cached = self.cache.get(cache_key)
                 if cached:
+                    logger.info("Returning cached image")
                     return cached
-            
-            # Rate limiting
+
             if not self.rate_limiter.can_proceed('image'):
                 wait_time = self.rate_limiter.wait_time('image')
                 raise ValueError(f"Rate limit exceeded. Please wait {wait_time:.0f} seconds.")
-            
+
             logger.info(f"Generating image: {prompt[:50]}...")
+
+            # Clamp dimensions
+            width = min(max(int(width), 512), 1024)
+            height = min(max(int(height), 512), 1024)
             
-            # SMART PROMPT ANALYSIS - Detect if prompt needs conversion
             prompt_lower = prompt.lower()
+
+            # ═══════════════════════════════════════════════════════════════════════
+            # CONTENT TYPE DETECTION
+            # ═══════════════════════════════════════════════════════════════════════
             
-            # Detect abstract/technical concepts that need visual representation
-            abstract_concepts = {
-                # AI/ML Terms
-                'rnn': 'diagram of recurrent neural network architecture with nodes and connections',
-                'neural network': 'diagram of artificial neural network layers with interconnected nodes',
-                'cnn': 'convolutional neural network architecture diagram',
-                'lstm': 'long short-term memory network diagram with gates',
-                'transformer': 'transformer architecture diagram with attention mechanism',
-                'machine learning': 'machine learning workflow diagram with data and models',
-                'deep learning': 'deep neural network layers visualization',
-                'ai': 'artificial intelligence concept with neural networks and data',
-                
-                # Programming Concepts
-                'algorithm': 'flowchart diagram of algorithm steps',
-                'binary tree': 'binary tree data structure diagram',
-                'graph': 'graph data structure with nodes and edges',
-                'api': 'API architecture diagram with client and server',
-                'database': 'database schema diagram with tables and relationships',
-                
-                # General Abstract Concepts
-                'blockchain': 'blockchain technology diagram with connected blocks',
-                'cloud computing': 'cloud computing architecture diagram',
-                'iot': 'Internet of Things network diagram with connected devices',
-                'cybersecurity': 'cybersecurity concept with shield and network protection',
-            }
-            
-            # Check if prompt is asking a question (what is, explain, how does)
-            is_question = any(phrase in prompt_lower for phrase in [
+            is_question = any(q in prompt_lower for q in [
                 'what is', 'what are', 'explain', 'how does', 'how do',
-                'tell me about', 'describe', 'definition of'
+                'tell me about', 'describe', 'definition of', 'concept of'
             ])
             
-            # Convert abstract concept to visual prompt
+            is_diagram = any(k in prompt_lower for k in [
+                'diagram', 'architecture', 'flowchart', 'infographic', 'schematic',
+                'blueprint', 'chart', 'graph', 'visualization', 'structure'
+            ])
+            
+            is_portrait = any(w in prompt_lower for w in [
+                'person', 'man', 'woman', 'portrait', 'face', 'people', 
+                'selfie', 'headshot', 'photo of'
+            ])
+            
+            is_landscape = any(w in prompt_lower for w in [
+                'landscape', 'nature', 'scenery', 'mountains', 'city', 'forest',
+                'ocean', 'sky', 'sunset', 'sunrise', 'beach', 'vista', 'view'
+            ])
+            
+            is_food = any(w in prompt_lower for w in [
+                'food', 'cake', 'muffin', 'pizza', 'burger', 'coffee', 'drink',
+                'meal', 'recipe', 'cooking', 'dessert', 'bread', 'fruit', 'dish'
+            ])
+            
+            is_vehicle = any(w in prompt_lower for w in [
+                'car', 'bike', 'motorcycle', 'truck', 'vehicle', 'racing',
+                'formula', 'motogp', 'race', 'auto', 'transport', 'f1'
+            ])
+            
+            is_character = any(w in prompt_lower for w in [
+                'hulk', 'superhero', 'character', 'hero', 'villain', 'comic',
+                'marvel', 'dc', 'anime', 'cartoon', 'mascot'
+            ])
+            
+            is_tech = any(w in prompt_lower for w in [
+                'technology', 'computer', 'robot', 'ai', 'circuit', 'digital',
+                'cyber', 'futuristic', 'machine', 'device'
+            ])
+            
+            is_space = any(w in prompt_lower for w in [
+                'space', 'rocket', 'spaceship', 'satellite', 'planet', 'galaxy',
+                'astronaut', 'cosmos', 'spacecraft', 'launch', 'nasa'
+            ])
+            
+            is_animal = any(w in prompt_lower for w in [
+                'animal', 'dog', 'cat', 'bird', 'lion', 'tiger', 'elephant',
+                'wildlife', 'pet', 'creature', 'beast'
+            ])
+            
+            is_business = any(w in prompt_lower for w in [
+                'business', 'office', 'meeting', 'corporate', 'work',
+                'professional', 'conference', 'team', 'entrepreneur'
+            ])
+            
+            is_sports = any(w in prompt_lower for w in [
+                'sport', 'sports', 'football', 'basketball', 'tennis', 'cricket',
+                'athlete', 'game', 'match', 'tournament', 'championship'
+            ])
+            
+            # Detect named entities
+            known_entities = [
+                'elon musk', 'steve jobs', 'bill gates', 'cristiano ronaldo',
+                'lionel messi', 'lebron james', 'taylor swift', 'beyonce',
+                'nasa', 'spacex', 'tesla', 'apple', 'google', 'microsoft'
+            ]
+            
+            original_words = prompt.strip().split()
+            is_named_entity = (
+                any(entity in prompt_lower for entity in known_entities) or
+                (len(original_words) <= 4 and 
+                sum(1 for w in original_words if w and w[0].isupper() and 
+                    w.lower() not in {'a','an','the','and','or','of','in','on','at'}) >= 1
+                and not is_food and not is_landscape and not is_animal)
+            )
+            
+            logger.info(f"Content type - diagram={is_diagram}, vehicle={is_vehicle}, "
+                    f"character={is_character}, space={is_space}, sports={is_sports}, "
+                    f"named_entity={is_named_entity}")
+
+            # ═══════════════════════════════════════════════════════════════════════
+            # BUILD ENHANCED AI PROMPT
+            # ═══════════════════════════════════════════════════════════════════════
+            
+            # Concept mapping for educational queries
+            abstract_concepts = {
+                'llm': 'large language model architecture diagram with transformer layers and attention mechanisms',
+                'neural network': 'artificial neural network diagram with interconnected nodes and layers',
+                'blockchain': 'blockchain technology diagram showing connected blocks with cryptographic hashes',
+                'photosynthesis': 'photosynthesis process diagram in plant leaf showing light and dark reactions',
+                'mitosis': 'cell division stages diagram showing prophase metaphase anaphase telophase',
+                'algorithm': 'algorithm flowchart diagram with decision nodes and process steps',
+                'database': 'database schema diagram with tables and relationships',
+            }
+            
             visual_prompt = prompt
             for concept, visual_desc in abstract_concepts.items():
                 if concept in prompt_lower:
                     visual_prompt = visual_desc
-                    logger.info(f"Converting abstract concept '{concept}' to visual: '{visual_desc}'")
+                    logger.info(f"Concept '{concept}' → '{visual_desc}'")
                     break
             
-            # If it's a question but not matched, try to extract the subject
-            if is_question and visual_prompt == prompt:
-                # Extract subject from question
-                words = prompt_lower.replace('what is', '').replace('what are', '').replace('explain', '').strip()
-                words = words.replace('?', '').strip()
-                
-                # If it seems technical/abstract, make it a diagram
-                if len(words.split()) <= 4:  # Short technical term
-                    visual_prompt = f"infographic diagram explaining {words}, educational illustration, clean design"
-                else:
-                    visual_prompt = words
+            # Enhance prompt based on content type
+            negative_prompt = "blurry, low quality, distorted, bad anatomy, watermark, text, signature, ugly"
             
-            # NOW BUILD ENHANCED PROMPT based on detected category
-            if 'diagram' in visual_prompt or 'architecture' in visual_prompt or 'flowchart' in visual_prompt:
-                # Technical diagram style
-                enhanced_prompt = (
-                    f"{visual_prompt}, "
-                    "professional infographic, clean design, educational illustration, "
-                    "technical diagram, clear labels, modern style, "
-                    "high contrast, vector art style, white background"
-                )
-                negative_aspects = (
-                    "photo, photograph, realistic, blurry, cluttered, "
-                    "messy, handwritten, low quality"
-                )
+            if is_diagram:
+                ai_prompt = (f"{visual_prompt}, professional infographic, clean modern design, "
+                            "educational illustration with clear labels, high contrast, "
+                            "minimalist style, vector graphics, white background")
+                negative_prompt = "photograph, photo, realistic, blurry, dark, messy"
             
-            elif any(word in prompt_lower for word in ['person', 'man', 'woman', 'portrait', 'face', 'people']):
-                # Portrait/person style
-                enhanced_prompt = (
-                    f"{visual_prompt}, "
-                    "photorealistic portrait, highly detailed facial features, "
-                    "professional photography, 85mm lens, natural lighting, "
-                    "sharp focus, realistic skin texture, National Geographic style"
-                )
-                negative_aspects = (
-                    "blurry, distorted, deformed, ugly, bad anatomy, "
-                    "poorly drawn, low quality, cartoon"
-                )
+            elif is_character:
+                ai_prompt = (f"{visual_prompt}, detailed character illustration, dynamic pose, "
+                            "vibrant colors, comic book style, high quality digital art, "
+                            "dramatic lighting, heroic composition, 4k artwork, full body")
+                negative_prompt += ", photograph, realistic photo, blurry, low detail"
             
-            elif any(word in prompt_lower for word in ['landscape', 'nature', 'scenery', 'mountains', 'city']):
-                # Landscape style
-                enhanced_prompt = (
-                    f"{visual_prompt}, "
-                    "landscape photography, ultra detailed, dramatic lighting, "
-                    "golden hour, wide angle, professional nature photography, 8K HDR"
-                )
-                negative_aspects = "blurry, low quality, overexposed, amateur"
+            elif is_vehicle or 'motogp' in prompt_lower or 'racing' in prompt_lower:
+                ai_prompt = (f"{visual_prompt}, professional motorsports photography, dynamic action shot, "
+                            "motion blur background, sharp focus on vehicle, dramatic lighting, "
+                            "racing livery details, high speed capture, 4k resolution, track racing")
+                negative_prompt += ", static, boring, low quality, toy, parked"
             
-            elif any(word in prompt_lower for word in ['logo', 'icon', 'symbol', 'badge']):
-                # Icon/logo style
-                enhanced_prompt = (
-                    f"{visual_prompt}, "
-                    "professional logo design, minimalist, clean, vector graphic, "
-                    "modern, simple, memorable design"
-                )
-                negative_aspects = "complex, cluttered, photo, realistic, blurry"
+            elif is_space or 'rocket' in prompt_lower:
+                ai_prompt = (f"{visual_prompt}, cinematic space scene, dramatic rocket launch, "
+                            "epic composition, volumetric lighting, nasa style photography, "
+                            "detailed spacecraft, atmospheric effects, 4k quality, powerful engines")
+                negative_prompt += ", cartoon, illustration, low quality, toy"
+            
+            elif is_sports:
+                ai_prompt = (f"{visual_prompt}, professional sports action photography, dynamic movement, "
+                            "stadium lighting, athletic performance, dramatic moment, "
+                            "sharp focus, intense competition, 4k quality")
+                negative_prompt += ", static, posed, boring, low quality"
+            
+            elif is_portrait or is_named_entity:
+                ai_prompt = (f"{visual_prompt}, professional portrait photography, photorealistic, "
+                            "studio lighting, 85mm lens, sharp focus, high detail, perfect composition")
+                negative_prompt += ", cartoon, illustration, anime, 3d render"
+            
+            elif is_landscape:
+                ai_prompt = (f"{visual_prompt}, stunning landscape photography, golden hour lighting, "
+                            "ultra detailed, wide angle, 8K HDR, professional nature photography")
+                negative_prompt += ", cartoon, indoor, people, low quality"
+            
+            elif is_food:
+                ai_prompt = (f"{visual_prompt}, professional food photography, appetizing, "
+                            "studio lighting, shallow depth of field, culinary art, vibrant colors")
+                negative_prompt += ", unappetizing, dark, messy"
+            
+            elif is_tech:
+                ai_prompt = (f"{visual_prompt}, futuristic technology, sleek design, neon accents, "
+                            "high-tech aesthetic, professional 3d render, detailed, modern")
+                negative_prompt += ", outdated, low-tech, blurry"
+            
+            elif is_animal:
+                ai_prompt = (f"{visual_prompt}, wildlife photography, natural habitat, "
+                            "sharp focus, National Geographic style, beautiful lighting")
+                negative_prompt += ", cartoon, cage, zoo, unnatural"
+            
+            elif is_business:
+                ai_prompt = (f"{visual_prompt}, professional corporate photography, modern office, "
+                            "business environment, clean composition, professional lighting")
+                negative_prompt += ", casual, messy, unprofessional"
             
             else:
-                # General high quality
-                enhanced_prompt = (
-                    f"{visual_prompt}, "
-                    "highly detailed, professional quality, 8K resolution, "
-                    "sharp focus, perfect composition, masterpiece"
-                )
-                negative_aspects = (
-                    "blurry, low quality, distorted, deformed, ugly, "
-                    "bad anatomy, poorly drawn, amateur, low resolution"
-                )
+                ai_prompt = (f"{visual_prompt}, highly detailed, professional quality, "
+                            "sharp focus, perfect composition, photorealistic, 8k")
+
+            # ═══════════════════════════════════════════════════════════════════════
+            # HELPER FUNCTIONS
+            # ═══════════════════════════════════════════════════════════════════════
             
-            # Method 1: Pollinations.AI (Primary)
-            try:
-                logger.info("Trying Pollinations.AI...")
-                
-                import urllib.parse
-                encoded_prompt = urllib.parse.quote(enhanced_prompt)
-                
-                pollinations_url = (
-                    f"https://image.pollinations.ai/prompt/{encoded_prompt}"
-                    f"?width=1024&height=1024"
-                    f"&model=flux"
-                    f"&nologo=true"
-                    f"&enhance=true"
-                )
-                
-                response = requests.get(pollinations_url, timeout=90)
-                
-                if response.status_code == 200 and len(response.content) > 5000:
-                    image_bytes = response.content
-                    logger.info(f"✓ Image generated with Pollinations.AI ({len(image_bytes)} bytes)")
+            import urllib.parse as _urlparse
+            
+            def _try_huggingface_2026(prompt_text, neg_text, w, h):
+                """
+                Use HuggingFace NEW router (router.huggingface.co) with working 2026 models.
+                Old api-inference.huggingface.co models are deprecated (410).
+                """
+                if not HF_API_TOKEN:
+                    logger.warning("HF_API_TOKEN not set in .env file")
+                    return None
+
+                # New Inference Providers router endpoint (replaces deprecated api-inference)
+                working_models = [
+                    "black-forest-labs/FLUX.1-dev",      # Best quality, fal-ai/replicate provider
+                    "black-forest-labs/FLUX.1-schnell",  # Fast version
+                    "stabilityai/stable-diffusion-xl-base-1.0",  # SDXL via hf-inference
+                    "Kwai-Kolors/Kolors",                # Alternative high quality
+                ]
+
+                headers = {
+                    "Authorization": f"Bearer {HF_API_TOKEN}",
+                    "Content-Type": "application/json",
+                    "User-Agent": "InfoSightAI/3.0",
+                }
+
+                for model_id in working_models:
+                    try:
+                        logger.info(f"Trying HF router model: {model_id}")
+
+                        is_schnell = "schnell" in model_id.lower()
+
+                        payload = {
+                            "inputs": prompt_text[:500],
+                            "parameters": {
+                                "num_inference_steps": 4 if is_schnell else 20,
+                                "guidance_scale": 0.0 if is_schnell else 3.5,
+                                "width": min(w, 1024),
+                                "height": min(h, 1024),
+                            }
+                        }
+
+                        # Use new router endpoint
+                        url = f"https://router.huggingface.co/hf-inference/models/{model_id}"
+
+                        response = requests.post(
+                            url,
+                            headers=headers,
+                            json=payload,
+                            timeout=90
+                        )
+
+                        if response.status_code == 200:
+                            content_type = response.headers.get("Content-Type", "")
+                            if "image" in content_type and len(response.content) > 5000:
+                                logger.info(f"✓ HF router SUCCESS: {model_id} ({len(response.content):,} bytes)")
+                                self.cache.set(cache_key + "_source", f"huggingface:{model_id}")
+                                return response.content
+
+                        elif response.status_code == 503:
+                            logger.info(f"HF model {model_id} loading (503), trying next...")
+                            continue
+                        elif response.status_code == 401:
+                            logger.error("HF 401 - Invalid token. Check HF_API_TOKEN in .env")
+                            return None
+                        elif response.status_code == 429:
+                            logger.warning("HF rate limit reached")
+                            break
+                        elif response.status_code == 422:
+                            logger.warning(f"HF {model_id}: params not supported (422), trying next...")
+                            # Retry without extra params
+                            payload_simple = {"inputs": prompt_text[:500]}
+                            r2 = requests.post(url, headers=headers, json=payload_simple, timeout=90)
+                            if r2.status_code == 200 and "image" in r2.headers.get("Content-Type","") and len(r2.content) > 5000:
+                                logger.info(f"✓ HF router SUCCESS (simple): {model_id}")
+                                self.cache.set(cache_key + "_source", f"huggingface:{model_id}")
+                                return r2.content
+                            continue
+                        else:
+                            logger.warning(f"HF {model_id}: HTTP {response.status_code} - {response.text[:100]}")
+                            continue
+
+                    except requests.exceptions.Timeout:
+                        logger.warning(f"HF {model_id} timeout, trying next...")
+                        continue
+                    except Exception as e:
+                        logger.warning(f"HF {model_id} error: {e}")
+                        continue
+
+                logger.warning("All HF router models failed")
+                return None
+            
+            def _try_unsplash_stock(search_query, w, h):
+                """
+                Fetch relevant stock photos from Unsplash API.
+                FREE tier: 50 requests/hour
+                Requires UNSPLASH_ACCESS_KEY in .env
+                """
+                try:
+                    if not UNSPLASH_ACCESS_KEY:
+                        logger.info("UNSPLASH_ACCESS_KEY not set in .env file, skipping...")
+                        return None
                     
-                    if use_cache:
-                        self.cache.set(cache_key, image_bytes)
+                    # Clean search query - extract main keywords
+                    stop_words = {'a', 'an', 'the', 'and', 'or', 'of', 'in', 'on', 'at', 'to', 'for', 'with'}
+                    words = [word for word in search_query.lower().split() if word not in stop_words]
+                    clean_query = ' '.join(words[:3]) if words else search_query
                     
-                    return image_bytes
+                    logger.info(f"Searching Unsplash for: '{clean_query}'")
+                    
+                    # Unsplash Search API
+                    headers = {
+                        "Authorization": f"Client-ID {UNSPLASH_ACCESS_KEY}",
+                        "Accept-Version": "v1"
+                    }
+                    
+                    params = {
+                        "query": clean_query,
+                        "per_page": 1,
+                        "orientation": "landscape" if w >= h else "portrait"
+                    }
+                    
+                    resp = requests.get(
+                        "https://api.unsplash.com/search/photos",
+                        headers=headers,
+                        params=params,
+                        timeout=10
+                    )
+                    
+                    if resp.status_code != 200:
+                        logger.warning(f"Unsplash API returned {resp.status_code}")
+                        return None
+                    
+                    data = resp.json()
+                    results = data.get("results", [])
+                    
+                    if not results:
+                        logger.warning(f"No Unsplash results for '{clean_query}'")
+                        return None
+                    
+                    # Get the first (best) result
+                    photo = results[0]
+                    image_url = photo["urls"]["regular"]  # High quality, ~1080px
+                    
+                    logger.info(f"Found Unsplash photo by {photo.get('user', {}).get('name', 'Unknown')}")
+                    
+                    # Download the image
+                    img_resp = requests.get(
+                        image_url,
+                        timeout=15,
+                        headers={"User-Agent": "InfoSightAI/3.0"}
+                    )
+                    
+                    if img_resp.status_code == 200 and len(img_resp.content) > 10000:
+                        logger.info(f"✓ Unsplash ({len(img_resp.content):,} bytes)")
+                        self.cache.set(cache_key + "_source", "unsplash")
+                        return img_resp.content
+                    
+                    return None
+                
+                except Exception as e:
+                    logger.warning(f"Unsplash error: {e}")
+                    return None
+            
+            def _try_pexels_stock(search_query, w, h):
+                """
+                Fetch relevant stock photos from Pexels API.
+                FREE tier: 200 requests/hour, 20,000/month
+                Requires PEXELS_API_KEY in .env
+                """
+                try:
+                    if not PEXELS_API_KEY:
+                        logger.info("PEXELS_API_KEY not set in .env file, trying public fallback...")
+                        return _try_pexels_public(search_query, w, h)
+                    
+                    # Clean search query
+                    stop_words = {'a', 'an', 'the', 'and', 'or', 'of', 'in', 'on', 'at', 'to', 'for', 'with'}
+                    words = [word for word in search_query.lower().split() if word not in stop_words]
+                    clean_query = ' '.join(words[:3]) if words else search_query
+                    
+                    logger.info(f"Searching Pexels for: '{clean_query}'")
+                    
+                    headers = {
+                        "Authorization": PEXELS_API_KEY
+                    }
+                    
+                    params = {
+                        "query": clean_query,
+                        "per_page": 1,
+                        "orientation": "landscape" if w >= h else "portrait",
+                        "size": "large"
+                    }
+                    
+                    resp = requests.get(
+                        "https://api.pexels.com/v1/search",
+                        headers=headers,
+                        params=params,
+                        timeout=10
+                    )
+                    
+                    if resp.status_code != 200:
+                        logger.warning(f"Pexels API returned {resp.status_code}")
+                        return None
+                    
+                    data = resp.json()
+                    photos = data.get("photos", [])
+                    
+                    if not photos:
+                        logger.warning(f"No Pexels results for '{clean_query}'")
+                        return None
+                    
+                    # Get best quality image URL
+                    photo = photos[0]
+                    image_url = photo["src"]["large2x"]  # Highest quality available
+                    
+                    logger.info(f"Found Pexels photo by {photo.get('photographer', 'Unknown')}")
+                    
+                    # Download the image
+                    img_resp = requests.get(
+                        image_url,
+                        timeout=15,
+                        headers={"User-Agent": "InfoSightAI/3.0"}
+                    )
+                    
+                    if img_resp.status_code == 200 and len(img_resp.content) > 10000:
+                        logger.info(f"✓ Pexels ({len(img_resp.content):,} bytes)")
+                        self.cache.set(cache_key + "_source", "pexels")
+                        return img_resp.content
+                    
+                    return None
+                
+                except Exception as e:
+                    logger.warning(f"Pexels error: {e}")
+                    return None
+            
+            def _try_pexels_public(search_query, w, h):
+                """
+                Fallback: Try Pexels public/curated photos endpoint.
+                No API key required but less targeted results.
+                """
+                try:
+                    import hashlib as _hl
+                    
+                    # Map keywords to Pexels popular search terms
+                    keyword_map = {
+                        'motogp': 'motorcycle racing',
+                        'f1': 'formula one racing',
+                        'hulk': 'strong man green',
+                        'rocket': 'rocket launch space',
+                        'spaceship': 'spacecraft',
+                        'car': 'sports car',
+                        'bike': 'motorcycle',
+                    }
+                    
+                    query = search_query.lower()
+                    for key, replacement in keyword_map.items():
+                        if key in query:
+                            query = replacement
+                            break
+                    
+                    # Use hash to get consistent results for same query
+                    query_hash = int(_hl.md5(query.encode()).hexdigest()[:8], 16)
+                    page = (query_hash % 10) + 1  # Pages 1-10
+                    
+                    # Pexels curated photos (no API key needed, but generic)
+                    url = f"https://www.pexels.com/search/{_urlparse.quote(query)}/"
+                    
+                    headers = {
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                    }
+                    
+                    resp = requests.get(url, headers=headers, timeout=10)
+                    
+                    if resp.status_code == 200:
+                        # Parse HTML to extract image URLs
+                        import re
+                        img_pattern = r'https://images\.pexels\.com/photos/\d+/[^"]+\.jpeg\?[^"]*w=1280'
+                        matches = re.findall(img_pattern, resp.text)
+                        
+                        if matches:
+                            # Get first good quality image
+                            img_url = matches[0]
+                            img_resp = requests.get(img_url, headers=headers, timeout=15)
+                            
+                            if img_resp.status_code == 200 and len(img_resp.content) > 10000:
+                                logger.info(f"✓ Pexels public ({len(img_resp.content):,} bytes)")
+                                self.cache.set(cache_key + "_source", "pexels_public")
+                                return img_resp.content
+                    
+                    return None
+                
+                except Exception as e:
+                    logger.warning(f"Pexels public fallback error: {e}")
+                    return None
+            
+            def _try_wikimedia_commons(search_query, w, h):
+                """
+                Search Wikimedia Commons for images - 100% FREE, no API key needed.
+                90+ million freely licensed media files.
+                """
+                try:
+                    # Clean query for search
+                    stop_words = {'a', 'an', 'the', 'and', 'or', 'of', 'in', 'on', 'at'}
+                    words = [word for word in search_query.lower().split() if word not in stop_words]
+                    clean_query = ' '.join(words[:4]) if words else search_query
+
+                    logger.info(f"Searching Wikimedia Commons for: '{clean_query}'")
+
+                    # Step 1: Search for image files
+                    search_params = {
+                        "action": "query",
+                        "list": "search",
+                        "srsearch": f"{clean_query} filetype:bitmap",
+                        "srnamespace": "6",  # File namespace only
+                        "srlimit": "5",
+                        "format": "json"
+                    }
+
+                    headers = {"User-Agent": "InfoSightAI/3.0 (educational project)"}
+
+                    search_resp = requests.get(
+                        "https://commons.wikimedia.org/w/api.php",
+                        params=search_params,
+                        headers=headers,
+                        timeout=10
+                    )
+
+                    if search_resp.status_code != 200:
+                        return None
+
+                    search_data = search_resp.json()
+                    results = search_data.get("query", {}).get("search", [])
+
+                    if not results:
+                        logger.warning(f"No Wikimedia Commons results for '{clean_query}'")
+                        return None
+
+                    # Step 2: Get image URL from first result
+                    for result in results:
+                        title = result.get("title", "")
+                        if not title.startswith("File:"):
+                            continue
+
+                        # Get image info
+                        info_params = {
+                            "action": "query",
+                            "titles": title,
+                            "prop": "imageinfo",
+                            "iiprop": "url|size|mime",
+                            "iiurlwidth": min(w, 1280),
+                            "format": "json"
+                        }
+
+                        info_resp = requests.get(
+                            "https://commons.wikimedia.org/w/api.php",
+                            params=info_params,
+                            headers=headers,
+                            timeout=10
+                        )
+
+                        if info_resp.status_code != 200:
+                            continue
+
+                        info_data = info_resp.json()
+                        pages = info_data.get("query", {}).get("pages", {})
+
+                        for page_id, page in pages.items():
+                            imageinfo = page.get("imageinfo", [])
+                            if not imageinfo:
+                                continue
+
+                            info = imageinfo[0]
+                            mime = info.get("mime", "")
+
+                            # Only use actual images, not SVG/PDF
+                            if "image" not in mime or "svg" in mime:
+                                continue
+
+                            thumb_url = info.get("thumburl") or info.get("url")
+                            if not thumb_url:
+                                continue
+
+                            # Download the image
+                            img_resp = requests.get(
+                                thumb_url,
+                                headers=headers,
+                                timeout=15
+                            )
+
+                            if img_resp.status_code == 200 and len(img_resp.content) > 10000:
+                                logger.info(f"✓ Wikimedia Commons ({len(img_resp.content):,} bytes) - {title}")
+                                self.cache.set(cache_key + "_source", "wikimedia_commons")
+                                return img_resp.content
+
+                    logger.warning("No usable images found on Wikimedia Commons")
+                    return None
+
+                except Exception as e:
+                    logger.warning(f"Wikimedia Commons error: {e}")
+                    return None
+
+            def _try_lorem_picsum(w, h):
+                """
+                Lorem Picsum - random high quality photos, no API key needed.
+                Use as absolute last stock fallback before failure.
+                https://picsum.photos
+                """
+                try:
+                    logger.info(f"Trying Lorem Picsum fallback ({w}x{h})...")
+
+                    # Use seed based on prompt for consistency
+                    import hashlib
+                    seed = int(hashlib.md5(prompt.encode()).hexdigest()[:8], 16) % 1000
+
+                    url = f"https://picsum.photos/seed/{seed}/{min(w,1024)}/{min(h,1024)}"
+
+                    img_resp = requests.get(
+                        url,
+                        timeout=15,
+                        headers={"User-Agent": "InfoSightAI/3.0"},
+                        allow_redirects=True
+                    )
+
+                    if img_resp.status_code == 200 and len(img_resp.content) > 10000:
+                        logger.info(f"✓ Lorem Picsum fallback ({len(img_resp.content):,} bytes)")
+                        self.cache.set(cache_key + "_source", "picsum")
+                        self.cache.set(cache_key + "_fallback", True)
+                        return img_resp.content
+
+                    return None
+
+                except Exception as e:
+                    logger.warning(f"Lorem Picsum error: {e}")
+                    return None
+            
+            def _try_wikipedia_image(entity_name):
+                """
+                Wikipedia image for famous entities.
+                No API key required.
+                """
+                try:
+                    import re
+                    
+                    api_url = "https://en.wikipedia.org/w/api.php"
+                    params = {
+                        "action": "query",
+                        "titles": entity_name,
+                        "prop": "pageimages",
+                        "pithumbsize": 1024,
+                        "format": "json",
+                        "redirects": 1,
+                    }
+                    
+                    resp = requests.get(api_url, params=params, timeout=10)
+                    if resp.status_code != 200:
+                        return None
+                    
+                    data = resp.json()
+                    pages = data.get("query", {}).get("pages", {})
+                    
+                    for page_id, page in pages.items():
+                        if page_id == "-1":
+                            return None
+                        
+                        thumb = page.get("thumbnail", {})
+                        if thumb and thumb.get("source"):
+                            thumb_url = thumb["source"]
+                            thumb_url = re.sub(r'/(\d+)px-', '/1200px-', thumb_url)
+                            
+                            img_resp = requests.get(thumb_url, timeout=12, allow_redirects=True)
+                            if img_resp.status_code == 200 and len(img_resp.content) > 10000:
+                                logger.info(f"✓ Wikipedia ({len(img_resp.content):,} bytes)")
+                                self.cache.set(cache_key + "_source", "wikipedia")
+                                return img_resp.content
+                    
+                    return None
+                
+                except Exception as e:
+                    logger.warning(f"Wikipedia error: {e}")
+                    return None
+
+            # ═══════════════════════════════════════════════════════════════════════
+            # SMART ROUTING: Person → Real Photo | Everything else → AI Generation
+            # ═══════════════════════════════════════════════════════════════════════
+
+            # Detect if prompt is a person's name
+            # Heuristic: 1-4 words, mostly capitalized, no action/descriptive words
+            action_words = {
+                'flying', 'running', 'jumping', 'eating', 'swimming', 'fighting',
+                'dancing', 'sitting', 'standing', 'burning', 'glowing', 'attacking',
+                'dragon', 'robot', 'monster', 'alien', 'fire', 'ice', 'magic',
+                'forest', 'ocean', 'space', 'city', 'mountain', 'galaxy', 'universe',
+                'diagram', 'chart', 'graph', 'architecture', 'flowchart',
+                'car', 'bike', 'rocket', 'spaceship', 'animal', 'dog', 'cat',
+                'in', 'on', 'at', 'with', 'and', 'or', 'the', 'a', 'an',
+                'beautiful', 'stunning', 'epic', 'dark', 'bright', 'colorful',
+                'landscape', 'portrait', 'abstract', 'realistic', 'cartoon'
+            }
+
+            words = prompt.strip().split()
+
+            # Normalize to title case for Wikipedia — handles any case combination
+            normalized_name = ' '.join(w.capitalize() for w in words)
+
+            # Lowercase version for all comparisons
+            prompt_lower_stripped = ' '.join(w.lower() for w in words)
+
+            # Non-person keywords — if any of these exist, it's NOT a person name
+            non_person_keywords = {
+                'flying', 'running', 'jumping', 'eating', 'swimming', 'fighting',
+                'dancing', 'sitting', 'standing', 'burning', 'glowing', 'attacking',
+                'riding', 'driving', 'climbing', 'playing', 'singing', 'cooking',
+                'dragon', 'robot', 'monster', 'alien', 'zombie', 'vampire', 'wizard',
+                'fairy', 'ghost', 'demon', 'angel', 'phoenix', 'unicorn',
+                'fire', 'ice', 'water', 'earth', 'wind', 'forest', 'ocean', 'desert',
+                'space', 'city', 'mountain', 'galaxy', 'universe', 'island', 'jungle',
+                'diagram', 'chart', 'graph', 'architecture', 'flowchart', 'logo',
+                'car', 'bike', 'rocket', 'spaceship', 'sword', 'gun', 'shield',
+                'house', 'castle', 'tower', 'bridge', 'ship', 'plane', 'train',
+                'dog', 'cat', 'lion', 'tiger', 'elephant', 'horse', 'wolf',
+                'eagle', 'snake', 'bear', 'shark', 'whale', 'fox', 'deer',
+                'abstract', 'realistic', 'cartoon', 'anime', 'dark', 'bright',
+                'colorful', 'vintage', 'futuristic', 'magical', 'epic', 'giant',
+                'in', 'on', 'at', 'with', 'and', 'or', 'the', 'a', 'an', 'of',
+            }
+
+            all_alpha = all(w.isalpha() for w in words)
+            has_non_person_word = any(w.lower() in non_person_keywords for w in words)
+
+            # Quick pre-check: could this possibly be a person name?
+            could_be_person = (
+                1 <= len(words) <= 4 and
+                all_alpha and
+                not has_non_person_word and
+                not is_diagram and
+                not is_food and
+                not is_vehicle and
+                not is_space and
+                not is_animal and
+                not is_landscape and
+                not is_character and
+                not is_tech and
+                not is_sports
+            )
+
+            # ── WIKIPEDIA PERSON VERIFICATION ───────────────────────────────
+            # If it looks like it could be a name, ask Wikipedia
+            # Wikipedia will confirm if it's a real person
+            is_person_name = False
+
+            def _verify_person_via_wikipedia(name):
+                """
+                Ask Wikipedia if this name is a real person.
+                Returns True if Wikipedia finds a person page for this name.
+                Fast — only fetches page categories/description, not full content.
+                """
+                try:
+                    # Step 1: Search Wikipedia for the name
+                    search_params = {
+                        "action": "query",
+                        "list": "search",
+                        "srsearch": name,
+                        "srlimit": 3,
+                        "format": "json"
+                    }
+                    headers = {"User-Agent": "InfoSightAI/3.0 (educational project)"}
+
+                    search_resp = requests.get(
+                        "https://en.wikipedia.org/w/api.php",
+                        params=search_params,
+                        headers=headers,
+                        timeout=5
+                    )
+
+                    if search_resp.status_code != 200:
+                        return False
+
+                    results = search_resp.json().get("query", {}).get("search", [])
+                    if not results:
+                        return False
+
+                    # Step 2: Check the top result's categories for person indicators
+                    top_title = results[0].get("title", "")
+
+                    category_params = {
+                        "action": "query",
+                        "titles": top_title,
+                        "prop": "categories|extracts",
+                        "cllimit": 10,
+                        "exintro": True,
+                        "exsentences": 2,
+                        "explaintext": True,
+                        "format": "json"
+                    }
+
+                    cat_resp = requests.get(
+                        "https://en.wikipedia.org/w/api.php",
+                        params=category_params,
+                        headers=headers,
+                        timeout=5
+                    )
+
+                    if cat_resp.status_code != 200:
+                        return False
+
+                    pages = cat_resp.json().get("query", {}).get("pages", {})
+
+                    for page_id, page in pages.items():
+                        if page_id == "-1":
+                            continue
+
+                        # Check categories for person indicators
+                        categories = [
+                            c.get("title", "").lower()
+                            for c in page.get("categories", [])
+                        ]
+
+                        person_category_keywords = [
+                            'births', 'deaths', 'living people', 'people from',
+                            'alumni', 'cricketers', 'footballers', 'actors',
+                            'actresses', 'politicians', 'businesspeople', 'musicians',
+                            'singers', 'athletes', 'players', 'entrepreneurs',
+                            'engineers', 'scientists', 'directors', 'writers',
+                            'authors', 'journalists', 'models', 'sportspeople',
+                        ]
+
+                        for cat in categories:
+                            if any(kw in cat for kw in person_category_keywords):
+                                logger.info(f"✓ Wikipedia confirms '{name}' is a person (category: {cat})")
+                                return True
+
+                        # Also check the extract text for person indicators
+                        extract = page.get("extract", "").lower()
+                        person_text_indicators = [
+                            'is an indian', 'is a indian', 'is an american', 'is a british',
+                            'born in', 'born on', 'is a cricketer', 'is an actor',
+                            'is a politician', 'is a businessman', 'is a singer',
+                            'is a footballer', 'is an entrepreneur', 'is a director',
+                            'is a scientist', 'is a musician', 'is a writer',
+                            'is the ceo', 'is the founder', 'is the president',
+                            'he is', 'she is', 'his career', 'her career',
+                        ]
+
+                        if any(indicator in extract for indicator in person_text_indicators):
+                            logger.info(f"✓ Wikipedia extract confirms '{name}' is a person")
+                            return True
+
+                    return False
+
+                except Exception as e:
+                    logger.warning(f"Wikipedia person verify error: {e}")
+                    return False
+
+            if could_be_person:
+                logger.info(f"🔍 Checking Wikipedia if '{normalized_name}' is a real person...")
+                is_person_name = _verify_person_via_wikipedia(normalized_name)
+                if not is_person_name:
+                    logger.info(f"❌ Wikipedia: '{normalized_name}' is NOT a person → AI generation")
                 else:
-                    logger.warning(f"Pollinations.AI failed: HTTP {response.status_code}")
-            
-            except Exception as e:
-                logger.warning(f"Pollinations.AI error: {str(e)}")
-            
-            # Method 2: Segmind (Fallback)
-            try:
-                logger.info("Trying Segmind...")
-                
-                segmind_url = "https://api.segmind.com/v1/sd1.5-txt2img"
-                payload = {
-                    "prompt": enhanced_prompt,
-                    "negative_prompt": negative_aspects,
-                    "samples": 1,
-                    "scheduler": "DPM++ 2M Karras",
-                    "num_inference_steps": 25,
-                    "guidance_scale": 7.5,
-                    "seed": -1,
-                    "img_width": 1024,
-                    "img_height": 1024
-                }
-                
-                response = requests.post(segmind_url, json=payload, timeout=90)
-                
-                if response.status_code == 200 and len(response.content) > 5000:
-                    image_bytes = response.content
-                    logger.info(f"✓ Image generated with Segmind ({len(image_bytes)} bytes)")
-                    
+                    logger.info(f"✅ Wikipedia: '{normalized_name}' IS a person → real photo chain")
+            else:
+                logger.info(f"⏭️  Skipping person check — keywords indicate non-person content")
+
+            logger.info(f"🧠 Smart routing — is_person_name={is_person_name}, "
+                       f"normalized='{normalized_name}', could_be_person={could_be_person}")
+            if is_person_name:
+                logger.info("👤 PERSON detected → Real photo priority chain")
+                logger.info("=" * 70)
+
+                # [1] Wikipedia (most accurate - use normalized Title Case name)
+                logger.info(f"📖 [1/4] Trying Wikipedia for '{normalized_name}'...")
+                wiki_result = _try_wikipedia_image(normalized_name)
+                if wiki_result and len(wiki_result) > 10000:
+                    logger.info("✅ SUCCESS: Wikipedia")
                     if use_cache:
-                        self.cache.set(cache_key, image_bytes)
-                    
-                    return image_bytes
-            
-            except Exception as e:
-                logger.warning(f"Segmind error: {str(e)}")
-            
-            # Method 3: DeepAI (Fallback)
-            try:
-                logger.info("Trying DeepAI...")
-                
-                deepai_url = "https://api.deepai.org/api/text2img"
-                payload = {
-                    'text': enhanced_prompt,
-                    'grid_size': 1,
-                    'width': 1024,
-                    'height': 1024
-                }
-                
-                response = requests.post(deepai_url, data=payload, timeout=90)
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    if 'output_url' in data:
-                        img_response = requests.get(data['output_url'], timeout=30)
-                        if img_response.status_code == 200:
-                            image_bytes = img_response.content
-                            logger.info(f"✓ Image generated with DeepAI ({len(image_bytes)} bytes)")
-                            
-                            if use_cache:
-                                self.cache.set(cache_key, image_bytes)
-                            
-                            return image_bytes
-            
-            except Exception as e:
-                logger.warning(f"DeepAI error: {str(e)}")
-            
-            raise ValueError("All image services unavailable. Please try again in 1-2 minutes.")
-            
+                        self.cache.set(cache_key, wiki_result)
+                    return wiki_result
+                logger.info("❌ Wikipedia failed")
+
+                # [2] Wikimedia Commons (use normalized name)
+                logger.info(f"🌐 [2/4] Trying Wikimedia Commons for '{normalized_name}'...")
+                wikimedia_result = _try_wikimedia_commons(normalized_name, width, height)
+                if wikimedia_result and len(wikimedia_result) > 10000:
+                    logger.info("✅ SUCCESS: Wikimedia Commons")
+                    if use_cache:
+                        self.cache.set(cache_key, wikimedia_result)
+                    return wikimedia_result
+                logger.info("❌ Wikimedia Commons failed")
+
+                # [3] Unsplash (press/event photos - use normalized name)
+                logger.info(f"📷 [3/4] Trying Unsplash for '{normalized_name}'...")
+                unsplash_result = _try_unsplash_stock(normalized_name, width, height)
+                if unsplash_result and len(unsplash_result) > 10000:
+                    logger.info("✅ SUCCESS: Unsplash")
+                    if use_cache:
+                        self.cache.set(cache_key, unsplash_result)
+                    return unsplash_result
+                logger.info("❌ Unsplash failed")
+
+                # [4] Pexels (use normalized name)
+                logger.info(f"📷 [4/4] Trying Pexels for '{normalized_name}'...")
+                pexels_result = _try_pexels_stock(normalized_name, width, height)
+                if pexels_result and len(pexels_result) > 10000:
+                    logger.info("✅ SUCCESS: Pexels")
+                    if use_cache:
+                        self.cache.set(cache_key, pexels_result)
+                    return pexels_result
+                logger.info("❌ Pexels failed")
+            else:
+                # ── NON-PERSON: AI generation priority chain ───────────────────
+                logger.info("🎨 NON-PERSON detected → AI generation priority chain")
+                logger.info("=" * 70)
+
+                # [1] HuggingFace AI (best for creative/specific requests)
+                logger.info("🎨 [1/6] Trying HuggingFace AI...")
+                hf_result = _try_huggingface_2026(ai_prompt, negative_prompt, width, height)
+                if hf_result and len(hf_result) > 5000:
+                    logger.info("✅ SUCCESS: HuggingFace AI")
+                    if use_cache:
+                        self.cache.set(cache_key, hf_result)
+                    return hf_result
+                logger.info("❌ HuggingFace failed")
+
+                # [2] Unsplash
+                logger.info("📷 [2/6] Trying Unsplash...")
+                unsplash_result = _try_unsplash_stock(prompt, width, height)
+                if unsplash_result and len(unsplash_result) > 10000:
+                    logger.info("✅ SUCCESS: Unsplash")
+                    if use_cache:
+                        self.cache.set(cache_key, unsplash_result)
+                    return unsplash_result
+                logger.info("❌ Unsplash failed")
+
+                # [3] Pexels
+                logger.info("📷 [3/6] Trying Pexels...")
+                pexels_result = _try_pexels_stock(prompt, width, height)
+                if pexels_result and len(pexels_result) > 10000:
+                    logger.info("✅ SUCCESS: Pexels")
+                    if use_cache:
+                        self.cache.set(cache_key, pexels_result)
+                    return pexels_result
+                logger.info("❌ Pexels failed")
+
+                # [4] Wikimedia Commons
+                logger.info("🌐 [4/6] Trying Wikimedia Commons...")
+                wikimedia_result = _try_wikimedia_commons(prompt, width, height)
+                if wikimedia_result and len(wikimedia_result) > 10000:
+                    logger.info("✅ SUCCESS: Wikimedia Commons")
+                    if use_cache:
+                        self.cache.set(cache_key, wikimedia_result)
+                    return wikimedia_result
+                logger.info("❌ Wikimedia Commons failed")
+
+                # [5] Wikipedia (for named concepts/entities)
+                if is_named_entity:
+                    logger.info("📖 [5/6] Trying Wikipedia...")
+                    wiki_result = _try_wikipedia_image(prompt.strip())
+                    if wiki_result and len(wiki_result) > 10000:
+                        logger.info("✅ SUCCESS: Wikipedia")
+                        if use_cache:
+                            self.cache.set(cache_key, wiki_result)
+                        return wiki_result
+                    logger.info("❌ Wikipedia failed")
+
+                # [6] Lorem Picsum (last resort)
+                logger.info("🎲 [6/6] Trying Lorem Picsum last resort...")
+                picsum_result = _try_lorem_picsum(width, height)
+                if picsum_result and len(picsum_result) > 10000:
+                    logger.info("✅ SUCCESS: Lorem Picsum fallback")
+                    if use_cache:
+                        self.cache.set(cache_key, picsum_result)
+                    return picsum_result
+
+            # All providers failed
+            logger.error("🆘 All providers failed - no image could be generated")
+
+            missing_keys = []
+            if not HF_API_TOKEN:
+                missing_keys.append("HF_API_TOKEN")
+            if not UNSPLASH_ACCESS_KEY:
+                missing_keys.append("UNSPLASH_ACCESS_KEY")
+
+            error_msg = "Image generation failed across all providers.\n\n"
+            if missing_keys:
+                error_msg += f"Missing API keys: {', '.join(missing_keys)}\n"
+            raise ValueError(error_msg)
+
         except Exception as e:
-            logger.error(f"Image generation error: {str(e)}", exc_info=True)
+            logger.error(f"generate_image error: {str(e)}", exc_info=True)
+            if 'rate limit' in str(e).lower():
+                raise ValueError(str(e))
             raise ValueError(f"Image generation failed: {str(e)}")
 
     def generate_both(self, prompt, use_cache=True):
-        """Generate both text and image in parallel with error handling."""
+        """Generate both text and image in parallel with full error handling."""
         prompt = self._sanitize_prompt(prompt)
-        
         logger.info(f"Starting parallel generation for: {prompt[:50]}...")
-        
-        text_result = None
+
+        text_result  = None
         image_result = None
-        text_error = None
-        image_error = None
-        model_used = "llm_router"  # Track which model was used
-        
-        # Submit both tasks to executor
-        text_future = self.executor.submit(self._safe_generate_text, prompt, use_cache)
+        text_error   = None
+        image_error  = None
+        model_used   = "llm_router"
+
+        text_future  = self.executor.submit(self._safe_generate_text,  prompt, use_cache)
         image_future = self.executor.submit(self._safe_generate_image, prompt, use_cache)
-        
-        # Wait for both with timeout
-        model_used = "llm_router"
+
+        # Collect text result
         try:
             text_result_data, text_error = text_future.result(timeout=90)
             if text_result_data and isinstance(text_result_data, tuple):
@@ -776,17 +1598,18 @@ Provide a comprehensive response without using markdown formatting or special ch
             else:
                 text_result = text_result_data
         except Exception as e:
-            text_error = f"Text generation timeout: {str(e)}"
+            text_error  = f"Text generation timeout: {str(e)}"
             text_result = None
             logger.error(text_error)
-        
+
+        # Collect image result
         try:
-            image_result, image_error = image_future.result(timeout=90)
+            image_result, image_error = image_future.result(timeout=180)
         except Exception as e:
-            image_error = f"Image generation timeout: {str(e)}"
+            image_error  = f"Image generation timeout: {str(e)}"
+            image_result = None
             logger.error(image_error)
-        
-        # Return results with error info and model used
+
         return text_result, image_result, text_error, image_error, model_used
 
     def _safe_generate_text(self, prompt, use_cache):
@@ -1086,11 +1909,11 @@ def api_status():
             'error': None
         },
         'huggingface': {
-            'configured': bool(HF_API_TOKEN and HF_API_TOKEN != 'your_hf_token_here' and not HF_API_TOKEN.startswith('your_')),
-            'working': False,
-            'error': None,
-            'token_format_valid': bool(HF_API_TOKEN and HF_API_TOKEN.startswith('hf_')) if HF_API_TOKEN else False
-        }
+                            'configured': bool(HF_API_TOKEN),
+                            'working': False,
+                            'error': None,
+                            'token_format_valid': bool(HF_API_TOKEN and HF_API_TOKEN.startswith("hf_"))
+                        }
     }
     
     # Test LLM router (cloud + local fallback)
@@ -1232,8 +2055,10 @@ def generate_text_endpoint():
         
         # Save to database
         user_id = request.remote_addr or 'anonymous'
-        word_count = len(text.split())
+        clean_text = re.sub('<[^<]+?>', '', text)
+        word_count = len(clean_text.split())
         cached = generator.cache.get(generator._create_cache_key(f"{prompt}:{style}:{length}", 'text')) is not None
+
         db_manager.save_generation(
             user_id=user_id,
             prompt=prompt,
@@ -1246,17 +2071,17 @@ def generate_text_endpoint():
             word_count=word_count,
             cached=cached
         )
-        
+                
         return jsonify({
-            'text': text,
-            'model_used': model_used,
-            'cached': cached,
-            'generation_time': elapsed,
-            'word_count': word_count,
-            'char_count': len(text),
-            'style': style,
-            'length': length
-        })
+                    'text': text,
+                    'model_used': model_used,
+                    'cached': cached,
+                    'generation_time': elapsed,
+                    'word_count': word_count,
+                    'char_count': len(text),
+                    'style': style,
+                    'length': length
+                })
 
 
 @infosight_ai.route('/generate-image', methods=['POST'])
@@ -1267,12 +2092,14 @@ def generate_image_endpoint():
     data = request.get_json()
     prompt = data['prompt'].strip()
     use_cache = data.get('use_cache', True)
+    width = data.get('width', 1024)
+    height = data.get('height', 1024)
     
-    logger.info(f"Image generation request: {prompt[:50]}...")
+    logger.info(f"Image generation request: {prompt[:50]}... ({width}x{height})")
     start_time = time.time()
     
     try:
-        image_bytes = generator.generate_image(prompt, use_cache=use_cache)
+        image_bytes = generator.generate_image(prompt, use_cache=use_cache, width=width, height=height)
         
         if not image_bytes:
             return jsonify({'error': 'Image generation failed - no image data returned'}), 500
@@ -1285,6 +2112,24 @@ def generate_image_endpoint():
         image_url = f"data:image/png;base64,{image_base64}"
         cached = generator.cache.get(generator._create_cache_key(prompt, 'image')) is not None
         
+        is_fallback = generator.cache.get(generator._create_cache_key(prompt, 'image') + "_fallback") or False
+        img_source  = generator.cache.get(generator._create_cache_key(prompt, 'image') + "_source") or ""
+
+        if is_fallback or img_source in ('picsum', 'picsum_stock'):
+            model_label = 'picsum_stock'
+        elif img_source.startswith('huggingface'):
+            model_label = 'huggingface'
+        elif img_source == 'unsplash':
+            model_label = 'unsplash'
+        elif img_source in ('pexels', 'pexels_public'):
+            model_label = 'pexels'
+        elif img_source == 'wikimedia_commons':
+            model_label = 'wikimedia_commons'
+        elif img_source == 'wikipedia':
+            model_label = 'wikipedia'
+        else:
+            model_label = img_source or 'unknown'
+
         # Save to database
         user_id = request.remote_addr or 'anonymous'
         db_manager.save_generation(
@@ -1292,18 +2137,20 @@ def generate_image_endpoint():
             prompt=prompt,
             content_type='image',
             image_url=image_url,
-            model_used='huggingface',
+            model_used=model_label,
             generation_time=elapsed,
             cached=cached
         )
-        
+
         return jsonify({
             'image_url': image_url,
             'cached': cached,
             'generation_time': elapsed,
             'image_size': len(image_bytes),
-            'model_used': 'huggingface'
+            'model_used': model_label,
+            'is_fallback': bool(is_fallback)
         })
+    
     except ValueError as e:
         # Handle validation errors with helpful messages
         logger.warning(f"Image generation validation error: {str(e)}")
@@ -1321,8 +2168,10 @@ def generate_both_endpoint():
     data = request.get_json()
     prompt = data['prompt'].strip()
     use_cache = data.get('use_cache', True)
+    width = data.get('width', 1024)
+    height = data.get('height', 1024)
     
-    logger.info(f"Combined generation request: {prompt[:50]}...")
+    logger.info(f"Combined generation request: {prompt[:50]}... ({width}x{height})")
     start_time = time.time()
     
     result = generator.generate_both(prompt, use_cache)
@@ -1357,9 +2206,36 @@ def generate_both_endpoint():
         response['image_url'] = f"data:image/png;base64,{image_base64}"
         response['image_cached'] = generator.cache.get(generator._create_cache_key(prompt, 'image')) is not None
         response['image_size'] = len(image_bytes)
+
+        # Resolve actual image source label
+        is_fallback = generator.cache.get(generator._create_cache_key(prompt, 'image') + "_fallback") or False
+        img_source  = generator.cache.get(generator._create_cache_key(prompt, 'image') + "_source") or ""
+
+        if is_fallback or img_source in ('picsum', 'picsum_stock'):
+            response['model_used'] = 'picsum_stock'
+            response['is_fallback'] = True
+        elif img_source.startswith('huggingface'):
+            response['model_used'] = 'huggingface'
+            response['is_fallback'] = False
+        elif img_source == 'unsplash':
+            response['model_used'] = 'unsplash'
+            response['is_fallback'] = True
+        elif img_source in ('pexels', 'pexels_public'):
+            response['model_used'] = 'pexels'
+            response['is_fallback'] = True
+        elif img_source == 'wikimedia_commons':
+            response['model_used'] = 'wikimedia_commons'
+            response['is_fallback'] = True
+        elif img_source == 'wikipedia':
+            response['model_used'] = 'wikipedia'
+            response['is_fallback'] = True
+        else:
+            response['model_used'] = img_source or 'unknown'
+            response['is_fallback'] = False
+
     elif image_error:
         response['image_error'] = image_error
-    
+
     return jsonify(response)
 
 

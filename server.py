@@ -25,6 +25,9 @@ from flask import Flask, render_template, redirect, url_for, jsonify
 import logging
 import requests
 
+from dotenv import load_dotenv
+load_dotenv()
+
 # Security imports
 from utils.security import init_rate_limiter
 
