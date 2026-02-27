@@ -891,6 +891,6 @@ For issues or questions:
 
 **🍂 Built By Lakshan For Tech Community**
 
-*Last Updated: January 2026*
+*Last Updated: Feb 2026*
 
 </div>
