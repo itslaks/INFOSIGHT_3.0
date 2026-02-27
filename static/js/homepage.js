@@ -94,7 +94,7 @@ function createIndicators() {
   
   const labels = [
     'WebSeeker', 'PortScanner', 'Site Index', 'File Fender', 
-    'InfoCrypt', 'SnapSpeak AI', 'TrueShot AI', 'InfoSight AI', 'LANA AI', 
+    'InfoCrypt', 'SnapSpeak AI', 'TrueShot AI', 'InfoSight AI', 'NOVA AI', 
     'CyberSentry AI', 'Inkwell AI', 'Tracklyst'
   ];
   

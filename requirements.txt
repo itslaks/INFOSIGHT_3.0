@@ -171,3 +171,13 @@ python-docx==1.2.0
 timezonefinder
 pytz
 cairosvg
+gradio
+
+# TTS (edge-tts recommended, gTTS as fallback)
+edge-tts>=6.1.9
+gTTS>=2.5.0
+
+# Optional (speeds up HTTP)
+httpx>=0.24.0
+
+pyaudio

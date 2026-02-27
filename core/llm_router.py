@@ -32,7 +32,7 @@ MODEL_MAP = {
     "enscan": "llama-3.3-70b-versatile",  # Best for security reasoning
     
     # Fast response tasks (chat, assistants, general)
-    "lana_ai": "llama-3.1-8b-instant",  # Fast and efficient for chat
+    # (Nova AI talks directly to Groq and does not use this router)
     "inkwell_ai": "llama-3.1-8b-instant",  # Fast for prompt optimization
     "webseeker": "llama-3.1-8b-instant",  # Fast for website analysis
     "infosight_ai": "llama-3.1-8b-instant",  # Fast for content generation

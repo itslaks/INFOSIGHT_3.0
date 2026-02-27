@@ -14,17 +14,17 @@ INFOSIGHT_3.0/
 │   ├── cybersentry_ai.py          # CyberSentry AI (Intelligence)
 │   ├── donna.py                   # DONNA AI (Intelligence)
 │   ├── enscan.py                  # Site Index (Recon)
-│   ├── filescanner.py              # File Fender (Detection)
-│   ├── infocrypt.py                # InfoCrypt (Protection)
-│   ├── infosight_ai.py             # InfoSight AI (Intelligence)
-│   ├── inkwell_ai.py               # Inkwell AI (Intelligence)
-│   ├── lana_ai.py                  # LANA AI (Intelligence)
-│   ├── osint.py                    # TrackLyst (Intelligence)
-│   ├── portscanner.py              # PortScanner (Recon)
-│   ├── snapspeak_ai.py             # SnapSpeak AI (Intelligence)
-│   ├── trueshot_ai.py              # TrueShot AI (Intelligence)
-│   ├── webseeker.py                # WebSeeker (Recon)
-│   └── validate_api.py             # API validation utility
+│   ├── filescanner.py             # File Fender (Detection)
+│   ├── infocrypt.py               # InfoCrypt (Protection)
+│   ├── infosight_ai.py            # InfoSight AI (Intelligence)
+│   ├── inkwell_ai.py              # Inkwell AI (Intelligence)
+│   ├── nova_ai.py                 # NOVA AI (Intelligence)
+│   ├── osint.py                   # TrackLyst (Intelligence)
+│   ├── portscanner.py             # PortScanner (Recon)
+│   ├── snapspeak_ai.py            # SnapSpeak AI (Intelligence)
+│   ├── trueshot_ai.py             # TrueShot AI (Intelligence)
+│   ├── webseeker.py               # WebSeeker (Recon)
+│   └── validate_api.py            # API validation utility
 │
 ├── 📂 core/                        # Core system modules
 │   ├── __init__.py
@@ -111,7 +111,7 @@ All main application modules organized by category:
 - **Recon**: `webseeker.py`, `portscanner.py`, `enscan.py`
 - **Detection**: `filescanner.py`
 - **Protection**: `infocrypt.py`
-- **Intelligence**: `osint.py`, `donna.py`, `snapspeak_ai.py`, `trueshot_ai.py`, `infosight_ai.py`, `lana_ai.py`, `cybersentry_ai.py`, `inkwell_ai.py`
+- **Intelligence**: `osint.py`, `donna.py`, `snapspeak_ai.py`, `trueshot_ai.py`, `infosight_ai.py`, `nova_ai.py`, `cybersentry_ai.py`, `inkwell_ai.py`
 
 ### Organized Directories
 

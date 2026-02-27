@@ -180,7 +180,7 @@ infosight_ai.db
 cybersentr_ai.db
 inkwell_ultimate.db
 prompt_optimizer.db
-lana_ai.db
+nova_conversations.db
 
 # Log files
 *.log
@@ -206,8 +206,6 @@ runs/
 check_token.py
 
 # Data files (auto-generated)
-data/lana_ai.db
-data/lana_memory.json
 data/encryption_metadata.json
 
 # Encrypted files directory

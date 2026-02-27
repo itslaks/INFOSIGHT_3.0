@@ -1,30 +1,27 @@
 Webseeker:
 1) virustotal API key: https://www.virustotal.com/gui/join-us
 2) ipinfo API key: https://ipinfo.io/signup
-3) gemini API key: https://www.gemini.com/developers
+3) Groq API key: https://console.groq.com/keys
 4) abuseipdb API key: https://www.abuseipdb.com/register
 
 FileFender:
 1) virustotal API key: https://www.virustotal.com/gui/join-us
 
 SnapSpeak AI:
-1) gemini API key: https://www.gemini.com/developers
+1) Groq API key: https://console.groq.com/keys
 
 InfoSight AI:
-1) gemini API key: https://www.gemini.com/developers
+1) Groq API key: https://console.groq.com/keys
 2) huggingface API key: https://huggingface.co/join (with read access)
 
-lana AI:
-1) gemini API key: https://www.gemini.com/developers
-2) news_api API key: https://newsapi.org/register
-3) openweather API key: https://home.openweathermap.org/users/sign_up
-4) serpapi API key: https://serpapi.com/users/sign_up
+NOVA AI:
+1) Groq API key: https://console.groq.com/keys
 
 CyberSentry AI:
-1) gemini API key: https://www.gemini.com/developers
+1) Groq API key: https://console.groq.com/keys
 
 DONNA AI:
-1) gemini API key: https://www.gemini.com/developers
+1) Groq API key: https://console.groq.com/keys
 2) Need Ollama to be installed locally 
 3) TOR required
 

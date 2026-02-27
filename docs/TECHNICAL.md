@@ -40,7 +40,7 @@ INFOSIGHT 3.0 is a comprehensive cybersecurity and AI intelligence platform that
 8. **SnapSpeak AI** - Image forensics
 9. **TrueShot AI** - Authenticity verification
 10. **InfoSight AI** - AI content generator
-11. **LANA AI** - AI voice assistant
+11. **NOVA AI** - AI voice assistant
 12. **CyberSentry AI** - Security monitoring
 13. **InkWell AI** - Prompt optimizer
 
