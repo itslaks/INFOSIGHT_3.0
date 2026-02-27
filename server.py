@@ -1,5 +1,6 @@
 import os
 import sys
+import requests
 import importlib
 # Ensure Hugging Face token is set before any modules that might use HF are imported
 # Prefer environment value if available; otherwise placeholder to remind operator to set it
@@ -21,7 +22,7 @@ import warnings
 warnings.filterwarnings('ignore', category=UserWarning)
 warnings.filterwarnings('ignore', category=DeprecationWarning)
 
-from flask import Flask, render_template, redirect, url_for, jsonify
+from flask import Flask, render_template, redirect, url_for, jsonify, request
 import logging
 import requests
 
@@ -48,7 +49,7 @@ APP_PORTS = {
     'filescanner': 5005,
     'infosight_ai': 5006,
     'inkwell_ai': 5007,
-    'lana_ai': 5008,
+    'nova_ai': 5008,
     'osint': 5009,
     'portscanner': 5010,
     'snapspeak_ai': 5011,
@@ -59,7 +60,7 @@ APP_PORTS = {
 BLUEPRINT_CONFIGS = [
     ('/infocrypt', 'app.infocrypt', 'infocrypt'),
     ('/cybersentry_ai', 'app.cybersentry_ai', 'cybersentry_ai'),
-    ('/lana_ai', 'app.lana_ai', 'lana_ai'),
+    ('/nova_ai', 'app.nova_ai', 'nova_ai'),
     ('/osint', 'app.osint', 'osint'),
     ('/portscanner', 'app.portscanner', 'portscanner'),
     ('/webseeker', 'app.webseeker', 'webseeker'),
@@ -160,10 +161,13 @@ def after_request(response):
     
     # Security headers (OWASP best practices)
     response.headers['X-Content-Type-Options'] = 'nosniff'  # Prevent MIME sniffing
-    response.headers['X-Frame-Options'] = 'SAMEORIGIN'  # Prevent clickjacking
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN' if request.path != '/nova_ai/' else 'ALLOWALL'  # Prevent clickjacking
     response.headers['X-XSS-Protection'] = '1; mode=block'  # XSS protection
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'  # HSTS
-    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; connect-src 'self' https://api2.amplitude.com;"
+    if request.path.startswith('/nova_ai'):
+        response.headers['Content-Security-Policy'] = "default-src 'self' http://127.0.0.1:7860; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; frame-src http://127.0.0.1:7860; connect-src 'self' http://127.0.0.1:7860;"
+    else:
+        response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; connect-src 'self' https://api2.amplitude.com;"
     response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
     response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(self), camera=()'
     
