@@ -99,11 +99,11 @@ These enhance functionality but are not strictly required:
   - Get from: https://ipinfo.io/signup
 - **ABUSEIPDB_API_KEY** - Abuse detection (WebSeeker)
   - Get from: https://www.abuseipdb.com/register
-- **NEWS_API_KEY** - News features (LANA AI)
+- **NEWS_API_KEY** - Legacy news features (old LANA AI; not used by Nova)
   - Get from: https://newsapi.org/register
-- **WEATHER_API_KEY** or **OPENWEATHER_API_KEY** - Weather features (LANA AI)
+- **WEATHER_API_KEY** or **OPENWEATHER_API_KEY** - Legacy weather features (old LANA AI; not used by Nova)
   - Get from: https://home.openweathermap.org/users/sign_up
-- **SERPAPI_KEY** - Search features (LANA AI)
+- **SERPAPI_KEY** - Legacy search features (old LANA AI; not used by Nova)
   - Get from: https://serpapi.com/users/sign_up
 
 ### Local LLM Setup (Optional but Recommended)

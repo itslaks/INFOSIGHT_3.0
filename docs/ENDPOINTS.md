@@ -12,7 +12,7 @@ All endpoints are prefixed with their respective blueprint path:
 - `/snapspeak_ai` - SnapSpeak AI endpoints
 - `/trueshot_ai` - TrueShot AI endpoints
 - `/infosight_ai` - InfoSight AI endpoints
-- `/lana_ai` - LANA AI endpoints
+- `/nova_ai` - NOVA AI endpoints
 - `/cybersentry_ai` - CyberSentry AI endpoints
 - `/inkwell_ai` - InkWell AI endpoints
 
@@ -430,34 +430,15 @@ Get favorites
 
 ---
 
-### LANA AI
+### NOVA AI
 
-#### `GET /lana_ai/`
-Main interface page
+#### `GET /nova_ai/`
+Main interface page (full-screen embedded Gradio app)
 
-#### `POST /lana_ai/listen`
-Start voice listening
-- **Rate Limit**: 20/min, 200/hour
-
-#### `GET /lana_ai/get_response`
-Get AI response
-
-#### `GET /lana_ai/get_transcript`
-Get transcript
-
-#### `POST /lana_ai/text_input`
-Text input
-- **Body**: `{"query": "..."}`
-- **Rate Limit**: 20/min, 200/hour
-
-#### `GET /lana_ai/audio/<filename>`
-Get audio file
-
-#### `GET /lana_ai/health`
-Health check
-
-#### `GET /lana_ai/get_history`
-Get conversation history
+> Note: Nova AI’s voice/text pipeline, wake word handling, and waveform visualization
+> are implemented entirely inside the embedded Gradio interface on port `7860`.
+> There are no separate JSON REST endpoints under `/nova_ai` – all interaction
+> happens via the Nova UI.
 
 ---
 

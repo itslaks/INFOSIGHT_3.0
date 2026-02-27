@@ -15,7 +15,7 @@ def test_blueprints_registered(client):
     blueprints = [
         '/infocrypt',
         '/cybersentry_ai',
-        '/lana_ai',
+        '/nova_ai',
         '/osint',
         '/portscanner',
         '/webseeker',

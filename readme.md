@@ -89,7 +89,7 @@ The platform integrates 13 specialized modules covering web security, network sc
 - Natural language processing via centralized LLM router (Groq Cloud LLM - Llama 3.3-70B-Versatile for complex tasks, Llama 3.1-8B-Instant for fast tasks)
 - Automated threat detection and analysis
 - AI content generation (text and images) with multi-model fallback
-- Voice-enabled assistance (LANA AI) with sentiment analysis
+- Voice-enabled assistance (NOVA AI) with sentiment analysis
 - Prompt optimization and enhancement (INKWELL AI)
 - Real-time data integration (weather, news, sports)
 - Centralized LLM router with intelligent model selection and local fallback (Ollama)
@@ -336,19 +336,20 @@ http://127.0.0.1:5000
 ---
 
 ### 8. **SNAPSPEAK AI** - Image Forensics
-> AI-powered image analysis and forensics
+> AI-powered image analysis and deep forensics
 
 **Features:**
-- Automatic image captioning (BLIP model)
-- Steganography detection
-- Comprehensive metadata extraction (EXIF, GPS, camera info)
-- Image hashing (perceptual hashing)
-- Color analysis and clustering
-- Face detection
-- Deep image analysis
+- Automatic image captioning (BLIP via `vision_analyzer` with local/cloud fallback)
+- Multi-method steganography detection with confidence and risk scoring
+- Deep metadata extraction (EXIF, GPS, camera, timestamps, software, technical fields)
+- Image hashing (perceptual and cryptographic) for duplicates and provenance
+- Advanced colour analysis and harmony classification
+- Face detection with optional LLM-based facial/context summaries
+- OCR, privacy risk assessment, and auto-redaction hints
+- Technical quality and aesthetic scoring, plus batch/report endpoints
 
-**⚠️ Requires:** Groq API key  
-**💡 Optional:** Local LLM fallback via centralized router
+**⚠️ Requires:** Groq API key (for enriched analysis)  
+**💡 Optional:** Local LLM fallback via centralized router; OCR and DeepFace are optional extras
 
 ---
 
@@ -392,36 +393,23 @@ http://127.0.0.1:5000
 
 ---
 
-### 11. **LANA AI** - AI Voice Assistant
-> Ultimate AI voice assistant with sentiment analysis and conversation analytics
+### 11. **NOVA AI** - AI Voice Assistant
+> Emotion‑aware AI voice assistant with wake word and real‑time visualization
 
 **Features:**
-- **Voice & Text Interaction**: Seamless voice and text-based communication
-- **Natural Language Processing**: Powered by Groq Cloud LLM (Llama 3.1/3.3 models) with intelligent model selection
-- **Sentiment Analysis**: Real-time sentiment detection (positive/negative/neutral) with emotion recognition
-- **Conversation Analytics**: Advanced insights including sentiment distribution, active hours, top intents, and response time metrics
-- **Real-time Data Integration**: Weather, news, sports scores, currency exchange rates
-- **Text-to-Speech (TTS)**: High-quality voice responses with female voice support
-- **Speech-to-Text (STT)**: Accurate speech recognition with Google Speech Recognition
-- **Audio Visualization**: Real-time frequency equalizer with Web Audio API (64-bar visualization)
-- **Voice Activity Indicator**: Visual feedback during voice input
-- **Conversation History**: Persistent conversation memory with SQLite database
-- **Long-term Memory**: User preferences and important facts storage
-- **Scheduled Reminders**: Set and manage reminders
-- **Multi-language Support**: 12+ languages (English, Spanish, French, German, Italian, Portuguese, Hindi, Chinese, Japanese, Korean, Arabic, Russian)
-- **Smart Caching**: Fast response times with intelligent API response caching (5-minute TTL)
-- **Rate Limiting**: Built-in protection (20 requests per 60 seconds)
-- **Task Automation**: Automated information extraction and memory management
-- **Fast Response Times**: Optimized pipeline with parallel processing (<1.5s average)
-- **Enhanced Error Handling**: Graceful fallback with detailed error categorization
-- **Local LLM Fallback**: Automatically uses Ollama (Qwen2.5-Coder) when Groq fails or rate-limited
-- **Model Selection**: Automatically chooses Llama 3.3-70B-Versatile for complex queries, Llama 3.1-8B-Instant for simple ones
-- **Response Time Tracking**: Real-time performance metrics display
-- **Futuristic UI**: Modern glassmorphism design with animated gradients, sentiment badges, and insights dashboard
+- **Voice & Text Interaction**: Natural conversational interface with both speech and text
+- **Groq‑Powered Brain**: Uses `llama-3.3-70b-versatile` via Groq for high‑quality reasoning
+- **Whisper STT**: High‑accuracy transcription with `whisper-large-v3`
+- **Modern TTS Stack**: Primary TTS via `edge-tts` with `gTTS` fallback
+- **Wake Word Support**: Browser‑side “Hey Nova” activation using Web Speech API
+- **Real‑time Waveform**: Live microphone waveform visualization with Web Audio API
+- **Conversation Memory**: SQLite‑backed `nova_conversations.db` with exportable history
+- **Latency Metrics**: Per‑turn STT / LLM / TTS timing chips for performance insight
+- **Strict Response Style**: Short, clean, zero‑markdown answers tuned for assistant use
 
-**⚠️ Requires:** Groq API key, News API key, OpenWeather API key, SerpAPI key  
-**💡 Optional:** Ollama with Qwen2.5-Coder model for local fallback  
-**🎨 UI Features:** Modern gradient design, responsive layout, audio visualizer, voice activity bars, typing indicators, sentiment visualization, conversation insights panel
+**⚠️ Requires:** Groq API key  
+**💡 Optional:** Local LLM (Ollama / llama.cpp) for other tools; Nova itself talks directly to Groq  
+**🎨 UI Features:** Custom Gradio shell with full‑screen orb UI, sidebar stats, transcript panel, waveform, and wake‑word status
 
 ---
 
@@ -535,18 +523,18 @@ Required API keys for full functionality (see `config/api-keys-requirements.txt`
    - Get from: https://huggingface.co/join
    - Add to `.env`: `HUGGINGFACE_API_KEY=your_key`
 
-6. **News API** - News data (LANA AI)
+6. **News API** - Legacy news integration (previous LANA AI only; not used by Nova)
    - Get from: https://newsapi.org/register
    - Add to `.env`: `NEWS_API_KEY=your_key`
    - Used for: Real-time news headlines and updates
 
-7. **OpenWeather API** - Weather data (LANA AI)
+7. **OpenWeather API** - Legacy weather integration (previous LANA AI only; not used by Nova)
    - Get from: https://home.openweathermap.org/users/sign_up
    - Add to `.env`: `OPENWEATHER_API_KEY=your_key` or `WEATHER_API_KEY=your_key`
    - Used for: Current weather conditions and forecasts
    - Fallback: wttr.in service if API unavailable
 
-8. **SerpAPI** - Search results (LANA AI)
+8. **SerpAPI** - Legacy web search integration (previous LANA AI only; not used by Nova)
    - Get from: https://serpapi.com/users/sign_up
    - Add to `.env`: `SERPAPI_API_KEY=your_key`
    - Used for: Web search and information retrieval
@@ -591,8 +579,7 @@ The following files and directories are **excluded from Git** for security, priv
   - `cybersentry_ai.db`
   - `inkwell_ultimate.db`
   - `prompt_optimizer.db`
-  - `lana_ai.db`
-  - `data/lana_ai.db`
+  - `nova_conversations.db`
 - **Why Excluded:** Auto-generated at runtime, contains user data and conversation history
 - **How to Setup:** 
   - **No action required** - These files are automatically created when you first run the application
@@ -642,7 +629,7 @@ The following files and directories are **excluded from Git** for security, priv
 
 #### **6. Auto-Generated Data Files**
 - **Files:**
-  - `data/lana_memory.json` - LANA AI conversation memory
+  - `data/lana_memory.json` - Legacy LANA AI memory file (no longer used; safe if present)
   - `data/encryption_metadata.json` - File encryption metadata
 - **Why Excluded:** Contains user-specific data and encryption keys
 - **How to Setup:**
@@ -700,7 +687,7 @@ INFOSIGHT_3.0/
 │   ├── snapspeak_ai.py      # Image forensics (Intelligence)
 │   ├── trueshot_ai.py       # Authenticity verification (Intelligence)
 │   ├── infosight_ai.py      # AI content generator (Intelligence)
-│   ├── lana_ai.py           # AI voice assistant (Intelligence)
+│   ├── nova_ai.py           # AI voice assistant (Intelligence)
 │   ├── cybersentry_ai.py    # Security monitoring (Intelligence)
 │   ├── inkwell_ai.py        # Prompt optimizer (Intelligence)
 │   └── validate_api.py      # API validation utility
@@ -836,16 +823,16 @@ pip install --upgrade -r requirements.txt
 - Verify TOR is properly configured (for DONNA AI only)
 - Set `OLLAMA_MODEL` env var if using a different model name
 
-**LANA AI Issues:**
+**NOVA AI Issues:**
 - **Audio not playing**: Check browser autoplay policy - user interaction required for first audio
 - **Voice recognition not working**: Ensure microphone permissions are granted in browser
 - **Web Audio API not available**: Browser may not support Web Audio API - fallback visualization will be used
 - **Rate limiting errors**: Wait 60 seconds between requests or increase rate limit in code
 - **Model fallback**: Check console logs to see if local Ollama model is being used
-- **Memory not saving**: Ensure `data/` directory exists and is writable
-- **TTS not working**: Verify `pyttsx3` is installed and system has TTS voices available
-- **Slow responses**: Check API key validity and internet connection
-- **Audio visualization not showing**: Browser may not support Web Audio API - static wave animation will be used instead
+- **History not saving**: Ensure the application has write access where `nova_conversations.db` is created
+- **No audio output**: Check browser autoplay policy and that at least one user interaction occurred before playback
+- **Wake word not working**: Make sure the browser supports Web Speech API and microphone permissions are granted
+- **Waveform not visible**: Browser may not support Web Audio API – Nova will still work without the visualizer
 
 ---
 
