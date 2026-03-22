@@ -76,7 +76,73 @@ Open your browser and navigate to:
 http://127.0.0.1:5000
 ```
 
-## 🔧 Configuration
+## � Standalone + Distributed Startup (Ports map)
+
+All apps have a dedicated port and can run as standalone processes or via `server.py`.
+
+- `infocrypt` → 5001
+- `cybersentry_ai` → 5002
+- `donna` → 5003
+- `enscan` → 5004
+- `filescanner` → 5005
+- `infosight_ai` → 5006
+- `inkwell_ai` → 5007
+- `nova_ai` → 5008
+- `osint` → 5009
+- `portscanner` → 5010
+- `snapspeak_ai` → 5011
+- `trueshot_ai` → 5012
+- `webseeker` → 5013
+
+### Run app standalone (example)
+
+Environment variables can override the port, otherwise defaults above are used.
+
+**Windows PowerShell**
+```powershell
+$env:APP_HOST='127.0.0.1'
+$env:APP_PORT='5008'
+python .\app\nova_ai.py
+```
+
+**Linux/Mac**
+```bash
+export APP_HOST=127.0.0.1
+export APP_PORT=5008
+python app/nova_ai.py
+```
+
+### Run the main server
+
+**Unified mode (all blueprints in one process)**
+```bash
+python server.py --mode unified --host 127.0.0.1 --port 5000
+```
+
+**Distributed mode (gateway + per-app processes)**
+```bash
+python server.py --mode distributed --host 127.0.0.1 --port 5000
+```
+
+### Recommended distributed startup sequence
+
+1. Ensure `.env` is set and dependencies are installed.
+2. Start the distributed gateway:
+   - `python server.py --mode distributed --host 127.0.0.1 --port 5000`
+3. Confirm each app is listening on its assigned port via health-check.
+4. Open browser at `http://127.0.0.1:5000`.
+
+### Health-check endpoints by app
+
+Each blueprint includes `/health` on its app route prefix:
+
+- `http://127.0.0.1:5001/health` (infocrypt)
+- `http://127.0.0.1:5002/health` (cybersentry_ai)
+- ... and so on to 5013.
+
+These endpoints return JSON with `status: healthy` for readiness checks.
+
+## �🔧 Configuration
 
 ### Required API Keys
 

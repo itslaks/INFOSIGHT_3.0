@@ -2490,8 +2490,10 @@ if __name__ != '__main__':
 
 if __name__ == "__main__":
     from flask import Flask
-    app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'dev-key-for-standalone-mode'
+    app = Flask(__name__, template_folder='templates')
+    app.config.setdefault('SECRET_KEY', os.getenv('FLASK_SECRET_KEY', 'dev-key-for-standalone-mode'))
     app.register_blueprint(infosight_ai)
-    print("Starting InfoSight AI in standalone mode on port 5006...")
-    app.run(debug=True, port=5006)
+    host = os.getenv('APP_HOST','127.0.0.1')
+    port = int(os.getenv('APP_PORT', '5006'))
+    print(f'Starting infosight_ai standalone mode on {host}:{port}...')
+    app.run(debug=True, host=host, port=port, threaded=True)

@@ -41,6 +41,9 @@ logger = logging.getLogger(__name__)
 
 # Import blueprints from app package
 # APP Configuration
+DEFAULT_SERVER_HOST = os.getenv('SERVER_HOST', '127.0.0.1')
+DEFAULT_SERVER_PORT = int(os.getenv('SERVER_PORT', '5000'))
+
 APP_PORTS = {
     'infocrypt': 5001,
     'cybersentry_ai': 5002,
@@ -419,18 +422,26 @@ if __name__ == '__main__':
     # Parse arguments
     parser = argparse.ArgumentParser(description='INFOSIGHT 3.0 Server')
     parser.add_argument('--mode', choices=['unified', 'distributed'], default='unified',
-                      help='Run mode: unified (single process) or distributed (multi-process)')
+                        help='Run mode: unified (single process) or distributed (multi-process)')
+    parser.add_argument('--host', default=None, help='Server host (default from env SERVER_HOST or 127.0.0.1)')
+    parser.add_argument('--port', type=int, default=None, help='Server port (default from env SERVER_PORT or 5000)')
     args = parser.parse_args()
-    
+
+    # Host/port override order: arg > config > env > default
+    host = args.host or DEFAULT_SERVER_HOST
+    port = args.port or DEFAULT_SERVER_PORT
+
     try:
         from pathlib import Path
         sys.path.insert(0, str(Path(__file__).parent))
         from config import Config
-        host = Config.HOST
-        port = Config.PORT
+        host = getattr(Config, 'HOST', host)
+        port = getattr(Config, 'PORT', port)
     except (ImportError, AttributeError):
-        host = os.getenv('SERVER_HOST', '127.0.0.1')
-        port = int(os.getenv('SERVER_PORT', '5000'))
+        pass
+
+    host = os.getenv('SERVER_HOST', host)
+    port = int(os.getenv('SERVER_PORT', port))
     
     # Start Ollama server if not running
     ollama_port = 11434

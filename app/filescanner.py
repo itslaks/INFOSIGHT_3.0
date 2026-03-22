@@ -906,9 +906,10 @@ def batch_scan():
 
 if __name__ == "__main__":
     from flask import Flask
-    app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'dev-key-for-standalone-mode'
-    app.config['MAX_CONTENT_LENGTH'] = 32 * 1024 * 1024
+    app = Flask(__name__, template_folder='templates')
+    app.config.setdefault('SECRET_KEY', os.getenv('FLASK_SECRET_KEY', 'dev-key-for-standalone-mode'))
     app.register_blueprint(filescanner)
-    print("Starting FileScanner in standalone mode on port 5005...")
-    app.run(debug=True, port=5005)
+    host = os.getenv('APP_HOST','127.0.0.1')
+    port = int(os.getenv('APP_PORT', '5005'))
+    print(f'Starting filescanner standalone mode on {host}:{port}...')
+    app.run(debug=True, host=host, port=port, threaded=True)
