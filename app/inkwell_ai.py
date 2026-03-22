@@ -1245,21 +1245,9 @@ def batch_status_endpoint(job_id):
 if __name__ == "__main__":
     from flask import Flask
     app = Flask(__name__, template_folder='templates')
-    CORS(app)
-    app.config['SECRET_KEY'] = 'dev-key-for-standalone-mode'
-    # Register directly without prefix for standalone mode to match server expectations
+    app.config.setdefault('SECRET_KEY', os.getenv('FLASK_SECRET_KEY', 'dev-key-for-standalone-mode'))
     app.register_blueprint(inkwell_ai)
-    
-    print("\n" + "="*60)
-    print("🚀 InkWell AI Ultimate - Starting...")
-    print("="*60)
-    print(f"✅ Database: Initialized")
-    print(f"{'✅' if groq_client else '⚠️ '} Groq AI: {'Connected' if groq_client else 'Not configured (add GROQ_API_KEY to .env)'}")
-    if LOCAL_LLM_AVAILABLE:
-        local_available = check_ollama_available()
-        print(f"{'✅' if local_available else '⚠️ '} Local LLM: {'Available' if local_available else 'Not running (start Ollama/llama.cpp server)'}")
-    print("="*60)
-    print("🌐 Server running on http://localhost:5007")
-    print("="*60 + "\n")
-    
-    app.run(debug=True, port=5007, threaded=True)
+    host = os.getenv('APP_HOST','127.0.0.1')
+    port = int(os.getenv('APP_PORT', '5007'))
+    print(f'Starting inkwell_ai standalone mode on {host}:{port}...')
+    app.run(debug=True, host=host, port=port, threaded=True)

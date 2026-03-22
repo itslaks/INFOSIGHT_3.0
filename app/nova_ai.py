@@ -2560,14 +2560,11 @@ def index():
 # STANDALONE MODE
 # ════════════════════════════════════════════════════════════════════════════
 if __name__ == "__main__":
-    startup()
-    app = build_app()
-    app.launch(
-        server_name="127.0.0.1",
-        server_port=7860,
-        share=False,
-        show_error=True,
-        quiet=False,
-        css=CSS,
-        js=JS,
-    )
+    from flask import Flask
+    app = Flask(__name__, template_folder='templates')
+    app.config.setdefault('SECRET_KEY', os.getenv('FLASK_SECRET_KEY', 'dev-key-for-standalone-mode'))
+    app.register_blueprint(nova_ai)
+    host = os.getenv('APP_HOST','127.0.0.1')
+    port = int(os.getenv('APP_PORT', '5008'))
+    print(f'Starting nova_ai standalone mode on {host}:{port}...')
+    app.run(debug=True, host=host, port=port, threaded=True)

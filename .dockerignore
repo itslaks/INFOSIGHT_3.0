@@ -1,0 +1,70 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Temporary files
+temp/
+*.tmp
+*.log
+.cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Large files to skip
+*.gguf
+yolov8n.pt
+best_model9.pth
+
+# Unnecessary documentation
+*.md
+docs/
+tests/
+examples/
+
+# Cache
+.cache/
+node_modules/
+
+# System
+*.exe
+*.bat (except the ones needed)
+*.sh
+
+# Docker files not needed during build
+.dockerignore
+docker-compose.*.yml

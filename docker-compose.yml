@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  infosight:
+    # Build from Dockerfile in current directory
+    build:
+      context: .
+      dockerfile: Dockerfile
+    
+    # Container name for easy reference
+    container_name: infosight-3.0
+    
+    # GPU support configuration
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    
+    # Port mappings
+    ports:
+      # Main Flask application
+      - "5000:5000"
+      # Ollama local LLM server (optional)
+      - "11434:11434"
+      # Individual service ports (for debugging)
+      - "5001-5013:5001-5013"
+    
+    # Volume mappings for persistent data
+    volumes:
+      # Application data persistence
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./audio/cache:/app/audio/cache
+      - ./static/generated_images:/app/static/generated_images
+      - ./models:/app/models
+      - ./llama/models:/app/llama/models
+      
+      # Cache directories (for faster model downloads)
+      - hf_cache:/app/.cache/huggingface
+      - torch_cache:/app/.cache/torch
+      - ollama_cache:/root/.ollama
+    
+    # Environment variables from .env file
+    environment:
+      # Required API Keys (from .env)
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - HF_API_TOKEN=${HF_API_TOKEN}
+      - VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY}
+      - IPINFO_API_KEY=${IPINFO_API_KEY}
+      - ABUSEIPDB_API_KEY=${ABUSEIPDB_API_KEY}
+      
+      # Optional API Keys
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - PYTHON_DOTENV_ENCODING=utf-8
+      
+      # System configuration
+      - PYTHONUNBUFFERED=1
+      - TF_CPP_MIN_LOG_LEVEL=3
+      - CUDA_VISIBLE_DEVICES=0
+      - NVIDIA_VISIBLE_DEVICES=all
+    
+    # Healthcheck configuration
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Network configuration
+    networks:
+      - infosight-net
+    
+    # Resource limits (adjust based on your system)
+    # Comment out if you want unlimited resources
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '4'
+    #       memory: 8G
+    #     reservations:
+    #       cpus: '2'
+    #       memory: 4G
+
+# Named volumes for persistent storage across container restarts
+volumes:
+  hf_cache:
+    driver: local
+  torch_cache:
+    driver: local
+  ollama_cache:
+    driver: local
+
+# Network definition
+networks:
+  infosight-net:
+    driver: bridge
